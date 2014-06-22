@@ -74,11 +74,6 @@ class Corvus(object):
         while not(self.is_drive_ready()):
             pass
 
-        # set pins as input
-        cmd = u3.PortDirWrite(Direction=[0, 0x00, 0],
-                              WriteMask=[0, 0xff, 0])
-        self._labjack.getFeedback(cmd)
-
         self.connect_data_bus()
 
         # lines must already be configured as input
