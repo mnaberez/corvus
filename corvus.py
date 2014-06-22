@@ -126,7 +126,31 @@ class Corvus(object):
             # response should return 0x8f (invalid command)
             response = self.read_data()
 
+    def read_sector_128(self, dadr):
+        self.write_data(0x12)                    # read 128-byte sector
+        self.write_data( dadr & 0x0000ff)        # dadr byte 0
+        self.write_data((dadr & 0x00ff00) >> 8)  # dadr byte 1
+        self.write_data((dadr & 0xff0000) >> 16) # dadr byte 2
+
+        # wait for bus to turn around
+        while not(self.is_drive_ready()):
+          pass
+        while self.is_host_to_drive():
+          pass
+
+        # read error byte
+        result = self.read_data()
+
+        if result == 0:
+            sector = []
+            for i in range(128):
+                sector.append(self.read_data())
+            return sector
+        else:
+            raise ValueError("CORVUS %02x ERROR" % result)
 
 if __name__ == "__main__":
     corvus = Corvus()
     corvus.init_drive()
+    sector = corvus.read_sector_128(0x009201)
+    print([chr(d) for d in sector])
