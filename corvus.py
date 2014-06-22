@@ -20,30 +20,23 @@ class Corvus(object):
 
         # configure outputs
         self._labjack.setDOState(u3.FIO0, 1)  # 74hct245 /oe for data bus
+        self._labjack.setDOState(u3.FIO4, 1)  # /strobe
 
-        # configure timers
-        # fio4: timer 0 (frequency out)
-        # fio5: timer 1 (timer stop)
-        # connect /strobe to fio4 and fio5
-        self._labjack.configIO(TimerCounterPinOffset=4,
-                               NumberOfTimersEnabled=2)
-
-        # use 48 MHz timer clock
-        cmd = self._labjack.configTimerClock(u3.LJ_tc48MHZ_DIV, 1)
-        self._labjack.getFeedback(cmd)
+        # disable timers so they don't interfere with dio
+        self._labjack.configIO(NumberOfTimersEnabled=0)
 
     def strobe(self):
         cmds = [
-            # set timer 1 mode as timer stop.  this will stop timer 0 after
-            # a single pulse (Value=1).  this must be done before starting
-            # timer 0 or else it will be too late to stop the pulses.
-            u3.Timer1Config(TimerMode=u3.LJ_tmTIMERSTOP, Value=1),
+            # set fio4 low (/strobe)
+            u3.PortStateWrite(State=[0x00, 0, 0],
+                              WriteMask=[0x10, 0, 0]),
 
-            # set timer 0 mode as frequency out.  this will start immediately
-            # after the command is sent.  it should output one pulse (the
-            # line is normally high and will be pulled low temporarily) and
-            # then be stopped by timer 1.
-            u3.Timer0Config(TimerMode=u3.LJ_tmFREQOUT, Value=0)
+            # wait ~128 microseconds
+            u3.WaitShort(Time=1),
+
+            # set fio4 high
+            u3.PortStateWrite(State=[0x10, 0, 0],
+                              WriteMask=[0x10, 0, 0]),
         ]
         self._labjack.getFeedback(cmds)
 
