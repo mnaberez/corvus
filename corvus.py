@@ -72,23 +72,38 @@ class Corvus(object):
             self._labjack.getDIState(line)
 
     def read_data(self):
+        while not(self.is_drive_ready()):
+            pass
+
+        # set pins as input
+        for line in self.DATA_LINES:
+            self._labjack.getDIState(line)
+
+        self.connect_data_bus()
+
         # lines must already be configured as input
         # read each line to build the byte
         value = 0
         for bit, line in enumerate(self.DATA_LINES):
             if self._labjack.getDIState(line) == 1:
                 value |= 2**bit
+
+        self.strobe()
+        self.disconnect_data_bus()
+
         return value
 
     def write_data(self, value):
-        # set pins as output low
-        for line in self.DATA_LINES:
-            self._labjack.setDOState(line, 0)
+        while not(self.is_drive_ready()):
+            pass
 
         # turn on lines for bits that are high
+        self.connect_data_bus()
         for bit, line in enumerate(self.DATA_LINES):
-            if (value & 2**bit) != 0:
-                self._labjack.setDOState(line, 1)
+            state = int((value & 2**bit) != 0)
+            self._labjack.setDOState(line, state)
+        self.strobe()
+        self.disconnect_data_bus()
 
     # Higher-Level Command Methods
 
@@ -100,21 +115,16 @@ class Corvus(object):
             while not(self.is_host_to_drive()):
               pass
 
-            self.connect_data_bus()
             value = 0xff # 0xff is an invalid command
             self.write_data(value)
-            self.strobe()
-            self.disconnect_data_bus()
 
             while not(self.is_drive_ready()):
               pass
             while self.is_host_to_drive():
               pass
 
-            self.connect_data_bus()
-            response = self.read_data() # should return 0x8f (invalid command)
-            self.strobe()
-            self.disconnect_data_bus()
+            # response should return 0x8f (invalid command)
+            response = self.read_data()
 
 
 if __name__ == "__main__":
