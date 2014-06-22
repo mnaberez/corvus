@@ -25,72 +25,73 @@ class Corvus(object):
         # disable timers so they don't interfere with dio
         self._labjack.configIO(NumberOfTimersEnabled=0)
 
-    def strobe(self):
-        cmds = [
-            # set fio4 low (/strobe)
-            u3.PortStateWrite(State=[0x00, 0, 0],
-                              WriteMask=[0x10, 0, 0]),
-
-            # wait ~128 microseconds
-            u3.WaitShort(Time=1),
-
-            # set fio4 high
-            u3.PortStateWrite(State=[0x10, 0, 0],
-                              WriteMask=[0x10, 0, 0]),
-        ]
-        self._labjack.getFeedback(cmds)
-
     def is_drive_ready(self):
         return self._labjack.getDIState(u3.FIO6) == 1
 
     def is_host_to_drive(self):
         return self._labjack.getDIState(u3.FIO7) == 1
 
-    def connect_data_bus(self):
-        cmds = [
-            # set eio port to input
-            u3.PortDirWrite(Direction=[0, 0x00, 0],
-                            WriteMask=[0, 0xff, 0]),
+    _STROBE = [
+        # set fio4 low (/strobe)
+        u3.PortStateWrite(State=[0x00, 0, 0],
+                          WriteMask=[0x10, 0, 0]),
 
-            # set fio0 low (/oe on 74hct245)
-            u3.PortStateWrite(State=[0,0,0],
-                              WriteMask=[0x01, 0, 0])
-        ]
-        self._labjack.getFeedback(cmds)
+        # wait ~128 microseconds
+        u3.WaitShort(Time=1),
+
+        # set fio4 high
+        u3.PortStateWrite(State=[0x10, 0, 0],
+                          WriteMask=[0x10, 0, 0])
+    ]
+
+    def strobe(self):
+        return self._labjack.getFeedback(self._STROBE)
+
+    _CONNECT_DATA_BUS = [
+        # set eio port to input
+        u3.PortDirWrite(Direction=[0, 0x00, 0],
+                        WriteMask=[0, 0xff, 0]),
+
+        # set fio0 low (/oe on 74hct245)
+        u3.PortStateWrite(State=[0,0,0],
+                          WriteMask=[0x01, 0, 0])
+    ]
+
+    def connect_data_bus(self):
+        self._labjack.getFeedback(self._CONNECT_DATA_BUS)
+
+    _DISCONNECT_DATA_BUS = [
+        # set fio0 high (/oe on 74hct245)
+        u3.PortStateWrite(State=[0x01,0,0],
+                          WriteMask=[0x01, 0, 0]),
+
+        # set eio port as input
+        u3.PortDirWrite(Direction=[0, 0x00, 0],
+                        WriteMask=[0, 0xff, 0])
+    ]
 
     def disconnect_data_bus(self):
-        cmds = [
-            # set fio0 high (/oe on 74hct245)
-            u3.PortStateWrite(State=[0x01,0,0],
-                              WriteMask=[0x01, 0, 0]),
-
-            # set eio port as input
-            u3.PortDirWrite(Direction=[0, 0x00, 0],
-                            WriteMask=[0, 0xff, 0]),
-        ]
-        self._labjack.getFeedback(cmds)
+        self._labjack.getFeedback(self._DISCONNECT_DATA_BUS)
 
     def read_data(self):
         while not(self.is_drive_ready()):
             pass
 
-        self.connect_data_bus()
+        port_state_read = u3.PortStateRead()
 
-        # lines must already be configured as input
-        # read each line to build the byte
-        cmd = u3.PortStateRead()
-        ports = self._labjack.getFeedback(cmd)[0]
-        value = ports['EIO']
-        self.strobe()
-        self.disconnect_data_bus()
+        cmds = (self._CONNECT_DATA_BUS +
+                [ port_state_read ] +
+                self._STROBE +
+                self._DISCONNECT_DATA_BUS)
 
-        return value
+        responses = self._labjack.getFeedback(cmds)
+        ports = responses[cmds.index(port_state_read)]
+        return ports['EIO']
 
     def write_data(self, value):
         while not(self.is_drive_ready()):
             pass
 
-        # turn on lines for bits that are high
         self.connect_data_bus()
         cmd = u3.PortStateWrite(State=[0, value, 0],
                                 WriteMask=[0, 0xff, 0])
