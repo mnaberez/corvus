@@ -20,7 +20,7 @@ class Corvus(object):
 
         # configure outputs
         self._labjack.setDOState(u3.FIO0, 1)  # 74hct245 /oe for data bus
-        self._labjack.setDOState(u3.FIO4, 1)  # /strobe
+        self._labjack.setDOState(u3.FIO1, 1)  # /strobe
 
         # disable timers so they don't interfere with dio
         self._labjack.configIO(NumberOfTimersEnabled=0)
@@ -32,16 +32,16 @@ class Corvus(object):
         return self._labjack.getDIState(u3.FIO7) == 1
 
     _STROBE = [
-        # set fio4 low (/strobe)
+        # set fio1 low (/strobe)
         u3.PortStateWrite(State=[0x00, 0, 0],
-                          WriteMask=[0x10, 0, 0]),
+                          WriteMask=[0x02, 0, 0]),
 
         # wait ~128 microseconds
         u3.WaitShort(Time=1),
 
-        # set fio4 high
-        u3.PortStateWrite(State=[0x10, 0, 0],
-                          WriteMask=[0x10, 0, 0])
+        # set fio1 high
+        u3.PortStateWrite(State=[0x02, 0, 0],
+                          WriteMask=[0x02, 0, 0])
     ]
 
     def strobe(self):
