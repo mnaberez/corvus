@@ -3,9 +3,6 @@
 import u3
 
 class Corvus(object):
-    DATA_LINES = (u3.EIO0, u3.EIO1, u3.EIO2, u3.EIO3,
-                  u3.EIO4, u3.EIO5, u3.EIO6, u3.EIO7)
-
     def __init__(self, labjack=None):
         if labjack is None:
             labjack = u3.U3()
@@ -56,9 +53,12 @@ class Corvus(object):
         return self._labjack.getDIState(u3.FIO7) == 1
 
     def connect_data_bus(self):
-        # set pins as input
-        for line in self.DATA_LINES:
-            self._labjack.getDIState(line)
+        # port order: [FIO, EIO, CIO]
+        # direction bits: 0=input, 1=output
+        # writemask bits: 0=ignore, 1=write
+        cmd = u3.PortDirWrite(Direction=[0, 0x00, 0],
+                              WriteMask=[0, 0xff, 0])
+        self._labjack.getFeedback(cmd)
 
         # set /oe on 74hct245 to low to connect
         self._labjack.setDOState(u3.FIO0, 0)
@@ -68,26 +68,26 @@ class Corvus(object):
         self._labjack.setDOState(u3.FIO0, 1)
 
         # set pins as input
-        for line in self.DATA_LINES:
-            self._labjack.getDIState(line)
+        cmd = u3.PortDirWrite(Direction=[0, 0x00, 0],
+                              WriteMask=[0, 0xff, 0])
+        self._labjack.getFeedback(cmd)
 
     def read_data(self):
         while not(self.is_drive_ready()):
             pass
 
         # set pins as input
-        for line in self.DATA_LINES:
-            self._labjack.getDIState(line)
+        cmd = u3.PortDirWrite(Direction=[0, 0x00, 0],
+                              WriteMask=[0, 0xff, 0])
+        self._labjack.getFeedback(cmd)
 
         self.connect_data_bus()
 
         # lines must already be configured as input
         # read each line to build the byte
-        value = 0
-        for bit, line in enumerate(self.DATA_LINES):
-            if self._labjack.getDIState(line) == 1:
-                value |= 2**bit
-
+        cmd = u3.PortStateRead()
+        ports = self._labjack.getFeedback(cmd)[0]
+        value = ports['EIO']
         self.strobe()
         self.disconnect_data_bus()
 
@@ -99,9 +99,9 @@ class Corvus(object):
 
         # turn on lines for bits that are high
         self.connect_data_bus()
-        for bit, line in enumerate(self.DATA_LINES):
-            state = int((value & 2**bit) != 0)
-            self._labjack.setDOState(line, state)
+        cmd = u3.PortStateWrite(State=[0, value, 0],
+                                WriteMask=[0, 0xff, 0])
+        self._labjack.getFeedback(cmd)
         self.strobe()
         self.disconnect_data_bus()
 
