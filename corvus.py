@@ -33,18 +33,19 @@ class Corvus(object):
         self._labjack.getFeedback(cmd)
 
     def strobe(self):
-        # set timer 1 mode as timer stop.  this will stop timer 0 after a
-        # single pulse (Value=1).  this must be done before starting timer 0
-        # or else it will be too late to stop the pulses.
-        cmd = u3.Timer1Config(TimerMode=u3.LJ_tmTIMERSTOP, Value=1)
-        self._labjack.getFeedback(cmd)
+        cmds = [
+            # set timer 1 mode as timer stop.  this will stop timer 0 after
+            # a single pulse (Value=1).  this must be done before starting
+            # timer 0 or else it will be too late to stop the pulses.
+            u3.Timer1Config(TimerMode=u3.LJ_tmTIMERSTOP, Value=1),
 
-        # set timer 0 mode as frequency out.  this will start immediately
-        # after the command is sent.  it should output one pulse (the line is
-        # normally high and will be pulled low temporarily) and then be
-        # stopped by timer 1.
-        cmd = u3.Timer0Config(TimerMode=u3.LJ_tmFREQOUT, Value=0)
-        self._labjack.getFeedback(cmd)
+            # set timer 0 mode as frequency out.  this will start immediately
+            # after the command is sent.  it should output one pulse (the
+            # line is normally high and will be pulled low temporarily) and
+            # then be stopped by timer 1.
+            u3.Timer0Config(TimerMode=u3.LJ_tmFREQOUT, Value=0)
+        ]
+        self._labjack.getFeedback(cmds)
 
     def is_drive_ready(self):
         return self._labjack.getDIState(u3.FIO6) == 1
