@@ -1,119 +1,122 @@
 #!/usr/bin/env python
 
-import LabJackPython
 import u3
 
+class Corvus(object):
+    DATA_LINES = (u3.EIO0, u3.EIO1, u3.EIO2, u3.EIO3,
+                  u3.EIO4, u3.EIO5, u3.EIO6, u3.EIO7)
 
-def setup(dev):
-    # configure inputs
-    dev.getDIState(u3.FIO3)  # /reset
-    dev.getDIState(u3.FIO6)  # ready
-    dev.getDIState(u3.FIO7)  # dirc
+    def __init__(self, labjack=None):
+        if labjack is None:
+            labjack = u3.U3()
+        self._labjack = labjack
 
-    # configure outputs
-    dev.setDOState(u3.FIO0, 1)  # 74hct245 /oe for corvus data bus
+        self._setup_labjack()
 
-    # configure timers
-    # fio4: timer 0 (frequency out)
-    # fio5: timer 1 (timer stop)
-    # connect /strobe to fio4 and fio5
-    dev.configIO(TimerCounterPinOffset=4,
-                 NumberOfTimersEnabled=2)
+    # Low-Level Hardware Methods
 
-    # use 48 MHz timer clock
-    cmd = dev.configTimerClock(LabJackPython.LJ_tc48MHZ_DIV, 1)
-    dev.getFeedback(cmd)
+    def _setup_labjack(self):
+        # configure inputs
+        self._labjack.getDIState(u3.FIO3)  # /reset
+        self._labjack.getDIState(u3.FIO6)  # ready
+        self._labjack.getDIState(u3.FIO7)  # dirc
 
-def strobe(dev):
-    # set timer 1 mode as timer stop.  this will stop timer 0 after a
-    # single pulse (Value=1).  this must be done before starting timer 0
-    # or else it will be too late to stop the pulses.
-    cmd = u3.Timer1Config(TimerMode=LabJackPython.LJ_tmTIMERSTOP, Value=1)
-    dev.getFeedback(cmd)
+        # configure outputs
+        self._labjack.setDOState(u3.FIO0, 1)  # 74hct245 /oe for data bus
 
-    # set timer 0 mode as frequency out.  this will start immediately after
-    # the command is sent.  it should output one pulse (the line is normally
-    # high and will be pulled low temporarily) and then be stopped by timer 1.
-    cmd = u3.Timer0Config(TimerMode=LabJackPython.LJ_tmFREQOUT, Value=0)
-    dev.getFeedback(cmd)
+        # configure timers
+        # fio4: timer 0 (frequency out)
+        # fio5: timer 1 (timer stop)
+        # connect /strobe to fio4 and fio5
+        self._labjack.configIO(TimerCounterPinOffset=4,
+                               NumberOfTimersEnabled=2)
 
-def is_drive_ready(dev):
-    return dev.getDIState(u3.FIO6) == 1
+        # use 48 MHz timer clock
+        cmd = self._labjack.configTimerClock(u3.LJ_tc48MHZ_DIV, 1)
+        self._labjack.getFeedback(cmd)
 
-def is_host_to_drive(dev):
-    return dev.getDIState(u3.FIO7) == 1
+    def strobe(self):
+        # set timer 1 mode as timer stop.  this will stop timer 0 after a
+        # single pulse (Value=1).  this must be done before starting timer 0
+        # or else it will be too late to stop the pulses.
+        cmd = u3.Timer1Config(TimerMode=u3.LJ_tmTIMERSTOP, Value=1)
+        self._labjack.getFeedback(cmd)
 
-DATA_LINES = (u3.EIO0, u3.EIO1, u3.EIO2, u3.EIO3,
-              u3.EIO4, u3.EIO5, u3.EIO6, u3.EIO7)
+        # set timer 0 mode as frequency out.  this will start immediately
+        # after the command is sent.  it should output one pulse (the line is
+        # normally high and will be pulled low temporarily) and then be
+        # stopped by timer 1.
+        cmd = u3.Timer0Config(TimerMode=u3.LJ_tmFREQOUT, Value=0)
+        self._labjack.getFeedback(cmd)
 
-def connect_data_bus(dev):
-    # set pins as input
-    for line in DATA_LINES:
-        dev.getDIState(line)
+    def is_drive_ready(self):
+        return self._labjack.getDIState(u3.FIO6) == 1
 
-    # set /oe on 74hct245 to low to connect
-    dev.setDOState(u3.FIO0, 0)
+    def is_host_to_drive(self):
+        return self._labjack.getDIState(u3.FIO7) == 1
 
-def disconnect_data_bus(dev):
-    # set /oe on 74hct245 to high to disconnect
-    dev.setDOState(u3.FIO0, 1)
+    def connect_data_bus(self):
+        # set pins as input
+        for line in self.DATA_LINES:
+            self._labjack.getDIState(line)
 
-    # set pins as input
-    for line in DATA_LINES:
-        dev.getDIState(line)
+        # set /oe on 74hct245 to low to connect
+        self._labjack.setDOState(u3.FIO0, 0)
 
-def read_data(dev):
-    # lines must already be configured as input
-    # read each line to build the byte
-    value = 0
-    for bit, line in enumerate(DATA_LINES):
-        if dev.getDIState(line) == 1:
-            value |= 2**bit
-    return value
+    def disconnect_data_bus(self):
+        # set /oe on 74hct245 to high to disconnect
+        self._labjack.setDOState(u3.FIO0, 1)
 
-def write_data(dev, value):
-    # set pins as output low
-    for line in DATA_LINES:
-        dev.setDOState(line, 0)
+        # set pins as input
+        for line in self.DATA_LINES:
+            self._labjack.getDIState(line)
 
-    # turn on lines for bits that are high
-    for bit, line in enumerate(DATA_LINES):
-        if (value & 2**bit) != 0:
-            dev.setDOState(line, 1)
+    def read_data(self):
+        # lines must already be configured as input
+        # read each line to build the byte
+        value = 0
+        for bit, line in enumerate(self.DATA_LINES):
+            if self._labjack.getDIState(line) == 1:
+                value |= 2**bit
+        return value
+
+    def write_data(self, value):
+        # set pins as output low
+        for line in self.DATA_LINES:
+            self._labjack.setDOState(line, 0)
+
+        # turn on lines for bits that are high
+        for bit, line in enumerate(self.DATA_LINES):
+            if (value & 2**bit) != 0:
+                self._labjack.setDOState(line, 1)
+
+    # Higher-Level Command Methods
+
+    def init_drive(self):
+        response = 0
+        while response != 0x8f:
+            while not(self.is_drive_ready()):
+              pass
+            while not(self.is_host_to_drive()):
+              pass
+
+            self.connect_data_bus()
+            value = 0xff # 0xff is an invalid command
+            self.write_data(value)
+            self.strobe()
+            self.disconnect_data_bus()
+
+            while not(self.is_drive_ready()):
+              pass
+            while self.is_host_to_drive():
+              pass
+
+            self.connect_data_bus()
+            response = self.read_data() # should return 0x8f (invalid command)
+            self.strobe()
+            self.disconnect_data_bus()
 
 
 if __name__ == "__main__":
-    dev = u3.U3()
-    setup(dev)
-
-    for i in range(100):
-        while not(is_drive_ready(dev)):
-          pass
-        print("drive is ready")
-
-        while not(is_host_to_drive(dev)):
-          pass
-        print("direction is host-to-drive")
-
-        connect_data_bus(dev)
-        value = 0xff # 0xff is an invalid command
-        write_data(dev, value)
-        print("wrote %02x" % value)
-        strobe(dev)
-        print("strobe")
-        disconnect_data_bus(dev)
-
-        while not(is_drive_ready(dev)):
-          pass
-        print("drive is ready")
-
-        while is_host_to_drive(dev):
-          pass
-        print("direction is drive-to-host")
-
-        connect_data_bus(dev)
-        value = read_data(dev) # should return 0x8f (invalid command)
-        print("read %02x" % value)
-        strobe(dev)
-        print("strobe")
-        disconnect_data_bus(dev)
+    corvus = Corvus()
+    corvus.init_drive()
