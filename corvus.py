@@ -92,12 +92,15 @@ class Corvus(object):
         while not(self.is_drive_ready()):
             pass
 
-        self.connect_data_bus()
-        cmd = u3.PortStateWrite(State=[0, value, 0],
-                                WriteMask=[0, 0xff, 0])
-        self._labjack.getFeedback(cmd)
-        self.strobe()
-        self.disconnect_data_bus()
+        # put data byte on eio port
+        port_state_write = u3.PortStateWrite(State=[0, value, 0],
+                                             WriteMask=[0, 0xff, 0])
+
+        cmds = (self._CONNECT_DATA_BUS +
+                [ port_state_write ] +
+                self._STROBE +
+                self._DISCONNECT_DATA_BUS)
+        self._labjack.getFeedback(cmds)
 
     # Higher-Level Command Methods
 
