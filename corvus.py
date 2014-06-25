@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import sys
 import u3
 
 class Corvus(object):
@@ -123,11 +124,24 @@ class Corvus(object):
             # response should return 0x8f (invalid command)
             response = self.read_data()
 
-    def read_sector_128(self, dadr):
-        self.write_data(0x12)                    # read 128-byte sector
-        self.write_data( dadr & 0x0000ff)        # dadr byte 0
-        self.write_data((dadr & 0x00ff00) >> 8)  # dadr byte 1
-        self.write_data((dadr & 0xff0000) >> 16) # dadr byte 2
+    def _make_dadr(self, drive, sector):
+        # byte 0:
+        #   upper nibble = bits 16-19 of sector address
+        #   lower nibble = corvus unit id (1-15)
+        b0 = ((sector & 0x0f0000) >> 12) + (drive & 0x0f)
+        # byte 1: bits 0-7 of sector address
+        b1 = sector & 0xff
+        # byte 2: bits 8-15 of sector address
+        b2 = (sector & 0xff00) >> 8
+        return (b0, b1, b2)
+
+    def read_sector_128(self, drive, sector):
+        # send command to read 128-byte sector
+        self.write_data(0x12)
+
+        # send disk address
+        for x in self._make_dadr(drive, sector):
+            self.write_data(x)
 
         # wait for bus to turn around
         while not(self.is_drive_ready()):
@@ -149,5 +163,9 @@ class Corvus(object):
 if __name__ == "__main__":
     corvus = Corvus()
     corvus.init_drive()
-    sector = corvus.read_sector_128(0x009201)
-    print([chr(d) for d in sector])
+    with open("image.bin", "wb") as f:
+        for i in range(80000):
+            sector = corvus.read_sector_128(1, i)
+            f.write(''.join([chr(d) for d in sector]))
+            sys.stdout.write("\r%d bytes read" % (i * 128))
+            sys.stdout.flush()
