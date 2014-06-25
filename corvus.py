@@ -151,14 +151,13 @@ class Corvus(object):
 
         # read error byte
         result = self.read_data()
-
-        if result == 0:
-            sector = []
-            for i in range(size):
-                sector.append(self.read_data())
-            return sector
-        else:
+        if result != 0:
             raise ValueError("CORVUS %02x ERROR" % result)
+
+        sector = []
+        for i in range(size):
+            sector.append(self.read_data())
+        return sector
 
     def read_sector_128(self, drive, sector):
         return self._read_sector(drive, sector, 0x12, 128)
@@ -169,12 +168,34 @@ class Corvus(object):
     def read_sector_512(self, drive, sector):
         return self._read_sector(drive, sector, 0x32, 512)
 
+    def get_drive_capacity(self, drive):
+        '''Returns total capacity as count of 512-byte sectors'''
+        # send command to get drive parameters
+        self.write_data(0x10)
+
+        # send disk address
+        self.write_data(drive)
+
+        # read error byte
+        result = self.read_data()
+        if result != 0:
+            raise ValueError("CORVUS %02x ERROR" % result)
+
+        # read parameter block
+        params = []
+        for i in range(128):
+            params.append(self.read_data())
+
+        total_sectors = params[37] + (params[38] << 8) + (params[39] << 16)
+        return total_sectors
+
 if __name__ == "__main__":
     corvus = Corvus()
     corvus.init_drive()
+    total_sectors = corvus.get_drive_capacity(1)
     with open("image.bin", "wb") as f:
-        for i in range(80000):
-            sector = corvus.read_sector_128(1, i)
+        for i in range(total_sectors):
+            sector = corvus.read_sector_512(1, i)
             f.write(''.join([chr(d) for d in sector]))
-            sys.stdout.write("\r%d bytes read" % (i * 128))
+            sys.stdout.write("\r%d bytes read" % (i * 512))
             sys.stdout.flush()
