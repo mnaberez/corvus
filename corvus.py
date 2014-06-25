@@ -135,9 +135,9 @@ class Corvus(object):
         b2 = (sector & 0xff00) >> 8
         return (b0, b1, b2)
 
-    def read_sector_128(self, drive, sector):
-        # send command to read 128-byte sector
-        self.write_data(0x12)
+    def _read_sector(self, drive, sector, cmd, size):
+        # send command to read sector
+        self.write_data(cmd)
 
         # send disk address
         for x in self._make_dadr(drive, sector):
@@ -154,11 +154,20 @@ class Corvus(object):
 
         if result == 0:
             sector = []
-            for i in range(128):
+            for i in range(size):
                 sector.append(self.read_data())
             return sector
         else:
             raise ValueError("CORVUS %02x ERROR" % result)
+
+    def read_sector_128(self, drive, sector):
+        return self._read_sector(drive, sector, 0x12, 128)
+
+    def read_sector_256(self, drive, sector):
+        return self._read_sector(drive, sector, 0x22, 256)
+
+    def read_sector_512(self, drive, sector):
+        return self._read_sector(drive, sector, 0x32, 512)
 
 if __name__ == "__main__":
     corvus = Corvus()
