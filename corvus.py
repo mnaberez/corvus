@@ -116,7 +116,7 @@ class Corvus(object):
 
         # read error byte
         error = self.read()
-        if error != 0:
+        if error & 0x80:
             raise ValueError("CORVUS %02x ERROR" % error)
 
         # read response packet
