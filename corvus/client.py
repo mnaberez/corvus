@@ -202,17 +202,3 @@ class Corvus(object):
         # byte 2: bits 8-15 of sector address
         b2 = (sector & 0xff00) >> 8
         return b0, b1, b2
-
-if __name__ == "__main__":
-    corvus = Corvus()
-    corvus.init_drive()
-    total_sectors = corvus.get_drive_capacity(1)
-    with open("image.bin", "wb") as f:
-        for i in range(total_sectors):
-            data = corvus.read_sector_512(1, i)
-            corvus.write_sector_512(1, i, data)
-            data = corvus.read_sector_512(1, i)
-            f.write(''.join([chr(d) for d in data]))
-            f.flush()
-            sys.stdout.write("\r%d bytes" % (i * 512))
-            sys.stdout.flush()
