@@ -3,17 +3,12 @@
 import sys
 import u3
 
-class Corvus(object):
+class LabjackInterface(object):
     def __init__(self, labjack=None):
         if labjack is None:
             labjack = u3.U3()
         self._labjack = labjack
 
-        self._setup_labjack()
-
-    # Low-Level Hardware Methods
-
-    def _setup_labjack(self):
         # configure inputs
         self._labjack.getDIState(u3.FIO3)  # /reset
         self._labjack.getDIState(u3.FIO6)  # ready
@@ -26,11 +21,25 @@ class Corvus(object):
         # disable timers so they don't interfere with dio
         self._labjack.configIO(NumberOfTimersEnabled=0)
 
-    def is_drive_ready(self):
-        return self._labjack.getDIState(u3.FIO6) == 1
+    _CONNECT_DATA_BUS = [
+        # set eio port to input
+        u3.PortDirWrite(Direction=[0, 0x00, 0],
+                        WriteMask=[0, 0xff, 0]),
 
-    def is_host_to_drive(self):
-        return self._labjack.getDIState(u3.FIO7) == 1
+        # set fio0 low (/oe on 74hct245)
+        u3.PortStateWrite(State=[0,0,0],
+                          WriteMask=[0x01, 0, 0])
+    ]
+
+    _DISCONNECT_DATA_BUS = [
+        # set fio0 high (/oe on 74hct245)
+        u3.PortStateWrite(State=[0x01,0,0],
+                          WriteMask=[0x01, 0, 0]),
+
+        # set eio port as input
+        u3.PortDirWrite(Direction=[0, 0x00, 0],
+                        WriteMask=[0, 0xff, 0])
+    ]
 
     _STROBE = [
         # set fio1 low (/strobe)
@@ -45,37 +54,14 @@ class Corvus(object):
                           WriteMask=[0x02, 0, 0])
     ]
 
-    def strobe(self):
-        return self._labjack.getFeedback(self._STROBE)
+    def _is_drive_ready(self):
+        return self._labjack.getDIState(u3.FIO6) == 1
 
-    _CONNECT_DATA_BUS = [
-        # set eio port to input
-        u3.PortDirWrite(Direction=[0, 0x00, 0],
-                        WriteMask=[0, 0xff, 0]),
-
-        # set fio0 low (/oe on 74hct245)
-        u3.PortStateWrite(State=[0,0,0],
-                          WriteMask=[0x01, 0, 0])
-    ]
-
-    def connect_data_bus(self):
-        self._labjack.getFeedback(self._CONNECT_DATA_BUS)
-
-    _DISCONNECT_DATA_BUS = [
-        # set fio0 high (/oe on 74hct245)
-        u3.PortStateWrite(State=[0x01,0,0],
-                          WriteMask=[0x01, 0, 0]),
-
-        # set eio port as input
-        u3.PortDirWrite(Direction=[0, 0x00, 0],
-                        WriteMask=[0, 0xff, 0])
-    ]
-
-    def disconnect_data_bus(self):
-        self._labjack.getFeedback(self._DISCONNECT_DATA_BUS)
+    def _is_host_to_drive(self):
+        return self._labjack.getDIState(u3.FIO7) == 1
 
     def read(self):
-        while not(self.is_drive_ready()):
+        while not(self._is_drive_ready()):
             pass
 
         port_state_read = u3.PortStateRead()
@@ -90,7 +76,7 @@ class Corvus(object):
         return ports['EIO']
 
     def write(self, value):
-        while not(self.is_drive_ready()):
+        while not(self._is_drive_ready()):
             pass
 
         # put data byte on eio port
@@ -103,15 +89,34 @@ class Corvus(object):
                 self._DISCONNECT_DATA_BUS)
         self._labjack.getFeedback(cmds)
 
+    def init_drive(self):
+        response = None
+        while response != 0x8f:
+            while not(self._is_drive_ready()):
+              pass
+            while not(self._is_host_to_drive()):
+              pass
+
+            value = 0xff # 0xff is an invalid command
+            self.write(value)
+
+            while not(self._is_drive_ready()):
+              pass
+            while self._is_host_to_drive():
+              pass
+
+            # response should return 0x8f (invalid command)
+            response = self.read()
+
     def request(self, request, response_length):
         # send request packet
         for byte in request:
             self.write(byte)
 
         # wait for bus to turn around
-        while not(self.is_drive_ready()):
+        while not(self._is_drive_ready()):
           pass
-        while self.is_host_to_drive():
+        while self._is_host_to_drive():
           pass
 
         # read error byte
@@ -125,71 +130,60 @@ class Corvus(object):
             response.append(self.read())
         return error, response
 
-    # Higher-Level Command Methods
+
+class Corvus(object):
+    def __init__(self, iface=None):
+        if iface is None:
+            iface = LabjackInterface()
+        self._iface = iface
 
     def init_drive(self):
-        response = 0
-        while response != 0x8f:
-            while not(self.is_drive_ready()):
-              pass
-            while not(self.is_host_to_drive()):
-              pass
-
-            value = 0xff # 0xff is an invalid command
-            self.write(value)
-
-            while not(self.is_drive_ready()):
-              pass
-            while self.is_host_to_drive():
-              pass
-
-            # response should return 0x8f (invalid command)
-            response = self.read()
+        self._iface.init_drive()
 
     def get_drive_capacity(self, drive):
         '''Returns total capacity as count of 512-byte sectors'''
         cmd = 0x10 # get drive paramaters
-        _, params = self.request([cmd, drive], 128)
+        _, params = self._iface.request([cmd, drive], 128)
         total_sectors = params[37] + (params[38] << 8) + (params[39] << 16)
         return total_sectors
 
     def read_sector_128(self, drive, sector):
         cmd = 0x12 # read 128-byte sector
         msn_drv, lsb, msb = self._make_dadr(drive, sector)
-        _, sector_128 = self.request([cmd, msn_drv, lsb, msb], 128)
+        _, sector_128 = self._iface.request([cmd, msn_drv, lsb, msb], 128)
         return sector_128
 
     def read_sector_256(self, drive, sector):
         cmd = 0x22 # read 256-byte sector
         msn_drv, lsb, msb = self._make_dadr(drive, sector)
-        _, sector_256 = self.request([cmd, msn_drv, lsb, msb], 256)
+        _, sector_256 = self._iface.request([cmd, msn_drv, lsb, msb], 256)
         return sector_256
 
     def read_sector_512(self, drive, sector):
         cmd = 0x32 # read 512-byte sector
         msn_drv, lsb, msb = self._make_dadr(drive, sector)
-        _, sector_512 = self.request([cmd, msn_drv, lsb, msb], 512)
+        _, sector_512 = self._iface.request([cmd, msn_drv, lsb, msb], 512)
         return sector_512
 
     def write_sector_128(self, drive, sector, data):
         cmd = 0x13 # write 128-byte sector
         msn_drv, lsb, msb = self._make_dadr(drive, sector)
         req = [cmd, msn_drv, lsb, msb] + data
-        error, _ = self.request(req, 0)
+        error, _ = self._iface.request(req, 0)
         return error
 
     def write_sector_256(self, drive, sector, data):
         cmd = 0x23 # write 256-byte sector
         msn_drv, lsb, msb = self._make_dadr(drive, sector)
         req = [cmd, msn_drv, lsb, msb] + data
-        error, _ = self.request(req, 0)
+        error, _ = self._iface.request(req, 0)
         return error
 
     def write_sector_512(self, drive, sector, data):
         cmd = 0x33 # write 512-byte sector
         msn_drv, lsb, msb = self._make_dadr(drive, sector)
         req = [cmd, msn_drv, lsb, msb] + data
-        error, _ = self.request(req, 0)
+        error, _ = self._iface.request(req, 0)
         return error
 
     def _make_dadr(self, drive, sector):
