@@ -54,15 +54,18 @@ class LabjackInterface(object):
                           WriteMask=[0x02, 0, 0])
     ]
 
-    def _is_drive_ready(self):
-        return self._labjack.getDIState(u3.FIO6) == 1
-
-    def _is_host_to_drive(self):
-        return self._labjack.getDIState(u3.FIO7) == 1
+    def read_status(self):
+        cmd = u3.PortStateRead()
+        fio = self._labjack.getFeedback(cmd)[0]['FIO']
+        ready = bool(fio & 0x40) # fio6 (ready high = drive is ready)
+        dirc  = bool(fio & 0x80) # fio7 (dirc high = host-to-drive)
+        return ready, dirc
 
     def read(self):
-        while not(self._is_drive_ready()):
-            pass
+        # wait until ready=high
+        ready = False
+        while not(ready):
+            ready, _ = self.read_status()
 
         port_state_read = u3.PortStateRead()
 
@@ -76,8 +79,10 @@ class LabjackInterface(object):
         return ports['EIO']
 
     def write(self, value):
-        while not(self._is_drive_ready()):
-            pass
+        # wait until ready=high
+        ready = False
+        while not(ready):
+            ready, _ = self.read_status()
 
         # put data byte on eio port
         port_state_write = u3.PortStateWrite(State=[0, value, 0],
@@ -92,18 +97,19 @@ class LabjackInterface(object):
     def init_drive(self):
         response = None
         while response != 0x8f:
-            while not(self._is_drive_ready()):
-              pass
-            while not(self._is_host_to_drive()):
-              pass
+            # wait until ready=high and dirc=high (host-to-drive)
+            ready, dirc = False, False
+            while not(ready) or not(dirc):
+                ready, dirc = self.read_status()
 
-            value = 0xff # 0xff is an invalid command
-            self.write(value)
+            # send command 0xff (invalid command)
+            self.write(0xff)
 
-            while not(self._is_drive_ready()):
-              pass
-            while self._is_host_to_drive():
-              pass
+            # bus turn-around
+            # wait until ready=high and dirc=low (drive-to-host)
+            ready, dirc = False, True
+            while not(ready) or dirc:
+                ready, dirc = self.read_status()
 
             # response should return 0x8f (invalid command)
             response = self.read()
@@ -113,11 +119,11 @@ class LabjackInterface(object):
         for byte in request:
             self.write(byte)
 
-        # wait for bus to turn around
-        while not(self._is_drive_ready()):
-          pass
-        while self._is_host_to_drive():
-          pass
+        # bus turn-around
+        # wait until ready=high and dirc=low (drive-to-host)
+        ready, dirc = False, True
+        while not(ready) or dirc:
+            ready, dirc = self.read_status()
 
         # read error byte
         error = self.read()
