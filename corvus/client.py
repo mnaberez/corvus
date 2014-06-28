@@ -54,14 +54,17 @@ class LabjackInterface(object):
                           WriteMask=[0x02, 0, 0])
     ]
 
-    def read_status(self):
-        cmd = u3.PortStateRead()
-        fio = self._labjack.getFeedback(cmd)[0]['FIO']
+    def read_status(self, fio=None):
+        '''Read the status bits from the drive'''
+        if fio is None:
+            cmd = u3.PortStateRead()
+            fio = self._labjack.getFeedback(cmd)[0]['FIO']
         ready = bool(fio & 0x40) # fio6 (ready high = drive is ready)
         dirc  = bool(fio & 0x80) # fio7 (dirc high = host-to-drive)
         return ready, dirc
 
     def read(self):
+        '''Read one byte from the drive'''
         # wait until ready=high
         ready = False
         while not(ready):
@@ -77,6 +80,81 @@ class LabjackInterface(object):
         responses = self._labjack.getFeedback(cmds)
         ports = responses[cmds.index(port_state_read)]
         return ports['EIO']
+
+    def read_multi(self, count):
+        '''Read multiple bytes from the drive.  This method optimizes the
+        number of packets sent to the LabJack so that it will perform
+        faster than calling read() for each byte.'''
+        if count == 0:
+            return []
+        elif count == 1:
+            return [ self.read() ]
+
+        buffer, pos = [], 0
+        while pos < count:
+            if pos == 0:
+                # for first byte only, we have to wait for ready
+                # before connecting the data bus
+                ready = False
+                while not(ready):
+                    ready, _ = self.read_status()
+
+                # connect data bus, read data byte, strobe, wait,
+                # and read the status byte.  the data bus is left connected.
+                data_read = u3.PortStateRead()
+                status_read = u3.PortStateRead()
+                cmds = (self._CONNECT_DATA_BUS +
+                        [ data_read ] +
+                        self._STROBE +
+                        [ u3.WaitShort(Time=1) ] +
+                        [ status_read ])
+                responses = self._labjack.getFeedback(cmds)
+
+                # data byte
+                ports = responses[cmds.index(data_read)]
+                buffer.append(ports['EIO'])
+
+                # status bits
+                ready, _ = self.read_status(ports['FIO'])
+                while not(ready):
+                    ready, _ = self.read_status()
+
+            elif pos < count-1:
+                # for each successive byte except the last, we know
+                # that the drive is ready and that the data bus is connected.
+                # read the data, strobe, wait 128us, and then read the status
+                # byte.  the data bus will be left connected.
+                data_read = u3.PortStateRead()
+                status_read = u3.PortStateRead()
+                cmds = ([ data_read ] +
+                        self._STROBE +
+                        [ u3.WaitShort(Time=1) ] +
+                        [ status_read ])
+                responses = self._labjack.getFeedback(cmds)
+
+                # data byte
+                ports = responses[cmds.index(data_read)]
+                buffer.append(ports['EIO'])
+
+                # status bits
+                ready, _ = self.read_status(ports['FIO'])
+                while not(ready):
+                    ready, _ = self.read_status()
+
+            else:
+                # for the last byte, read the data byte, strobe, and
+                # then disconnect the data bus.
+                data_read = u3.PortStateRead()
+                cmds = ([ data_read ] +
+                        self._STROBE +
+                        self._DISCONNECT_DATA_BUS)
+                responses = self._labjack.getFeedback(cmds)
+
+                # data byte
+                ports = responses[cmds.index(data_read)]
+                buffer.append(ports['EIO'])
+            pos += 1
+        return buffer
 
     def write(self, value):
         # wait until ready=high
@@ -131,9 +209,7 @@ class LabjackInterface(object):
             raise ValueError("CORVUS %02x ERROR" % error)
 
         # read response packet
-        response = []
-        for i in range(response_length):
-            response.append(self.read())
+        response = self.read_multi(response_length)
         return error, response
 
 
