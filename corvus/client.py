@@ -78,7 +78,7 @@ class LabjackInterface(object):
                 self._DISCONNECT_DATA_BUS)
 
         responses = self._labjack.getFeedback(cmds)
-        ports = responses[cmds.index(port_state_read)]
+        ports = responses[cmds.index(data_read)]
         return ports['EIO']
 
     def read_multi(self, count):
@@ -90,8 +90,12 @@ class LabjackInterface(object):
         elif count == 1:
             return [ self.read() ]
 
-        buffer, pos = [], 0
+        buffer = []
+        pos = 0
         while pos < count:
+            data_read = u3.PortStateRead()
+            status_read = u3.PortStateRead()
+
             if pos == 0:
                 # for first byte only, we have to wait for ready
                 # before connecting the data bus
@@ -99,10 +103,8 @@ class LabjackInterface(object):
                 while not(ready):
                     ready, _ = self.read_status()
 
-                # connect data bus, read data byte, strobe, wait,
+                # connect data bus, read data byte, strobe, wait 128us,
                 # and read the status byte.  the data bus is left connected.
-                data_read = u3.PortStateRead()
-                status_read = u3.PortStateRead()
                 cmds = (self._CONNECT_DATA_BUS +
                         [ data_read ] +
                         self._STROBE +
@@ -125,8 +127,6 @@ class LabjackInterface(object):
                 # that the drive is ready and that the data bus is connected.
                 # read the data, strobe, wait 128us, and then read the status
                 # byte.  the data bus will be left connected.
-                data_read = u3.PortStateRead()
-                status_read = u3.PortStateRead()
                 cmds = ([ data_read ] +
                         self._STROBE +
                         [ u3.WaitShort(Time=1) ] +
@@ -146,7 +146,6 @@ class LabjackInterface(object):
             else:
                 # for the last byte, read the data byte, strobe, and
                 # then disconnect the data bus.
-                data_read = u3.PortStateRead()
                 cmds = ([ data_read ] +
                         self._STROBE +
                         self._DISCONNECT_DATA_BUS)
@@ -165,14 +164,78 @@ class LabjackInterface(object):
             ready, _ = self.read_status()
 
         # put data byte on eio port
-        port_state_write = u3.PortStateWrite(State=[0, value, 0],
-                                             WriteMask=[0, 0xff, 0])
+        data_write = u3.PortStateWrite(State=[0, value, 0],
+                                       WriteMask=[0, 0xff, 0])
 
         cmds = (self._CONNECT_DATA_BUS +
-                [ port_state_write ] +
+                [ data_write ] +
                 self._STROBE +
                 self._DISCONNECT_DATA_BUS)
         self._labjack.getFeedback(cmds)
+
+    def write_multi(self, values):
+        '''Write multiple bytes to the drive.  This method optimizes the
+        number of packets sent to the LabJack so that it will perform
+        faster than calling write() for each byte.'''
+
+        count = len(values)
+        if count == 1:
+            return self.write(values[0])
+
+        pos = 0
+        while pos < count:
+            data_write = u3.PortStateWrite(State=[0, values[pos], 0],
+                                           WriteMask=[0, 0xff, 0])
+            status_read = u3.PortStateRead()
+
+            if pos == 0:
+                # for first byte only, we have to wait for ready
+                # before connecting the data bus
+                ready = False
+                while not(ready):
+                    ready, _ = self.read_status()
+
+                # connect data bus, write data byte, strobe, wait 128us,
+                # and read the status byte.  the data bus is left connected.
+                cmds = (self._CONNECT_DATA_BUS +
+                        [ data_write ] +
+                        self._STROBE +
+                        [ u3.WaitShort(Time=1) ] +
+                        [ status_read ])
+                responses = self._labjack.getFeedback(cmds)
+
+                # status bits
+                ports = responses[cmds.index(status_read)]
+                ready, _ = self.read_status(ports['FIO'])
+                while not(ready):
+                    ready, _ = self.read_status()
+
+            elif pos < count-1:
+                # for each successive byte except the last, we know
+                # that the drive is ready and that the data bus is connected.
+                # write the data, strobe, wait 128us, and then read the status
+                # byte.  the data bus will be left connected.
+                cmds = ([ data_write ] +
+                        self._STROBE +
+                        [ u3.WaitShort(Time=1) ] +
+                        [ status_read ])
+                responses = self._labjack.getFeedback(cmds)
+
+                # status bits
+                ports = responses[cmds.index(status_read)]
+                ready, _ = self.read_status(ports['FIO'])
+                while not(ready):
+                    ready, _ = self.read_status()
+
+            else:
+                # for the last byte, write the data byte, strobe, and
+                # then disconnect the data bus.
+                cmds = ([ data_write ] +
+                        self._STROBE +
+                        self._DISCONNECT_DATA_BUS)
+                self._labjack.getFeedback(cmds)
+            pos += 1
+        return
 
     def init_drive(self):
         response = None
@@ -196,8 +259,7 @@ class LabjackInterface(object):
 
     def request(self, request, response_length):
         # send request packet
-        for byte in request:
-            self.write(byte)
+        self.write_multi(request)
 
         # bus turn-around
         # wait until ready=high and dirc=low (drive-to-host)
