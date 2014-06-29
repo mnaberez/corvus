@@ -70,10 +70,10 @@ class LabjackInterface(object):
         while not(ready):
             ready, _ = self.read_status()
 
-        port_state_read = u3.PortStateRead()
+        data_read = u3.PortStateRead()
 
         cmds = (self._CONNECT_DATA_BUS +
-                [ port_state_read ] +
+                [ data_read ] +
                 self._STROBE +
                 self._DISCONNECT_DATA_BUS)
 
@@ -115,6 +115,7 @@ class LabjackInterface(object):
                 buffer.append(ports['EIO'])
 
                 # status bits
+                ports = responses[cmds.index(status_read)]
                 ready, _ = self.read_status(ports['FIO'])
                 while not(ready):
                     ready, _ = self.read_status()
@@ -137,6 +138,7 @@ class LabjackInterface(object):
                 buffer.append(ports['EIO'])
 
                 # status bits
+                ports = responses[cmds.index(status_read)]
                 ready, _ = self.read_status(ports['FIO'])
                 while not(ready):
                     ready, _ = self.read_status()
