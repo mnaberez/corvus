@@ -332,6 +332,18 @@ class Corvus(object):
         error, _ = self._iface.request(req, 0)
         return error
 
+    def enter_prep_mode(self, drive, prep_block):
+        cmd = 0x11 # put drive into prep mode
+        req = [cmd] + prep_block
+        error, _ = self._iface.request(req, 0)
+        return error
+
+    def exit_prep_mode(self):
+        cmd = 0x00 # reset (only works in prep mode)
+        req = [cmd]
+        error, _ = self._iface.request(req, 0)
+        return error
+
     def _make_dadr(self, drive, sector):
         # byte 0:
         #   upper nibble = bits 16-19 of sector address
