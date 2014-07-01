@@ -1,4 +1,5 @@
 import sys
+import time
 from corvus.client import Corvus
 
 def backup(corvus, filename):
@@ -22,6 +23,15 @@ def restore(corvus, filename):
             sys.stdout.write("\r%d bytes" % (i * 512))
             sys.stdout.flush()
         sys.stdout.write("\n")
+
+def scribble(corvus, count):
+    first_sector = 0
+    last_sector = corvus.get_drive_capacity(1) - 1
+    for i in range(count):
+        corvus.read_sector_512(1, first_sector)
+        time.sleep(0.10)
+        corvus.read_sector_512(1, last_sector)
+        time.sleep(0.10)
 
 def main():
     corvus = Corvus()
