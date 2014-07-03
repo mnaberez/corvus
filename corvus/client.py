@@ -9,17 +9,20 @@ class LabjackInterface(object):
             labjack = u3.U3()
         self._labjack = labjack
 
+        # disable timers so they don't interfere with dio
+        self._labjack.configIO(NumberOfTimersEnabled=0)
+
         # configure inputs
         self._labjack.getDIState(u3.FIO3)  # /reset
         self._labjack.getDIState(u3.FIO6)  # ready
         self._labjack.getDIState(u3.FIO7)  # dirc
 
+        # configure eio port as input
+        self._labjack.getFeedback(self._DISCONNECT_DATA_BUS)
+
         # configure outputs
         self._labjack.setDOState(u3.FIO0, 1)  # 74hct245 /oe for data bus
         self._labjack.setDOState(u3.FIO1, 1)  # /strobe
-
-        # disable timers so they don't interfere with dio
-        self._labjack.configIO(NumberOfTimersEnabled=0)
 
     _CONNECT_DATA_BUS = [
         # set eio port to input
