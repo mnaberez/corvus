@@ -3,6 +3,7 @@
 
     org 0000h
 
+;called from prep code
 l0000h:
     jp l00dfh           ;0000 c3 df 00
     jp l0bc1h           ;0003 c3 c1 0b
@@ -10,9 +11,11 @@ l0000h:
     nop                 ;0007 00
 l0008h:
     jp l0dcch           ;0008 c3 cc 0d
+;called from prep code
     jp l0a43h           ;000b c3 43 0a
     ld b,48h            ;000e 06 48
     jp l071fh           ;0010 c3 1f 07
+;called from prep code
     jp l086fh           ;0013 c3 6f 08
     cp d                ;0016 ba
     dec b               ;0017 05
@@ -35,6 +38,7 @@ l0008h:
     jp l00c6h           ;0038 c3 c6 00
     nop                 ;003b 00
     nop                 ;003c 00
+;called from prep code
     jp l0b55h           ;003d c3 55 0b
     adc a,d             ;0040 8a
     ex af,af'           ;0041 08
@@ -75,7 +79,9 @@ l0008h:
     jp l030eh           ;006b c3 0e 03
     jp l0367h           ;006e c3 67 03
     jp l03d4h           ;0071 c3 d4 03
+;called from prep code
     jp l03f1h           ;0074 c3 f1 03
+;called from prep code
     jp l0439h           ;0077 c3 39 04
     jp l0440h           ;007a c3 40 04
     jp l0449h           ;007d c3 49 04
@@ -92,6 +98,7 @@ l0008h:
     jp l0289h           ;009e c3 89 02
     jp l0c65h           ;00a1 c3 65 0c
     jp l0c41h           ;00a4 c3 41 0c
+;called from prep code
     jp l0c56h           ;00a7 c3 56 0c
     jp l0902h           ;00aa c3 02 09
     jp l0924h           ;00ad c3 24 09
