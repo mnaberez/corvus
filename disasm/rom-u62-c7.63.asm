@@ -387,24 +387,27 @@ l02a4h:
     bit 0,a             ;02a9 cb 47
     jr nz,l02a4h        ;02ab 20 f7
     ret                 ;02ad c9
+
 sub_02aeh:
     in a,(60h)          ;02ae db 60
     res 7,a             ;02b0 cb bf
     out (60h),a         ;02b2 d3 60
-    call sub_02c1h      ;02b4 cd c1 02
+    call delay          ;02b4 cd c1 02
     in a,(60h)          ;02b7 db 60
     set 7,a             ;02b9 cb ff
     out (60h),a         ;02bb d3 60
-    call sub_02c1h      ;02bd cd c1 02
+    call delay          ;02bd cd c1 02
     ret                 ;02c0 c9
-sub_02c1h:
-    xor a               ;02c1 af
-    ld b,a              ;02c2 47
-l02c3h:
-    djnz l02c3h         ;02c3 10 fe
-    dec a               ;02c5 3d
-    jr nz,l02c3h        ;02c6 20 fb
-    ret                 ;02c8 c9
+
+delay:
+    xor a               ;A=0
+    ld b,a              ;B=0
+dly1:
+    djnz dly1           ;Decrement B, loop until B=0
+    dec a               ;Decrement A
+    jr nz,dly1          ;Loop until A=0
+    ret
+
 l02c9h:
     ld a,h              ;02c9 7c
     ld a,l              ;02ca 7d
