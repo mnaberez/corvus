@@ -3,6 +3,28 @@
 
     org 0000h
 
+pio0:       equ 60h     ;Z80 PIO #0 (7D/E)
+pio0_dra:   equ pio0+0  ;  Data Register A:
+                        ;    A7: "BUSY" LED
+                        ;    A6:
+                        ;    A5:
+                        ;    A4:
+                        ;    A3:
+                        ;    A2:
+                        ;    A1:
+                        ;    A0:
+pio0_drb:   equ pio0+1  ;  Data Register B
+                        ;    B7:
+                        ;    B6:
+                        ;    B5:
+                        ;    B4:
+                        ;    B3:
+                        ;    B2:
+                        ;    B1:
+                        ;    B0:
+pio0_cra:   equ pio0+2  ;  Control Register A
+pio0_crb:   equ pio0+3  ;  Control Register B
+
 ;called from prep code
 l0000h:
     jp l00dfh           ;0000 c3 df 00
@@ -259,12 +281,12 @@ l01a9h:
 l01beh:
     call l0289h         ;01be cd 89 02
     call blink          ;01c1 cd ae 02
-    in a,(61h)          ;01c4 db 61
+    in a,(pio0_drb)     ;01c4 db 61
     bit 0,a             ;01c6 cb 47
     jr nz,l01beh        ;01c8 20 f4
 l01cah:
     call l0289h         ;01ca cd 89 02
-    in a,(60h)          ;01cd db 60
+    in a,(pio0_dra)     ;01cd db 60
     bit 0,a             ;01cf cb 47
     jr nz,l01cah        ;01d1 20 f7
     call l0ac7h         ;01d3 cd c7 0a
@@ -275,9 +297,9 @@ l01cah:
     set 0,a             ;01df cb c7
     set 1,a             ;01e1 cb cf
     out (6ch),a         ;01e3 d3 6c
-    in a,(60h)          ;01e5 db 60
+    in a,(pio0_dra)     ;01e5 db 60
     res 7,a             ;01e7 cb bf
-    out (60h),a         ;01e9 d3 60
+    out (pio0_dra),a    ;01e9 d3 60
     call sub_020ah      ;01eb cd 0a 02
     call l0439h         ;01ee cd 39 04
     ld hl,l0000h        ;01f1 21 00 00
@@ -383,7 +405,7 @@ l02a1h:
     ret                 ;02a3 c9
 l02a4h:
     call l0289h         ;02a4 cd 89 02
-    in a,(61h)          ;02a7 db 61
+    in a,(pio0_drb)     ;02a7 db 61
     bit 0,a             ;02a9 cb 47
     jr nz,l02a4h        ;02ab 20 f7
     ret                 ;02ad c9
@@ -392,16 +414,16 @@ blink:
 ;Blink the "BUSY" LED
 ;
                         ;Turn the "BUSY" LED on:
-    in a,(60h)          ;  A = read port state
+    in a,(pio0_dra)     ;  A = read port state
     res 7,a             ;  Turn off bit 7 (low state turns LED on)
-    out (60h),a         ;  Write new port state
+    out (pio0_dra),a    ;  Write new port state
 
     call delay          ;Delay
 
                         ;Turn the "BUSY" LED off:
-    in a,(60h)          ;  A = read port state
+    in a,(pio0_dra)     ;  A = read port state
     set 7,a             ;  Turn on bit 7 (high state turns LED off)
-    out (60h),a         ;  Write new port state
+    out (pio0_dra),a    ;  Write new port state
 
     call delay          ;Delay
     ret
@@ -472,7 +494,7 @@ l0305h:
     inc d               ;030c 14
     adc a,h             ;030d 8c
 l030eh:
-    in a,(60h)          ;030e db 60
+    in a,(pio0_dra)     ;030e db 60
     ld b,a              ;0310 47
     ld a,01h            ;0311 3e 01
     bit 1,b             ;0313 cb 48
@@ -601,7 +623,7 @@ l03f1h:
     or h                ;0404 b4
     call nz,sub_0438h   ;0405 c4 38 04
 l0408h:
-    in a,(61h)          ;0408 db 61
+    in a,(pio0_drb)     ;0408 db 61
     bit 2,a             ;040a cb 57
     jr z,l0408h         ;040c 28 fa
 l040eh:
@@ -685,7 +707,7 @@ l0486h:
 l0489h:
     di                  ;0489 f3
     ld a,0ffh           ;048a 3e ff
-    out (60h),a         ;048c d3 60
+    out (pio0_dra),a    ;048c d3 60
     ld a,0feh           ;048e 3e fe
     out (6ch),a         ;0490 d3 6c
     in a,(74h)          ;0492 db 74
@@ -803,7 +825,7 @@ l0544h:
     jr l055fh           ;0555 18 08
 l0557h:
     ld a,7fh            ;0557 3e 7f
-    out (60h),a         ;0559 d3 60
+    out (pio0_dra),a    ;0559 d3 60
     in a,(74h)          ;055b db 74
     ld a,0d5h           ;055d 3e d5
 l055fh:
@@ -811,7 +833,7 @@ l055fh:
     ret                 ;0561 c9
 l0562h:
     ld a,0ffh           ;0562 3e ff
-    out (60h),a         ;0564 d3 60
+    out (pio0_dra),a    ;0564 d3 60
     ld a,0dfh           ;0566 3e df
     jr l055fh           ;0568 18 f5
 l056ah:
@@ -1049,7 +1071,7 @@ l06d5h:
     jr l06cbh           ;06db 18 ee
     ld a,(81fdh)        ;06dd 3a fd 81
     ld b,a              ;06e0 47
-    in a,(61h)          ;06e1 db 61
+    in a,(pio0_drb)     ;06e1 db 61
     and 8fh             ;06e3 e6 8f
     bit 5,b             ;06e5 cb 68
     jr z,l06ebh         ;06e7 28 02
@@ -1063,7 +1085,7 @@ l06f1h:
     jr z,l06f7h         ;06f3 28 02
     set 6,a             ;06f5 cb f7
 l06f7h:
-    out (61h),a         ;06f7 d3 61
+    out (pio0_drb),a    ;06f7 d3 61
     ld a,b              ;06f9 78
     and 1fh             ;06fa e6 1f
     ld b,a              ;06fc 47
@@ -1249,7 +1271,7 @@ l083fh:
     pop af              ;0851 f1
     call 8dfch          ;0852 cd fc 8d
     ld a,0ffh           ;0855 3e ff
-    out (60h),a         ;0857 d3 60
+    out (pio0_dra),a    ;0857 d3 60
     in a,(6ch)          ;0859 db 6c
     res 7,a             ;085b cb bf
     out (6ch),a         ;085d d3 6c
@@ -1265,16 +1287,16 @@ l086fh:
     ld a,40h            ;086f 3e 40
 l0871h:
     di                  ;0871 f3
-    out (62h),a         ;0872 d3 62
+    out (pio0_cra),a    ;0872 d3 62
     out (7ch),a         ;0874 d3 7c
     ld a,0a7h           ;0876 3e a7
     out (7fh),a         ;0878 d3 7f
     ld a,4eh            ;087a 3e 4e
     out (7fh),a         ;087c d3 7f
     ld a,97h            ;087e 3e 97
-    out (62h),a         ;0880 d3 62
+    out (pio0_cra),a    ;0880 d3 62
     ld a,0f7h           ;0882 3e f7
-    out (62h),a         ;0884 d3 62
+    out (pio0_cra),a    ;0884 d3 62
     ei                  ;0886 fb
 l0887h:
     halt                ;0887 76
@@ -1293,11 +1315,11 @@ l0887h:
     ld a,(6014h)        ;089c 3a 14 60
     cp 0ffh             ;089f fe ff
     jr nz,l08a7h        ;08a1 20 04
-    in a,(60h)          ;08a3 db 60
+    in a,(pio0_dra)     ;08a3 db 60
     and 10h             ;08a5 e6 10
 l08a7h:
     ld a,0ffh           ;08a7 3e ff
-    out (60h),a         ;08a9 d3 60
+    out (pio0_dra),a    ;08a9 d3 60
     ld a,23h            ;08ab 3e 23
     out (7fh),a         ;08ad d3 7f
     ld hl,l0000h        ;08af 21 00 00
@@ -1320,7 +1342,7 @@ l08c9h:
     res 7,a             ;08d0 cb bf
     out (6ch),a         ;08d2 d3 6c
     ld a,0ffh           ;08d4 3e ff
-    out (60h),a         ;08d6 d3 60
+    out (pio0_dra),a    ;08d6 d3 60
     call sub_0b0ah      ;08d8 cd 0a 0b
     push hl             ;08db e5
     ld hl,(6100h)       ;08dc 2a 00 61
@@ -1337,9 +1359,9 @@ l08c9h:
     jr l08ffh           ;08f5 18 08
 sub_08f7h:
     ld a,7fh            ;08f7 3e 7f
-    out (60h),a         ;08f9 d3 60
+    out (pio0_dra),a    ;08f9 d3 60
     ld a,03h            ;08fb 3e 03
-    out (62h),a         ;08fd d3 62
+    out (pio0_cra),a    ;08fd d3 62
 l08ffh:
     ei                  ;08ff fb
     reti                ;0900 ed 4d
@@ -1462,7 +1484,7 @@ l09afh:
     nop                 ;09d3 00
     call 6ffdh          ;09d4 cd fd 6f
     ld a,0ffh           ;09d7 3e ff
-    out (60h),a         ;09d9 d3 60
+    out (pio0_dra),a    ;09d9 d3 60
     ld a,23h            ;09db 3e 23
     out (7fh),a         ;09dd d3 7f
     ld a,(63fdh)        ;09df 3a fd 63
@@ -1532,18 +1554,18 @@ sub_0a53h:
     sbc hl,de           ;0a61 ed 52
     ret z               ;0a63 c8
     jp m,l0a6dh         ;0a64 fa 6d 0a
-    in a,(61h)          ;0a67 db 61
+    in a,(pio0_drb)     ;0a67 db 61
     set 1,a             ;0a69 cb cf
     jr l0a78h           ;0a6b 18 0b
 l0a6dh:
-    in a,(61h)          ;0a6d db 61
+    in a,(pio0_drb)     ;0a6d db 61
     res 1,a             ;0a6f cb 8f
     ex de,hl            ;0a71 eb
     ld hl,l0000h        ;0a72 21 00 00
     or a                ;0a75 b7
     sbc hl,de           ;0a76 ed 52
 l0a78h:
-    out (61h),a         ;0a78 d3 61
+    out (pio0_drb),a    ;0a78 d3 61
     call sub_0b17h      ;0a7a cd 17 0b
     ld hl,(6004h)       ;0a7d 2a 04 60
     ld (600ch),hl       ;0a80 22 0c 60
@@ -1575,33 +1597,33 @@ l0a84h:
     in a,(6ch)          ;0aba db 6c
     set 0,a             ;0abc cb c7
     out (6ch),a         ;0abe d3 6c
-    in a,(60h)          ;0ac0 db 60
+    in a,(pio0_dra)     ;0ac0 db 60
     set 7,a             ;0ac2 cb ff
-    out (60h),a         ;0ac4 d3 60
+    out (pio0_dra),a    ;0ac4 d3 60
     halt                ;0ac6 76
 l0ac7h:
     call l02a4h         ;0ac7 cd a4 02
     in a,(6ch)          ;0aca db 6c
     res 7,a             ;0acc cb bf
     out (6ch),a         ;0ace d3 6c
-    in a,(61h)          ;0ad0 db 61
+    in a,(pio0_drb)     ;0ad0 db 61
     set 1,a             ;0ad2 cb cf
-    out (61h),a         ;0ad4 d3 61
+    out (pio0_drb),a    ;0ad4 d3 61
     ld hl,000ch         ;0ad6 21 0c 00
     call sub_0b17h      ;0ad9 cd 17 0b
-    in a,(61h)          ;0adc db 61
+    in a,(pio0_drb)     ;0adc db 61
     res 1,a             ;0ade cb 8f
-    out (61h),a         ;0ae0 d3 61
+    out (pio0_drb),a    ;0ae0 d3 61
 l0ae2h:
     in a,(6ch)          ;0ae2 db 6c
     bit 6,a             ;0ae4 cb 77
     jr z,l0afah         ;0ae6 28 12
     call l0289h         ;0ae8 cd 89 02
-    in a,(61h)          ;0aeb db 61
+    in a,(pio0_drb)     ;0aeb db 61
     set 3,a             ;0aed cb df
-    out (61h),a         ;0aef d3 61
+    out (pio0_drb),a    ;0aef d3 61
     res 3,a             ;0af1 cb 9f
-    out (61h),a         ;0af3 d3 61
+    out (pio0_drb),a    ;0af3 d3 61
     call sub_0b4eh      ;0af5 cd 4e 0b
     jr l0ae2h           ;0af8 18 e8
 l0afah:
@@ -1616,7 +1638,7 @@ sub_0b0ah:
     ld a,01h            ;0b0a 3e 01
     out (7fh),a         ;0b0c d3 7f
     ld a,03h            ;0b0e 3e 03
-    out (62h),a         ;0b10 d3 62
+    out (pio0_cra),a    ;0b10 d3 62
     xor a               ;0b12 af
     ld (6006h),a        ;0b13 32 06 60
     ret                 ;0b16 c9
@@ -1644,11 +1666,11 @@ l0b33h:
 sub_0b34h:
     call l0289h         ;0b34 cd 89 02
 l0b37h:
-    in a,(61h)          ;0b37 db 61
+    in a,(pio0_drb)     ;0b37 db 61
     set 3,a             ;0b39 cb df
-    out (61h),a         ;0b3b d3 61
+    out (pio0_drb),a    ;0b3b d3 61
     res 3,a             ;0b3d cb 9f
-    out (61h),a         ;0b3f d3 61
+    out (pio0_drb),a    ;0b3f d3 61
     ex (sp),hl          ;0b41 e3
     ex (sp),hl          ;0b42 e3
     ex (sp),hl          ;0b43 e3
@@ -1660,7 +1682,7 @@ l0b37h:
     call sub_0b4eh      ;0b4a cd 4e 0b
     ret                 ;0b4d c9
 sub_0b4eh:
-    in a,(60h)          ;0b4e db 60
+    in a,(pio0_dra)     ;0b4e db 60
     bit 0,a             ;0b50 cb 47
     jr nz,sub_0b4eh     ;0b52 20 fa
     ret                 ;0b54 c9
