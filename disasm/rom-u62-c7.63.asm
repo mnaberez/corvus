@@ -258,7 +258,7 @@ l01a9h:
     call sub_020ah      ;01bb cd 0a 02
 l01beh:
     call l0289h         ;01be cd 89 02
-    call sub_02aeh      ;01c1 cd ae 02
+    call blink          ;01c1 cd ae 02
     in a,(61h)          ;01c4 db 61
     bit 0,a             ;01c6 cb 47
     jr nz,l01beh        ;01c8 20 f4
@@ -388,18 +388,27 @@ l02a4h:
     jr nz,l02a4h        ;02ab 20 f7
     ret                 ;02ad c9
 
-sub_02aeh:
-    in a,(60h)          ;02ae db 60
-    res 7,a             ;02b0 cb bf
-    out (60h),a         ;02b2 d3 60
-    call delay          ;02b4 cd c1 02
-    in a,(60h)          ;02b7 db 60
-    set 7,a             ;02b9 cb ff
-    out (60h),a         ;02bb d3 60
-    call delay          ;02bd cd c1 02
-    ret                 ;02c0 c9
+blink:
+;Blink the "BUSY" LED
+;
+                        ;Turn the "BUSY" LED on:
+    in a,(60h)          ;  A = read port state
+    res 7,a             ;  Turn off bit 7 (low state turns LED on)
+    out (60h),a         ;  Write new port state
+
+    call delay          ;Delay
+
+                        ;Turn the "BUSY" LED off:
+    in a,(60h)          ;  A = read port state
+    set 7,a             ;  Turn on bit 7 (high state turns LED off)
+    out (60h),a         ;  Write new port state
+
+    call delay          ;Delay
+    ret
 
 delay:
+;Long delay, only used when blinking the "BUSY" LED
+;
     xor a               ;A=0
     ld b,a              ;B=0
 dly1:
