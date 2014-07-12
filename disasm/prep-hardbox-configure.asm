@@ -1,6 +1,12 @@
 ; z80dasm 1.1.3
 ; command line: z80dasm --origin=256 --address --labels --output=prep-hardbox-configure.asm prep-hardbox-configure.bin
 
+cmd_reset:       equ 00h  ;Reset (exit prep mode)
+cmd_format_drv:  equ 01h  ;Format drive
+cmd_verify_drv:  equ 07h  ;Verify drive
+cmd_read_firm:   equ 32h  ;Read a firmware block
+cmd_writ_firm:   equ 33h  ;Write a firmare block
+
     org 0100h
 
     ld a,03h            ;0100 3e 03
@@ -14,23 +20,25 @@
     ld bc,0001h         ;0113 01 01 00
     call 007dh          ;0116 cd 7d 00
     ld a,(hl)           ;0119 7e
-    or a                ;011a b7
-    jr z,l012dh         ;011b 28 10
-    cp 01h              ;011d fe 01
-    jr z,l013ch         ;011f 28 1b
-    cp 32h              ;0121 fe 32
-    jr z,l0153h         ;0123 28 2e
-    cp 33h              ;0125 fe 33
-    jr z,l016ah         ;0127 28 41
-    cp 07h              ;0129 fe 07
-    jr z,l018eh         ;012b 28 61
-l012dh:
+    or a
+    jr z,reset_drive    ;Reset drive
+    cp cmd_format_drv
+    jr z,format_drive   ;Format drive
+    cp cmd_read_firm
+    jr z,read_firm_blk  ;Read firmware block
+    cp cmd_writ_firm
+    jr z,writ_firm_blk  ;Write firmware block
+    cp cmd_verify_drv
+    jr z,verify_drive   ;Verify drive
+
+reset_drive:
     call 00a7h          ;012d cd a7 00
     ld hl,0000h         ;0130 21 00 00
     ld (6012h),hl       ;0133 22 12 60
     call 0074h          ;0136 cd 74 00
     jp 0000h            ;0139 c3 00 00
-l013ch:
+
+format_drive:
     ld bc,l0200h        ;013c 01 00 02
     call 007dh          ;013f cd 7d 00
     ld de,8200h         ;0142 11 00 82
@@ -39,7 +47,8 @@ l013ch:
     ld hl,0000h         ;014a 21 00 00
     ld (6012h),hl       ;014d 22 12 60
     jp 818ah            ;0150 c3 8a 81
-l0153h:
+
+read_firm_blk:
     ld bc,0001h         ;0153 01 01 00
     call 007dh          ;0156 cd 7d 00
     ld a,(hl)           ;0159 7e
@@ -50,7 +59,8 @@ l0153h:
     ld hl,0b600h        ;0161 21 00 b6
     ld (6012h),hl       ;0164 22 12 60
     jp 818ah            ;0167 c3 8a 81
-l016ah:
+
+writ_firm_blk:
     ld bc,l0200h+1      ;016a 01 01 02
     call 007dh          ;016d cd 7d 00
     ld a,(hl)           ;0170 7e
@@ -65,7 +75,8 @@ l016ah:
     ld hl,0000h         ;0185 21 00 00
     ld (6012h),hl       ;0188 22 12 60
     jp 818ah            ;018b c3 8a 81
-l018eh:
+
+verify_drive:
     ld hl,0a201h        ;018e 21 01 a2
     ld (6012h),hl       ;0191 22 12 60
     ld a,00h            ;0194 3e 00
@@ -195,6 +206,7 @@ l027dh:
     ld a,(6014h)        ;0293 3a 14 60
     cp 0ffh             ;0296 fe ff
     ret                 ;0298 c9
+
     nop                 ;0299 00
     nop                 ;029a 00
     nop                 ;029b 00

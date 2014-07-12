@@ -1,6 +1,12 @@
 ; z80dasm 1.1.3
 ; command line: z80dasm --origin=256 --address --labels --output=prep-corvus-diag.asm prep-corvus-diag.bin
 
+cmd_reset:       equ 00h  ;Reset (exit prep mode)
+cmd_format_drv:  equ 01h  ;Format drive
+cmd_verify_drv:  equ 07h  ;Verify drive
+cmd_read_firm:   equ 32h  ;Read a firmware block
+cmd_writ_firm:   equ 33h  ;Write a firmare block
+
     org 0100h
 
     nop                 ;0100 00
@@ -16,28 +22,30 @@
     ld a,03h            ;0115 3e 03
     out (7eh),a         ;0117 d3 7e
     call 81afh          ;0119 cd af 81
-    or a                ;011c b7
-    jr z,l013dh         ;011d 28 1e
-    cp 01h              ;011f fe 01
-    jr z,l014ch         ;0121 28 29
-    cp 32h              ;0123 fe 32
-    jr z,l0169h         ;0125 28 42
-    cp 33h              ;0127 fe 33
-    jr z,l017fh         ;0129 28 54
-    cp 07h              ;012b fe 07
-    jr z,l01a3h         ;012d 28 74
+    or a
+    jr z,reset          ;Reset drive (exit prep mode)
+    cp cmd_format_drv
+    jr z,format_drive   ;Format drive
+    cp cmd_read_firm
+    jr z,read_firm_blk  ;Read a firmware block
+    cp cmd_writ_firm
+    jr z,writ_firm_blk  ;Write a firmware block
+    cp cmd_verify_drv
+    jr z,verify_drive   ;Verify drive
     ld a,8fh            ;012f 3e 8f
     ld (6011h),a        ;0131 32 11 60
     ld hl,0000h         ;0134 21 00 00
     ld (6012h),hl       ;0137 22 12 60
     jp 81a0h            ;013a c3 a0 81
-l013dh:
+
+reset:
     call 00a7h          ;013d cd a7 00
     ld hl,0000h         ;0140 21 00 00
     ld (6012h),hl       ;0143 22 12 60
     call 0074h          ;0146 cd 74 00
     jp 0000h            ;0149 c3 00 00
-l014ch:
+
+format_drive:
     ld bc,l0200h        ;014c 01 00 02
     call 81e9h          ;014f cd e9 81
     ld de,8200h         ;0152 11 00 82
@@ -48,7 +56,8 @@ l014ch:
     ld hl,0000h         ;0160 21 00 00
     ld (6012h),hl       ;0163 22 12 60
     jp 81a0h            ;0166 c3 a0 81
-l0169h:
+
+read_firm_blk:
     call 81afh          ;0169 cd af 81
     ld (81fdh),a        ;016c 32 fd 81
     ld hl,0000h         ;016f 21 00 00
@@ -57,7 +66,8 @@ l0169h:
     ld hl,7600h         ;0176 21 00 76
     ld (6012h),hl       ;0179 22 12 60
     jp 81a0h            ;017c c3 a0 81
-l017fh:
+
+writ_firm_blk:
     ld bc,l0200h+1      ;017f 01 01 02
     call 81e9h          ;0182 cd e9 81
     ld a,(hl)           ;0185 7e
@@ -72,7 +82,8 @@ l017fh:
     ld hl,0000h         ;019a 21 00 00
     ld (6012h),hl       ;019d 22 12 60
     jp 81a0h            ;01a0 c3 a0 81
-l01a3h:
+
+verify_drive:
     ld hl,0a201h        ;01a3 21 01 a2
     ld (6012h),hl       ;01a6 22 12 60
     xor a               ;01a9 af
@@ -202,6 +213,7 @@ l02a0h:
     ld a,(6014h)        ;02a9 3a 14 60
     cp 0ffh             ;02ac fe ff
     ret                 ;02ae c9
+
     di                  ;02af f3
     ld a,0c3h           ;02b0 3e c3
     ld (480ch),a        ;02b2 32 0c 48
