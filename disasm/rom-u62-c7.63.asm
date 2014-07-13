@@ -69,6 +69,10 @@ pio2_drb:   equ pio2+1  ;  Data Register B:
 pio2_cra:   equ pio2+2  ;  Control Register A
 pio2_crb:   equ pio2+3  ;  Control Register B
 
+begrdy:     equ 70h     ;/BEGRDY
+hsxclr:     equ 74h     ;/HSXCLR
+xferstb:    equ 78h     ;/XFERSTB
+
 ctc:        equ 7ch     ;Z80 CTC
 ctc_ch0:    equ ctc+0   ;  Channel 0 Register
 ctc_ch1:    equ ctc+1   ;  Channel 1 Register
@@ -269,7 +273,7 @@ l010bh:                 ;
 
     ld a,d              ;0118 7a
     out (pio2_dra),a    ;0119 d3 6c
-    in a,(70h)          ;011b db 70
+    in a,(begrdy)       ;011b db 70
     ld de,(6070h)       ;011d ed 5b 70 60
     ld hl,5aa5h         ;0121 21 a5 5a
     or a                ;0124 b7
@@ -435,7 +439,7 @@ not_6mb:
 
 not_11mb:
                         ;Set drive params for 20MB:
-    ld hl,drive_20mb    ;  HL = address of drive_6mb (0305h)
+    ld hl,drive_20mb    ;  HL = address of params table for 20MB
                         ;  Fall through to set params for 20MB drive
 
 set_drive_params:
@@ -811,7 +815,7 @@ l0439h:
 l0440h:
     ld a,(7000h)        ;0440 3a 00 70
 sub_0443h:
-    in a,(78h)          ;0443 db 78
+    in a,(xferstb)      ;0443 db 78
     ld a,0f4h           ;0445 3e f4
     jr l0486h           ;0447 18 3d
 l0449h:
@@ -824,7 +828,7 @@ l0449h:
     jr nz,l0469h        ;0454 20 13
     ld de,1400h         ;0456 11 00 14
     add hl,de           ;0459 19
-    in a,(74h)          ;045a db 74
+    in a,(hsxclr)       ;045a db 74
     ld a,0f5h           ;045c 3e f5
     out (pio1_dra),a    ;045e d3 68
     ld a,0d5h           ;0460 3e d5
@@ -849,7 +853,7 @@ l047ah:
     ld a,0cdh           ;047e 3e cd
     jr l0486h           ;0480 18 04
 l0482h:
-    in a,(74h)          ;0482 db 74
+    in a,(hsxclr)       ;0482 db 74
     ld a,0d7h           ;0484 3e d7
 l0486h:
     out (pio1_dra),a    ;0486 d3 68
@@ -860,7 +864,7 @@ l0489h:
     out (pio0_dra),a    ;048c d3 60
     ld a,0feh           ;048e 3e fe
     out (pio2_dra),a    ;0490 d3 6c
-    in a,(74h)          ;0492 db 74
+    in a,(hsxclr)       ;0492 db 74
     call l0439h         ;0494 cd 39 04
     ld a,4fh            ;0497 3e 4f
     out (pio1_crb),a    ;0499 d3 6b
@@ -912,7 +916,7 @@ l04e6h:
     jr l04f8h           ;04e8 18 0e
 sub_04eah:
     push af             ;04ea f5
-    in a,(74h)          ;04eb db 74
+    in a,(hsxclr)       ;04eb db 74
     ld a,0f5h           ;04ed 3e f5
     out (pio1_dra),a    ;04ef d3 68
     ld a,(95f7h)        ;04f1 3a f7 95
@@ -976,7 +980,7 @@ l0544h:
 l0557h:
     ld a,7fh            ;0557 3e 7f
     out (pio0_dra),a    ;0559 d3 60
-    in a,(74h)          ;055b db 74
+    in a,(hsxclr)       ;055b db 74
     ld a,0d5h           ;055d 3e d5
 l055fh:
     out (pio1_dra),a    ;055f d3 68
@@ -1024,7 +1028,7 @@ l0593h:
 l059bh:
     ld (6075h),a        ;059b 32 75 60
     ld a,(7000h)        ;059e 3a 00 70
-    in a,(78h)          ;05a1 db 78
+    in a,(xferstb)      ;05a1 db 78
     ld a,0d0h           ;05a3 3e d0
     out (pio1_dra),a    ;05a5 d3 68
     ld a,(7475h)        ;05a7 3a 75 74
@@ -1032,7 +1036,7 @@ l059bh:
     out (pio1_dra),a    ;05ac d3 68
     ld a,0d0h           ;05ae 3e d0
     out (pio1_dra),a    ;05b0 d3 68
-    in a,(74h)          ;05b2 db 74
+    in a,(hsxclr)       ;05b2 db 74
     ret                 ;05b4 c9
     djnz l05c9h         ;05b5 10 12
     pop bc              ;05b7 c1
@@ -1729,7 +1733,7 @@ l0a84h:
     ld hl,l0000h        ;0a8e 21 00 00
     ld (6012h),hl       ;0a91 22 12 60
     call l03f1h         ;0a94 cd f1 03
-    in a,(74h)          ;0a97 db 74
+    in a,(hsxclr)       ;0a97 db 74
     call l0439h         ;0a99 cd 39 04
     ld a,4fh            ;0a9c 3e 4f
     out (pio1_crb),a    ;0a9e d3 6b
