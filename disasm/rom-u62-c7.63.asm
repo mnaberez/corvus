@@ -75,6 +75,14 @@ ctc_ch1:    equ ctc+1   ;  Channel 1 Register
 ctc_ch2:    equ ctc+2   ;  Channel 2 Register
 ctc_ch3:    equ ctc+3   ;  Channel 3 Register
 
+last_cyl:   equ 6002h   ;Number of heads (byte)
+heads:      equ 6009h   ;Last cylinder number (word)
+tracks:     equ 600ah   ;Number of cylinders (word)
+cylinders:  equ 600eh   ;Number of tracks (word)
+capacity:   equ 606dh   ;Capacity in 512-byte blocks (word)
+reserved:   equ 60aeh   ;Number of tracks reserved for firmware (byte)
+spares:     equ 61fdh   ;Number of tracks reserved for spares (byte)
+
 ;called from prep code
 l0000h:
     jp l00dfh           ;0000 c3 df 00
@@ -400,65 +408,81 @@ l0219h:
     jr nz,l0219h        ;021b 20 fc
     ld a,14h            ;021d 3e 14
     ld (6017h),a        ;021f 32 17 60
+
     ld a,(6104h)        ;0222 3a 04 61
-    cp 04h              ;0225 fe 04
-    jr nz,l022eh        ;0227 20 05
 
-    ld hl,table_1       ;0229 21 f3 02
-    jr copy_table       ;022c 18 0c
-l022eh:
-    cp 40h              ;022e fe 40
-    jr nz,l0237h        ;0230 20 05
+    cp 04h              ;Is it 0x04?
+    jr nz,not_6mb       ;  No: it's not a 6MB, so jump.
 
-    ld hl,table_2       ;0232 21 fc 02
-    jr copy_table       ;0235 18 03
+                        ;Set params for 6MB:
+    ld hl,drive_6mb     ;  HL = address of params table for 6MB
+    jr set_drive_params ;  Set params for 6MB drive
 
-l0237h:
-    ld hl,table_3       ;HL = address of table_1 (0305h)
-                        ;Fall through into copy_table
+not_6mb:
+    cp 40h              ;Is it 0x40?
+    jr nz,not_11mb      ;  No: It's not an 11MB, so jump.
 
-copy_table:
-                        ;Copy byte in table to (6009h):
+                        ;Set drive params for 11MB:
+    ld hl,drive_11mb    ;  HL = address of params table for 11MB
+    jr set_drive_params ;  Set params for 11MB drive
+
+not_11mb:
+                        ;Set drive params for 20MB:
+    ld hl,drive_20mb    ;  HL = address of drive_6mb (0305h)
+                        ;  Fall through to set params for 20MB drive
+
+set_drive_params:
+;Set the drive parameters by copying from one of the three
+;tables in this ROM into the RAM locations.
+;
+;HL = address of table for the mechanism
+;
+                        ;Copy number of heads to (heads):
     ld a,(hl)           ;  A = byte from table
-    ld (6009h),a        ;  Store A in 6009h
+    ld (heads),a        ;  Store A in (heads)
 
-                        ;Copy first word in table to (6002h):
+                        ;Copy last cylinder number to (last_cyl):
     inc hl              ;  Increment table pointer
     ld c,(hl)           ;  C = byte from table
     inc hl              ;  Increment table pointer
     ld b,(hl)           ;  B = byte from table
-    ld (6002h),bc       ;  Store BC in 6002h
+    ld (last_cyl),bc    ;  Store BC in (last_cyl)
 
-                        ;Copy second word in table to (600eh):
+                        ;Copy number of cylinders to (cylinders):
     inc hl              ;  Increment table pointer
     ld c,(hl)           ;  C = byte from table
     inc hl              ;  Increment table pointer
     ld b,(hl)           ;  B = byte from table
-    ld (600eh),bc       ;  Store BC in 600eh
+    ld (cylinders),bc   ;  Store BC in (cylinders)
 
-                        ;Copy third word in table (600ah):
+                        ;Copy number of tracks to (tracks):
     inc hl              ;  Increment table pointer
     ld c,(hl)           ;  C = byte from table
     inc hl              ;  Increment table pointer
     ld b,(hl)           ;  B = byte from table
-    ld (600ah),bc       ;  Store BC in 600ah
+    ld (tracks),bc      ;  Store BC in (tracks)
 
-                        ;Copy fourth word in table (606dh):
+                        ;Copy capacity in 512-byte blocks to (capacity):
     inc hl              ;  Increment table pointer
     ld c,(hl)           ;  C = byte from table
     inc hl              ;  Increment table pointer
     ld b,(hl)           ;  B = byte from table
-    ld (606dh),bc       ;  Store BC in 606dh
+    ld (capacity),bc    ;  Store BC in (capacity)
 
-    ld a,(6009h)        ;025e 3a 09 60
-    add a,a             ;0261 87
-    dec a               ;0262 3d
-    ld (60aeh),a        ;0263 32 ae 60
+                        ;Compute number of tracks reserved for firmware:
+    ld a,(heads)        ;  A = (number of heads * 2) - 1
+    add a,a             ;
+    dec a               ;
+    ld (reserved),a     ;  Save A in (reserved)
 
-sub_0266h:
-    ld a,1fh            ;0266 3e 1f
-    ld (61fdh),a        ;0268 32 fd 61
-    ret                 ;026b c9
+                        ;Fall through into set_spares
+
+set_spares:
+;Set the number of tracks reserved for spares to 31
+;
+    ld a,31             ;A = 31
+    ld (spares),a       ;Store A in (spares)
+    ret
 
     ld d,1eh            ;026c 16 1e
 l026eh:
@@ -585,26 +609,32 @@ table_0:
     db 0fch             ;Second byte to write to pio2_crb
     db 0feh             ;Byte to write to pio2_drb
 
-table_1:
-    db 02h              ;Byte copied to 6009h
-    dw 0131h            ;Word copied to 6002h
-    dw 0132h            ;Word copied to 600eh
-    dw 0264h            ;Word copied to 600ah
-    dw 2d14h            ;Word copied to 606dh
+drive_6mb:
+;Drive parameters for 6MB mechanism
+;
+    db 2                ;Number of surfaces (heads)
+    dw 305              ;Last cylinder number (last_cyl)
+    dw 306              ;Number of cylinders (cylinders)
+    dw 612              ;Number of tracks (tracks)
+    dw 11540            ;Capacity in 512-byte blocks (capacity)
 
-table_2:
-    db 04h              ;Byte copied to 6009h
-    dw 0131h            ;Word copied to 6002h
-    dw 0132h            ;Word copied to 600eh
-    dw 04c8h            ;Word copied to 600ah
-    dw 5c94h            ;Word copied to 606dh
+drive_11mb:
+;Drive parameters for 11MB mechanism
+;
+    db 4                ;Number of surfaces (heads)
+    dw 305              ;Last cylinder number (last_cyl)
+    dw 306              ;Number of cylinders (cylinders)
+    dw 1224             ;Number of tracks (tracks)
+    dw 23700            ;Capacity in 512-byte blocks (capacity)
 
-table_3:
-    db 06h              ;Byte copied to 6009h
-    dw 0131h            ;Word copied to 6002h
-    dw 0132h            ;Word copied to 600eh
-    dw 072ch            ;Word copied to 600ah
-    dw 8c14h            ;Word copied to 606dh
+drive_20mb:
+;Drive parameters for 20MB mechanism
+;
+    db 6                ;Number of surfaces (heads)
+    dw 305              ;Last cylinder number (last_cyl)
+    dw 306              ;Number of cylinders (cylinders)
+    dw 1836             ;Number of tracks (tracks)
+    dw 35860            ;Capacity in 512-byte blocks (capacity)
 
 l030eh:
     in a,(pio0_dra)     ;030e db 60
@@ -1370,7 +1400,7 @@ l0835h:
 l0838h:
     call sub_0793h      ;0838 cd 93 07
 l083bh:
-    call sub_0266h      ;083b cd 66 02
+    call set_spares      ;083b cd 66 02
     rst 30h             ;083e f7
 l083fh:
     in a,(pio2_dra)     ;083f db 6c
@@ -1438,7 +1468,7 @@ l08a7h:
     ld hl,l0000h        ;08af 21 00 00
     ld (6100h),hl       ;08b2 22 00 61
     ret z               ;08b5 c8
-    call sub_0266h      ;08b6 cd 66 02
+    call set_spares      ;08b6 cd 66 02
     call sub_0c49h      ;08b9 cd 49 0c
     scf                 ;08bc 37
     ret nz              ;08bd c0
@@ -1531,7 +1561,7 @@ sub_0958h:
     cp (hl)             ;0960 be
     jr nc,l096fh        ;0961 30 0c
     ld de,(81feh)       ;0963 ed 5b fe 81
-    ld hl,(6002h)       ;0967 2a 02 60
+    ld hl,(last_cyl)    ;0967 2a 02 60
     or a                ;096a b7
     sbc hl,de           ;096b ed 52
     ex de,hl            ;096d eb
@@ -1552,7 +1582,7 @@ sub_0976h:
     ret                 ;0986 c9
 sub_0987h:
     ld hl,81fdh         ;0987 21 fd 81
-    ld a,(61fdh)        ;098a 3a fd 61
+    ld a,(spares)        ;098a 3a fd 61
     cp (hl)             ;098d be
     ret z               ;098e c8
     ld a,0bh            ;098f 3e 0b
@@ -1601,7 +1631,7 @@ l09afh:
     ld a,23h            ;09db 3e 23
     out (7fh),a         ;09dd d3 7f
     ld a,(63fdh)        ;09df 3a fd 63
-    ld (61fdh),a        ;09e2 32 fd 61
+    ld (spares),a        ;09e2 32 fd 61
     ld hl,(63feh)       ;09e5 2a fe 63
     ld (61feh),hl       ;09e8 22 fe 61
     ld (63fdh),bc       ;09eb ed 43 fd 63
@@ -1610,7 +1640,7 @@ l09afh:
     ld a,14h            ;09f4 3e 14
     sub e               ;09f6 93
     ld e,a              ;09f7 5f
-    ld a,(61fdh)        ;09f8 3a fd 61
+    ld a,(spares)        ;09f8 3a fd 61
     and 1fh             ;09fb e6 1f
     cp e                ;09fd bb
     ret z               ;09fe c8
@@ -1858,7 +1888,7 @@ l0bc1h:
     in a,(pio2_dra)     ;0bc1 db 6c
     bit 4,a             ;0bc3 cb 67
     ret nz              ;0bc5 c0
-    ld a,(6009h)        ;0bc6 3a 09 60
+    ld a,(heads)        ;0bc6 3a 09 60
     rrca                ;0bc9 0f
     rrca                ;0bca 0f
     rrca                ;0bcb 0f
@@ -1875,7 +1905,7 @@ l0bc1h:
     inc hl              ;0be1 23
     ld (81feh),hl       ;0be2 22 fe 81
     ex de,hl            ;0be5 eb
-    ld hl,(6002h)       ;0be6 2a 02 60
+    ld hl,(last_cyl)    ;0be6 2a 02 60
     or a                ;0be9 b7
     sbc hl,de           ;0bea ed 52
     jr nc,l0bf1h        ;0bec 30 03
@@ -2039,7 +2069,7 @@ l0cc6h:
     ex de,hl            ;0ceb eb
     ld (60b1h),hl       ;0cec 22 b1 60
     xor a               ;0cef af
-    ld de,(6009h)       ;0cf0 ed 5b 09 60
+    ld de,(heads)       ;0cf0 ed 5b 09 60
     ld d,a              ;0cf4 57
     rst 8               ;0cf5 cf
     ld (81feh),hl       ;0cf6 22 fe 81
@@ -2065,7 +2095,7 @@ l0d1ch:
     add hl,de           ;0d1c 19
     xor a               ;0d1d af
     ld (60b9h),a        ;0d1e 32 b9 60
-    ld de,(60aeh)       ;0d21 ed 5b ae 60
+    ld de,(reserved)    ;0d21 ed 5b ae 60
     ld d,a              ;0d25 57
     add hl,de           ;0d26 19
     ex de,hl            ;0d27 eb
@@ -2135,7 +2165,7 @@ l0d9ch:
     xor a               ;0d9c af
     ret                 ;0d9d c9
 sub_0d9eh:
-    ld a,(6009h)        ;0d9e 3a 09 60
+    ld a,(heads)        ;0d9e 3a 09 60
     ld c,a              ;0da1 4f
     ld a,(81fdh)        ;0da2 3a fd 81
     add a,20h           ;0da5 c6 20
