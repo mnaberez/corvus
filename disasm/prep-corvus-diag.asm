@@ -52,7 +52,7 @@ reset_drive:
     jp 0000h            ;0149 c3 00 00
 
 format_drive:
-    ld bc,l0200h        ;014c 01 00 02
+    ld bc,0200h         ;014c 01 00 02
     call 81e9h          ;014f cd e9 81
     ld de,8200h         ;0152 11 00 82
     ldir                ;0155 ed b0
@@ -74,7 +74,7 @@ read_firm_blk:
     jp 81a0h            ;017c c3 a0 81
 
 writ_firm_blk:
-    ld bc,l0200h+1      ;017f 01 01 02
+    ld bc,0201h         ;017f 01 01 02
     call 81e9h          ;0182 cd e9 81
     ld a,(hl)           ;0185 7e
     ld (81fdh),a        ;0186 32 fd 81
