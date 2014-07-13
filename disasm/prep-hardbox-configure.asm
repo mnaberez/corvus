@@ -20,14 +20,19 @@ cmd_writ_firm:   equ 33h  ;Write a firmare block
     ld bc,0001h         ;0113 01 01 00
     call 007dh          ;0116 cd 7d 00
     ld a,(hl)           ;0119 7e
+
     or a
-    jr z,reset_drive    ;Reset drive
+    jr z,reset_drive    ;Reset drive (exit prep mode)
+
     cp cmd_format_drv
     jr z,format_drive   ;Format drive
+
     cp cmd_read_firm
     jr z,read_firm_blk  ;Read firmware block
+
     cp cmd_writ_firm
     jr z,writ_firm_blk  ;Write firmware block
+
     cp cmd_verify_drv
     jr z,verify_drive   ;Verify drive
 
