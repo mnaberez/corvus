@@ -341,9 +341,12 @@ l01cah:
     set 0,a             ;01df cb c7
     set 1,a             ;01e1 cb cf
     out (pio2_dra),a    ;01e3 d3 6c
-    in a,(pio0_dra)     ;01e5 db 60
-    res 7,a             ;01e7 cb bf
-    out (pio0_dra),a    ;01e9 d3 60
+
+                        ;Turn the "BUSY" LED on:
+    in a,(pio0_dra)     ;  A = read port state
+    res 7,a             ;  Turn off bit 7 (low state turns LED on)
+    out (pio0_dra),a    ;  Write new port state
+
     call sub_020ah      ;01eb cd 0a 02
     call l0439h         ;01ee cd 39 04
     ld hl,l0000h        ;01f1 21 00 00
@@ -1641,9 +1644,12 @@ l0a84h:
     in a,(pio2_dra)     ;0aba db 6c
     set 0,a             ;0abc cb c7
     out (pio2_dra),a    ;0abe d3 6c
-    in a,(pio0_dra)     ;0ac0 db 60
-    set 7,a             ;0ac2 cb ff
-    out (pio0_dra),a    ;0ac4 d3 60
+
+                        ;Turn the "BUSY" LED off:
+    in a,(pio0_dra)     ;  A = read port state
+    set 7,a             ;  Turn on bit 7 (high state turns LED off)
+    out (pio0_dra),a    ;  Write new port state
+
     halt                ;0ac6 76
 l0ac7h:
     call l02a4h         ;0ac7 cd a4 02
