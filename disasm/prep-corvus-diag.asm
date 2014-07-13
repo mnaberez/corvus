@@ -45,6 +45,11 @@ cmd_writ_firm:   equ 33h  ;Write a firmare block
     jp 81a0h            ;013a c3 a0 81
 
 reset_drive:
+;Reset drive (exit prep mode)
+;
+;Command byte (0x00) has already been read
+;No bytes left to read
+;
     call 00a7h          ;013d cd a7 00
     ld hl,0000h         ;0140 21 00 00
     ld (6012h),hl       ;0143 22 12 60
@@ -52,6 +57,11 @@ reset_drive:
     jp 0000h            ;0149 c3 00 00
 
 format_drive:
+;Format drive
+;
+;Command byte (0x01) has already been read
+;512 bytes left to read: format pattern
+;
     ld bc,0200h         ;014c 01 00 02
     call 81e9h          ;014f cd e9 81
     ld de,8200h         ;0152 11 00 82
@@ -64,6 +74,11 @@ format_drive:
     jp 81a0h            ;0166 c3 a0 81
 
 read_firm_blk:
+;Read a block of Corvus firmware
+;
+;Command byte (0x32) has already been read
+;1 byte left to read: head/sector
+;
     call 81afh          ;0169 cd af 81
     ld (81fdh),a        ;016c 32 fd 81
     ld hl,0000h         ;016f 21 00 00
@@ -74,6 +89,11 @@ read_firm_blk:
     jp 81a0h            ;017c c3 a0 81
 
 writ_firm_blk:
+;Write a block of Corvus firmware
+;
+;Command byte (0x33) has already been read
+;513 bytes left to read: 1 byte head/sector, 512 bytes data
+;
     ld bc,0201h         ;017f 01 01 02
     call 81e9h          ;0182 cd e9 81
     ld a,(hl)           ;0185 7e
@@ -90,6 +110,11 @@ writ_firm_blk:
     jp 81a0h            ;01a0 c3 a0 81
 
 verify_drive:
+;Verify drive
+;
+;Command byte (0x07) has already been read
+;No more left bytes to read
+;
     ld hl,0a201h        ;01a3 21 01 a2
     ld (6012h),hl       ;01a6 22 12 60
     xor a               ;01a9 af
