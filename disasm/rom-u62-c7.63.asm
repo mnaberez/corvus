@@ -280,6 +280,7 @@ l010bh:                 ;
     sbc hl,de           ;012d ed 52
 l012fh:
     jp z,l01beh         ;012f ca be 01
+
 l0132h:
     ld hl,l0000h        ;0132 21 00 00
 l0135h:
@@ -287,24 +288,29 @@ l0135h:
     ld a,h              ;0136 7c
     or l                ;0137 b5
     jr nz,l0135h        ;0138 20 fb
-    ld a,01h            ;013a 3e 01
-l013ch:
-    ld hl,6000h         ;013c 21 00 60
-    ld de,6001h         ;013f 11 01 60
-    ld bc,03ffh         ;0142 01 ff 03
-    ld (hl),a           ;0145 77
-    ldir                ;0146 ed b0
+
+                        ;Fill 6000-63ffh with 01h:
+    ld a,01h            ;  A = 01h (fill byte)
+l013ch:                 ;
+    ld hl,6000h         ;  HL = 6000h (source address)
+    ld de,6001h         ;  DE = 6001h (target address)
+    ld bc,03ffh         ;  BC = 1023 bytes to copy
+    ld (hl),a           ;  Store fill byte (01h) in 6000h
+    ldir                ;  Copy BC bytes from (HL) to (DE)
+
     ld hl,6000h         ;0148 21 00 60
     ld b,04h            ;014b 06 04
 l014dh:
     cpi                 ;014d ed a1
     jr nz,l0194h        ;014f 20 43
     jp pe,l014dh        ;0151 ea 4d 01
+
     ld h,80h            ;0154 26 80
     ld de,8001h         ;0156 11 01 80
     ld bc,03ffh         ;0159 01 ff 03
     ld (hl),a           ;015c 77
     ldir                ;015d ed b0
+
     ld hl,8000h         ;015f 21 00 80
     ld b,04h            ;0162 06 04
 l0164h:
@@ -406,12 +412,13 @@ l0219h:
     ld (hl),a           ;0219 77
     inc l               ;021a 2c
     jr nz,l0219h        ;021b 20 fc
-    ld a,14h            ;021d 3e 14
+
+    ld a,14h            ;TODO: sectors per track?
     ld (6017h),a        ;021f 32 17 60
 
     ld a,(6104h)        ;0222 3a 04 61
 
-    cp 04h              ;Is it 0x04?
+    cp 04h              ;Is it 4?
     jr nz,not_6mb       ;  No: it's not a 6MB, so jump.
 
                         ;Set params for 6MB:
@@ -419,7 +426,7 @@ l0219h:
     jr set_drive_params ;  Set params for 6MB drive
 
 not_6mb:
-    cp 40h              ;Is it 0x40?
+    cp 40h              ;Is it 40h?
     jr nz,not_11mb      ;  No: It's not an 11MB, so jump.
 
                         ;Set drive params for 11MB:
