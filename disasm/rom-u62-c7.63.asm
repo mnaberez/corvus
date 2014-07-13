@@ -69,6 +69,12 @@ pio2_drb:   equ pio2+1  ;  Data Register B:
 pio2_cra:   equ pio2+2  ;  Control Register A
 pio2_crb:   equ pio2+3  ;  Control Register B
 
+ctc:        equ 7ch     ;Z80 CTC
+ctc_ch0:    equ ctc+0   ;  Channel 0 Register
+ctc_ch1:    equ ctc+1   ;  Channel 1 Register
+ctc_ch2:    equ ctc+2   ;  Channel 2 Register
+ctc_ch3:    equ ctc+3   ;  Channel 3 Register
+
 ;called from prep code
 l0000h:
     jp l00dfh           ;0000 c3 df 00
@@ -201,37 +207,58 @@ l00e1h:
     ld sp,61edh         ;00e1 31 ed 61
     di                  ;00e4 f3
     ld a,(7000h)        ;00e5 3a 00 70
-    xor a               ;00e8 af
-    ld hl,l02c9h        ;00e9 21 c9 02
-    ld b,0ah            ;00ec 06 0a
+
+                        ;Initialize a list of I/O ports to 0:
+    xor a               ;  A = 0
+    ld hl,table_0       ;  HL = address of table (02c9h)
+    ld b,0ah            ;  B = number of table entries to read
 l00eeh:
-    ld c,(hl)           ;00ee 4e
-    out (c),a           ;00ef ed 79
-    inc hl              ;00f1 23
-    djnz l00eeh         ;00f2 10 fa
-    ld c,7ch            ;00f4 0e 7c
-    outi                ;00f6 ed a3
-    outi                ;00f8 ed a3
-    inc c               ;00fa 0c
-    outi                ;00fb ed a3
-    outi                ;00fd ed a3
-    inc c               ;00ff 0c
-    outi                ;0100 ed a3
-    outi                ;0102 ed a3
-    inc c               ;0104 0c
-    outi                ;0105 ed a3
-    outi                ;0107 ed a3
-    ld e,06h            ;0109 1e 06
-l010bh:
-    ld c,(hl)           ;010b 4e
-    inc hl              ;010c 23
-    outi                ;010d ed a3
-    outi                ;010f ed a3
-    dec c               ;0111 0d
-    dec c               ;0112 0d
-    outi                ;0113 ed a3
-    dec e               ;0115 1d
-    jr nz,l010bh        ;0116 20 f3
+    ld c,(hl)           ;  C = value at HL in table
+    out (c),a           ;  Write A (always 0) to port (C)
+    inc hl              ;  HL=HL+1
+    djnz l00eeh         ;  Decrement B, loop until B=0
+
+                        ;Initialize CTC Channel 0:
+                        ;  HL now contains 02d3h
+    ld c,ctc_ch0        ;  C = address of CTC Channel 0 (ctc_ch0)
+    outi                ;  Copy (HL) to port (C), Increment HL, Decrement B
+    outi                ;  Copy (HL) to port (C), Increment HL, Decrement B
+
+                        ;Initialize CTC Channel 1:
+                        ;  HL now contains 02d5h
+    inc c               ;  Increment C to address of CTC Channel 1 (ctc_ch1)
+    outi                ;  Copy (HL) to port (C), Increment HL, Decrement B
+    outi                ;  Copy (HL) to port (C), Increment HL, Decrement B
+
+                        ;Initialize CTC Channel 2:
+                        ;  HL now contains 02d7h
+    inc c               ;  Increment C to address of CTC Channel 2 (ctc_ch2)
+    outi                ;  Copy (HL) to port (C), Increment HL, Decrement B
+    outi                ;  Copy (HL) to port (C), Increment HL, Decrement B
+
+                        ;Initialize CTC Channel 3:
+                        ;  HL now contains 02d9h
+    inc c               ;  Increment C to address of CTC Channel 3 (ctc_ch3)
+    outi                ;  Copy (HL) to port (C), Increment HL, Decrement B
+    outi                ;  Copy (HL) to port (C), Increment HL, Decrement B
+
+                        ;Initialize port A and port B of each PIO:
+                        ;  HL now contains 02dbh
+    ld e,06h            ;  E = 6 table blocks to read (2 for each of the 3 PIOs)
+l010bh:                 ;
+    ld c,(hl)           ;  C = port number from table (a PIO CRx)
+    inc hl              ;  Increment HL to first byte of table
+                        ;  Write two bytes to a PIO CRx:
+    outi                ;    Copy (HL) to port (C), Increment HL, Decrement B
+    outi                ;    Copy (HL) to port (C), Increment HL, Decrement B
+                        ;  Back up to point to a PIO DRx:
+    dec c               ;    Decrement C
+    dec c               ;    Decrement C
+                        ;  Write a byte to a PIO DRx:
+    outi                ;    Copy (HL) to port (C), Increment HL, Decrement B
+    dec e               ;  Decrement E
+    jr nz,l010bh        ;  Loop until E=0
+
     ld a,d              ;0118 7a
     out (pio2_dra),a    ;0119 d3 6c
     in a,(70h)          ;011b db 70
@@ -419,10 +446,10 @@ sub_0266h:
     ld d,1eh            ;026c 16 1e
 l026eh:
     call l0c56h         ;026e cd 56 0c
-    in a,(7ch)          ;0271 db 7c
+    in a,(ctc_ch0)      ;0271 db 7c
     ld c,a              ;0273 4f
 l0274h:
-    in a,(7ch)          ;0274 db 7c
+    in a,(ctc_ch0)      ;0274 db 7c
     cp c                ;0276 b9
     jr z,l0274h         ;0277 28 fb
     call l086fh         ;0279 cd 6f 08
@@ -486,45 +513,62 @@ dly1:
     jr nz,dly1          ;Loop until A=0
     ret
 
-l02c9h:
-    ld a,h              ;02c9 7c
-    ld a,l              ;02ca 7d
-    ld a,(hl)           ;02cb 7e
-    ld a,a              ;02cc 7f
-    ld h,d              ;02cd 62
-    ld h,e              ;02ce 63
-    ld l,d              ;02cf 6a
-    ld l,e              ;02d0 6b
-    ld l,(hl)           ;02d1 6e
-    ld l,a              ;02d2 6f
-    ld b,a              ;02d3 47
-    inc d               ;02d4 14
-    ld b,a              ;02d5 47
-    ld bc,0ff47h        ;02d6 01 47 ff
-    ld b,a              ;02d9 47
-    ld e,62h            ;02da 1e 62
-    rst 8               ;02dc cf
-    ld a,a              ;02dd 7f
-    nop                 ;02de 00
-    ld h,e              ;02df 63
-    rst 8               ;02e0 cf
-    dec b               ;02e1 05
-    add a,d             ;02e2 82
-    ld l,d              ;02e3 6a
-    rst 8               ;02e4 cf
-    ret nz              ;02e5 c0
-    defb 0ddh,6bh,04fh  ;illegal sequence
-    inc bc              ;02e9 03
-    rst 38h             ;02ea ff
-    ld l,(hl)           ;02eb 6e
-    rst 8               ;02ec cf
-    ld e,h              ;02ed 5c
-    ld a,h              ;02ee 7c
-    ld l,a              ;02ef 6f
-    rst 8               ;02f0 cf
-    call m,02feh        ;02f1 fc fe 02
-    ld sp,3201h         ;02f4 31 01 32
-    ld bc,0264h         ;02f7 01 64 02
+table_0:
+    ;I/O ports that are initialized with 0
+    db ctc_ch0, ctc_ch1, ctc_ch2, ctc_ch3
+    db pio0_cra, pio0_crb
+    db pio1_cra, pio1_crb
+    db pio2_cra, pio2_crb
+
+    ;Bytes written to CTC Channel 0 (ctc_ch0)
+    db 47h, 14h
+
+    ;Bytes written to CTC Channel 1 (ctc_ch1)
+    db 47h, 01h
+
+    ;Bytes written to CTC Channel 2 (ctc_ch2)
+    db 47h, 0ffh
+
+    ;Bytes written to CTC Channel 3 (ctc_ch3)
+    db 47h, 1eh
+
+    ;Init sequence for PIO0 Port A
+    db pio0_cra         ;Address of PIO0 Control Register A
+    db 0cfh             ;First byte to write to pio0_cra
+    db 7fh              ;Second byte to write to pio0_crb
+    db 00h              ;Byte to write to pio0_dra
+
+    ;Init sequence for PIO0 Port B
+    db pio0_crb         ;Address of PIO0 Control Register B
+    db 0cfh             ;First byte to write to pio0_crb
+    db 05h              ;Second byte to write to pio0_crb
+    db 82h              ;Byte to write to pio0_drb
+
+    ;Init sequence for PIO1 Port A
+    db pio1_cra         ;Address of PIO1 Control Register A
+    db 0cfh             ;First byte to write to pio1_cra
+    db 0c0h             ;Second byte to write to pio1_cra
+    db 0ddh             ;Byte to write to pio0_dra
+
+    ;Init sequence for PIO1 Port B
+    db pio1_crb         ;Address of PIO1 Control Register B
+    db 04fh             ;First byte to write to pio1_crb
+    db 03h              ;Second byte to write to pio1_crb
+    db 0ffh             ;Byte to write to pio1_drb
+
+    ;Init sequence for PIO2 Port A
+    db pio2_cra         ;Address of PIO2 Control Register A
+    db 0cfh             ;First byte to write to pio2_cra
+    db 5ch              ;Second byte to write to pio2_cra
+    db 7ch              ;Byte to write to pio2_dra
+
+    ;Init sequence for PIO2 Port B
+    db pio2_crb         ;Address of PIO2 Control Register B
+    db 0cfh             ;First byte to write to pio2_crb
+    db 0fch             ;Second byte to write to pio2_crb
+    db 0feh             ;Byte to write to pio2_drb
+
+    db 02h,31h, 01h, 32h, 01h, 64h, 02h
     inc d               ;02fa 14
     dec l               ;02fb 2d
 l02fch:
@@ -890,7 +934,7 @@ l056ah:
     ld a,01h            ;056d 3e 01
     jr z,l0579h         ;056f 28 08
     ld a,0eh            ;0571 3e 0e
-    out (7ch),a         ;0573 d3 7c
+    out (ctc_ch0),a     ;0573 d3 7c
     ld a,c              ;0575 79
     out (7fh),a         ;0576 d3 7f
     ld a,b              ;0578 78
@@ -1140,11 +1184,11 @@ l06f7h:
     sub b               ;06ff 90
     ld b,a              ;0700 47
 l0701h:
-    in a,(7ch)          ;0701 db 7c
+    in a,(ctc_ch0)      ;0701 db 7c
     cp b                ;0703 b8
     jr z,l0701h         ;0704 28 fb
 l0706h:
-    in a,(7ch)          ;0706 db 7c
+    in a,(ctc_ch0)      ;0706 db 7c
     cp b                ;0708 b8
     jr nz,l0706h        ;0709 20 fb
     ld a,0ffh           ;070b 3e ff
@@ -1335,7 +1379,7 @@ l086fh:
 l0871h:
     di                  ;0871 f3
     out (pio0_cra),a    ;0872 d3 62
-    out (7ch),a         ;0874 d3 7c
+    out (ctc_ch0),a     ;0874 d3 7c
     ld a,0a7h           ;0876 3e a7
     out (7fh),a         ;0878 d3 7f
     ld a,4eh            ;087a 3e 4e
@@ -1506,13 +1550,13 @@ sub_09a4h:
     ld (6020h),a        ;09a6 32 20 60
 l09a9h:
     call l0c56h         ;09a9 cd 56 0c
-    in a,(7ch)          ;09ac db 7c
+    in a,(ctc_ch0)      ;09ac db 7c
     ld c,a              ;09ae 4f
 l09afh:
-    in a,(7ch)          ;09af db 7c
+    in a,(ctc_ch0)      ;09af db 7c
     cp c                ;09b1 b9
     jr z,l09afh         ;09b2 28 fb
-    in a,(7ch)          ;09b4 db 7c
+    in a,(ctc_ch0)      ;09b4 db 7c
     ld e,a              ;09b6 5f
     exx                 ;09b7 d9
     ld bc,(63fdh)       ;09b8 ed 4b fd 63
