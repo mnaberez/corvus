@@ -403,46 +403,63 @@ l0219h:
     ld a,(6104h)        ;0222 3a 04 61
     cp 04h              ;0225 fe 04
     jr nz,l022eh        ;0227 20 05
-    ld hl,02f3h         ;0229 21 f3 02
-    jr l023ah           ;022c 18 0c
+
+    ld hl,table_1       ;0229 21 f3 02
+    jr copy_table       ;022c 18 0c
 l022eh:
     cp 40h              ;022e fe 40
     jr nz,l0237h        ;0230 20 05
-    ld hl,l02fch        ;0232 21 fc 02
-    jr l023ah           ;0235 18 03
+
+    ld hl,table_2       ;0232 21 fc 02
+    jr copy_table       ;0235 18 03
+
 l0237h:
-    ld hl,l0305h        ;0237 21 05 03
-l023ah:
-    ld a,(hl)           ;023a 7e
-    ld (6009h),a        ;023b 32 09 60
-    inc hl              ;023e 23
-    ld c,(hl)           ;023f 4e
-    inc hl              ;0240 23
-    ld b,(hl)           ;0241 46
-    ld (6002h),bc       ;0242 ed 43 02 60
-    inc hl              ;0246 23
-    ld c,(hl)           ;0247 4e
-    inc hl              ;0248 23
-    ld b,(hl)           ;0249 46
-    ld (600eh),bc       ;024a ed 43 0e 60
-    inc hl              ;024e 23
-    ld c,(hl)           ;024f 4e
-    inc hl              ;0250 23
-    ld b,(hl)           ;0251 46
-    ld (600ah),bc       ;0252 ed 43 0a 60
-    inc hl              ;0256 23
-    ld c,(hl)           ;0257 4e
-    inc hl              ;0258 23
-    ld b,(hl)           ;0259 46
-    ld (606dh),bc       ;025a ed 43 6d 60
+    ld hl,table_3       ;HL = address of table_1 (0305h)
+                        ;Fall through into copy_table
+
+copy_table:
+                        ;Copy byte in table to (6009h):
+    ld a,(hl)           ;  A = byte from table
+    ld (6009h),a        ;  Store A in 6009h
+
+                        ;Copy first word in table to (6002h):
+    inc hl              ;  Increment table pointer
+    ld c,(hl)           ;  C = byte from table
+    inc hl              ;  Increment table pointer
+    ld b,(hl)           ;  B = byte from table
+    ld (6002h),bc       ;  Store BC in 6002h
+
+                        ;Copy second word in table to (600eh):
+    inc hl              ;  Increment table pointer
+    ld c,(hl)           ;  C = byte from table
+    inc hl              ;  Increment table pointer
+    ld b,(hl)           ;  B = byte from table
+    ld (600eh),bc       ;  Store BC in 600eh
+
+                        ;Copy third word in table (600ah):
+    inc hl              ;  Increment table pointer
+    ld c,(hl)           ;  C = byte from table
+    inc hl              ;  Increment table pointer
+    ld b,(hl)           ;  B = byte from table
+    ld (600ah),bc       ;  Store BC in 600ah
+
+                        ;Copy fourth word in table (606dh):
+    inc hl              ;  Increment table pointer
+    ld c,(hl)           ;  C = byte from table
+    inc hl              ;  Increment table pointer
+    ld b,(hl)           ;  B = byte from table
+    ld (606dh),bc       ;  Store BC in 606dh
+
     ld a,(6009h)        ;025e 3a 09 60
     add a,a             ;0261 87
     dec a               ;0262 3d
     ld (60aeh),a        ;0263 32 ae 60
+
 sub_0266h:
     ld a,1fh            ;0266 3e 1f
     ld (61fdh),a        ;0268 32 fd 61
     ret                 ;026b c9
+
     ld d,1eh            ;026c 16 1e
 l026eh:
     call l0c56h         ;026e cd 56 0c
@@ -568,22 +585,27 @@ table_0:
     db 0fch             ;Second byte to write to pio2_crb
     db 0feh             ;Byte to write to pio2_drb
 
-    db 02h,31h, 01h, 32h, 01h, 64h, 02h
-    inc d               ;02fa 14
-    dec l               ;02fb 2d
-l02fch:
-    inc b               ;02fc 04
-    ld sp,3201h         ;02fd 31 01 32
-    ld bc,l04c8h        ;0300 01 c8 04
-    sub h               ;0303 94
-    ld e,h              ;0304 5c
-l0305h:
-    ld b,31h            ;0305 06 31
-    ld bc,l0132h        ;0307 01 32 01
-    inc l               ;030a 2c
-    rlca                ;030b 07
-    inc d               ;030c 14
-    adc a,h             ;030d 8c
+table_1:
+    db 02h              ;Byte copied to 6009h
+    dw 0131h            ;Word copied to 6002h
+    dw 0132h            ;Word copied to 600eh
+    dw 0264h            ;Word copied to 600ah
+    dw 2d14h            ;Word copied to 606dh
+
+table_2:
+    db 04h              ;Byte copied to 6009h
+    dw 0131h            ;Word copied to 6002h
+    dw 0132h            ;Word copied to 600eh
+    dw 04c8h            ;Word copied to 600ah
+    dw 5c94h            ;Word copied to 606dh
+
+table_3:
+    db 06h              ;Byte copied to 6009h
+    dw 0131h            ;Word copied to 6002h
+    dw 0132h            ;Word copied to 600eh
+    dw 072ch            ;Word copied to 600ah
+    dw 8c14h            ;Word copied to 606dh
+
 l030eh:
     in a,(pio0_dra)     ;030e db 60
     ld b,a              ;0310 47
