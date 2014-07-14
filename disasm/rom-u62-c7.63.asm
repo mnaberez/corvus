@@ -369,7 +369,7 @@ l01a9h:
     add a,(hl)          ;01b1 86
     jr nz,l0194h        ;01b2 20 e0
     in a,(pio3_drb)     ;01b4 db 6d
-    and 44h             ;01b6 e6 44
+    and 01000100b       ;01b6 e6 44
     ld (6104h),a        ;01b8 32 04 61
     call sub_020ah      ;01bb cd 0a 02
 l01beh:
@@ -764,7 +764,7 @@ l03c3h:
 
 e_03d4h:
     ld a,(6011h)        ;03d4 3a 11 60
-    or 80h              ;03d7 f6 80
+    or 10000000b        ;03d7 f6 80
     ld b,a              ;03d9 47
     ld a,(6015h)        ;03da 3a 15 60
     cp 0ffh             ;03dd fe ff
@@ -1040,14 +1040,14 @@ e_0587h:
     ld a,d              ;0587 7a
     cp 0ffh             ;0588 fe ff
     jr z,l0593h         ;058a 28 07
-    and 07h             ;058c e6 07
-    or 0d0h             ;058e f6 d0
+    and 00000111b       ;058c e6 07
+    or 11010000b        ;058e f6 d0
     call e_059bh        ;0590 cd 9b 05
 l0593h:
     ld a,e              ;0593 7b
     cp 0ffh             ;0594 fe ff
     ret z               ;0596 c8
-    and 07h             ;0597 e6 07
+    and 00000111b       ;0597 e6 07
     or 0e0h             ;0599 f6 e0
 
 e_059bh:
@@ -1169,7 +1169,7 @@ l063ch:
     ld (ix-09h),d       ;065a dd 72 f7
     ld (ix-08h),e       ;065d dd 73 f8
     ld a,b              ;0660 78
-    and 01h             ;0661 e6 01
+    and 00000001b       ;0661 e6 01
     ld (ix-06h),a       ;0663 dd 77 fa
     ei                  ;0666 fb
     reti                ;0667 ed 4d
@@ -1251,7 +1251,7 @@ l06d5h:
     ld a,(81fdh)        ;06dd 3a fd 81
     ld b,a              ;06e0 47
     in a,(pio0_drb)     ;06e1 db 61
-    and 8fh             ;06e3 e6 8f
+    and 10001111b       ;06e3 e6 8f
     bit 5,b             ;06e5 cb 68
     jr z,l06ebh         ;06e7 28 02
     set 4,a             ;06e9 cb e7
@@ -1266,7 +1266,7 @@ l06f1h:
 l06f7h:
     out (pio0_drb),a    ;06f7 d3 61
     ld a,b              ;06f9 78
-    and 1fh             ;06fa e6 1f
+    and 00011111b       ;06fa e6 1f
     ld b,a              ;06fc 47
     ld a,14h            ;06fd 3e 14
     sub b               ;06ff 90
@@ -1495,7 +1495,7 @@ l0887h:
     cp 0ffh             ;089f fe ff
     jr nz,l08a7h        ;08a1 20 04
     in a,(pio0_dra)     ;08a3 db 60
-    and 10h             ;08a5 e6 10
+    and 00010000b       ;08a5 e6 10
 l08a7h:
     ld a,0ffh           ;08a7 3e ff
     out (pio0_dra),a    ;08a9 d3 60
@@ -1595,7 +1595,7 @@ sub_0944h:
 sub_0958h:
     ld hl,6017h         ;0958 21 17 60
     ld a,(81fdh)        ;095b 3a fd 81
-    and 1fh             ;095e e6 1f
+    and 00011111b       ;095e e6 1f
     cp (hl)             ;0960 be
     jr nc,l096fh        ;0961 30 0c
     ld de,(81feh)       ;0963 ed 5b fe 81
@@ -1679,7 +1679,7 @@ l09afh:
     sub e               ;09f6 93
     ld e,a              ;09f7 5f
     ld a,(spares)       ;09f8 3a fd 61
-    and 1fh             ;09fb e6 1f
+    and 00011111b       ;09fb e6 1f
     cp e                ;09fd bb
     ret z               ;09fe c8
     ld hl,6020h         ;09ff 21 20 60
@@ -1892,14 +1892,14 @@ sub_0b75h:
     call e_0c41h        ;0b78 cd 41 0c
     ret nz              ;0b7b c0
     ld a,(81fdh)        ;0b7c 3a fd 81
-    and 0e0h            ;0b7f e6 e0
+    and 11100000b       ;0b7f e6 e0
     ld (81fdh),a        ;0b81 32 fd 81
     rst 30h             ;0b84 f7
     ld c,00h            ;0b85 0e 00
     call sub_0ba1h      ;0b87 cd a1 0b
     ld a,(81fdh)        ;0b8a 3a fd 81
-    and 0e0h            ;0b8d e6 e0
-    or 01h              ;0b8f f6 01
+    and 11100000b       ;0b8d e6 e0
+    or 00000001b        ;0b8f f6 01
     ld (81fdh),a        ;0b91 32 fd 81
     rst 30h             ;0b94 f7
     call sub_0ba1h      ;0b95 cd a1 0b
@@ -1933,7 +1933,7 @@ l0bc1h:
     rrca                ;0bcb 0f
     ld b,a              ;0bcc 47
     ld a,(81fdh)        ;0bcd 3a fd 81
-    and 0e0h            ;0bd0 e6 e0
+    and 11100000b       ;0bd0 e6 e0
     add a,20h           ;0bd2 c6 20
     ld (81fdh),a        ;0bd4 32 fd 81
     cp b                ;0bd7 b8
@@ -2037,7 +2037,7 @@ e_0c65h:
     rrca                ;0c70 0f
     rrca                ;0c71 0f
     rrca                ;0c72 0f
-    and 0fh             ;0c73 e6 0f
+    and 00001111b       ;0c73 e6 0f
     ld c,l              ;0c75 4d
     bit 0,b             ;0c76 cb 40
     jr z,l0c80h         ;0c78 28 06
@@ -2056,10 +2056,10 @@ l0c89h:
     rr h                ;0c8a cb 1c
     rr l                ;0c8c cb 1d
 l0c8eh:
-    and 0fh             ;0c8e e6 0f
+    and 00001111b       ;0c8e e6 0f
     ld b,a              ;0c90 47
     ld a,c              ;0c91 79
-    and 03h             ;0c92 e6 03
+    and 00000011b       ;0c92 e6 03
     ld (6016h),a        ;0c94 32 16 60
     ex de,hl            ;0c97 eb
     ld a,(60d3h)        ;0c98 3a d3 60
@@ -2182,7 +2182,7 @@ l0d58h:
     ld bc,608bh         ;0d67 01 8b 60
     add hl,bc           ;0d6a 09
     ld a,(81fdh)        ;0d6b 3a fd 81
-    and 0e0h            ;0d6e e6 e0
+    and 11100000b       ;0d6e e6 e0
     or (hl)             ;0d70 b6
     ld (81fdh),a        ;0d71 32 fd 81
     ld (60b6h),a        ;0d74 32 b6 60
@@ -2217,11 +2217,11 @@ sub_0d9eh:
     rlca                ;0da8 07
     rlca                ;0da9 07
     rlca                ;0daa 07
-    and 07h             ;0dab e6 07
+    and 00000111b       ;0dab e6 07
     cp c                ;0dad b9
     jr nz,l0dc4h        ;0dae 20 14
     ld a,b              ;0db0 78
-    and 1fh             ;0db1 e6 1f
+    and 00011111b       ;0db1 e6 1f
     ld (81fdh),a        ;0db3 32 fd 81
     ld (60b6h),a        ;0db6 32 b6 60
     ld hl,(81feh)       ;0db9 2a fe 81
