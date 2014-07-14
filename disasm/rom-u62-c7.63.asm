@@ -5,23 +5,23 @@
 
 pio0:       equ 60h     ;Z80 PIO #0 (U45)
 pio0_dra:   equ pio0+0  ;  Data Register A:
-                        ;    A7: "BUSY" LED
-                        ;    A6:
-                        ;    A5:
-                        ;    A4:
-                        ;    A3:
-                        ;    A2:
-                        ;    A1:
-                        ;    A0:
+                        ;    A7: ACTIVITY LED ("BUSY")
+                        ;    A6: -INDEX SEL
+                        ;    A5: WRITE FAULT
+                        ;    A4: CRC ERROR
+                        ;    A3: -SECTOR SEL
+                        ;    A2: -SECTOR SIZE 1 (UB4:1)
+                        ;    A1: -SECTOR SIZE 2 (UB4:4)
+                        ;    A0: -SEEK COMPLETE
 pio0_drb:   equ pio0+1  ;  Data Register B:
-                        ;    B7:
-                        ;    B6:
-                        ;    B5:
-                        ;    B4:
-                        ;    B3:
-                        ;    B2:
-                        ;    B1:
-                        ;    B0:
+                        ;    B7: REDUCE WR CURRENT
+                        ;    B6: HEAD SEL 2^2
+                        ;    B5: HEAD SEL 2^1
+                        ;    B4: HEAD SEL 2^0
+                        ;    B3: STEP
+                        ;    B2: -HSXSTB
+                        ;    B1: DIRECTION IN
+                        ;    B0: -READY
 pio0_cra:   equ pio0+2  ;  Control Register A
 pio0_crb:   equ pio0+3  ;  Control Register B
 
@@ -29,14 +29,14 @@ pio1:       equ 64h     ;Z80 PIO #1 (Unpopulated)
 
 pio2:       equ 68h     ;Z80 PIO #2 (U44)
 pio2_dra:   equ pio2+0  ;  Data Register A
-                        ;    A7:
-                        ;    A6:
-                        ;    A5:
-                        ;    A4:
-                        ;    A3:
-                        ;    A2:
-                        ;    A1:
-                        ;    A0:
+                        ;    A7: -DRV.ACK
+                        ;    A6: -SYNC
+                        ;    A5: -COMPL
+                        ;    A4: PIO RDY
+                        ;    A3: -HSXFER
+                        ;    A2: -ALT SEL
+                        ;    A1: -DRV.ACK
+                        ;    A0: BUS DIR
 pio2_drb:   equ pio2+1  ;  Data Register B
                         ;    B7: Data Bit 7
                         ;    B6: Data Bit 6
@@ -51,23 +51,23 @@ pio2_crb:   equ pio2+3  ;  Control Register B
 
 pio3:       equ 6ch     ;Z80 PIO #3 (U46)
 pio3_dra:   equ pio3+0  ;  Data Register A
-                        ;    A7:
-                        ;    A6:
-                        ;    A5:
-                        ;    A4:
-                        ;    A3: Unit Select Bit 3
-                        ;    A2: Unit Select Bit 2
-                        ;    A1: Unit Select Bit 1
-                        ;    A0: Unit Select Bit 0
+                        ;    A7: -WRITE DISABLE
+                        ;    A6: -TRACK 00
+                        ;    A5: TXD
+                        ;    A4: -RXD
+                        ;    A3: SYSTEM/-DIAG (UB4:5)
+                        ;    A2: -UNIT SELECT 2 (UB4:6)
+                        ;    A1: -UNIT SELECT 1 (UB4:7)
+                        ;    A0: -TIMEOUT DISABLE (UB4:8)
 pio3_drb:   equ pio3+1  ;  Data Register B
-                        ;    B7: Sector Size Bit 0
-                        ;    B6: Sector Size Bit 1
-                        ;    B5: Boot Enable
-                        ;    B4: Format Protect
-                        ;    B3:
-                        ;    B2:
-                        ;    B1:
-                        ;    B0:
+                        ;    B7: 12MB2
+                        ;    B6: 12MB1
+                        ;    B5: 6MB2
+                        ;    B4: -FORMAT ENABLE
+                        ;    B3: -WRITE PROTECT (W2)
+                        ;    B2: 6MB1
+                        ;    B1: -DRV 2 SEL
+                        ;    B0: -DRV 1 SEL
 pio3_cra:   equ pio3+2  ;  Control Register A
 pio3_crb:   equ pio3+3  ;  Control Register B
 
