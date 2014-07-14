@@ -375,14 +375,18 @@ l01a9h:
 l01beh:
     call e_0289h        ;01be cd 89 02
     call blink          ;01c1 cd ae 02
+
     in a,(pio0_drb)     ;01c4 db 61
-    bit 0,a             ;01c6 cb 47
+    bit 0,a             ;Bit 0 = -READY
     jr nz,l01beh        ;01c8 20 f4
+
 l01cah:
     call e_0289h        ;01ca cd 89 02
+
     in a,(pio0_dra)     ;01cd db 60
-    bit 0,a             ;01cf cb 47
+    bit 0,a             ;Bit 0 = -SEEK COMPLETE
     jr nz,l01cah        ;01d1 20 f7
+
     call l0ac7h         ;01d3 cd c7 0a
     di                  ;01d6 f3
     ld sp,61edh         ;01d7 31 ed 61
@@ -539,9 +543,11 @@ l02a1h:
     ret                 ;02a3 c9
 l02a4h:
     call e_0289h        ;02a4 cd 89 02
+
     in a,(pio0_drb)     ;02a7 db 61
-    bit 0,a             ;02a9 cb 47
+    bit 0,a             ;Bit 0 = -READY
     jr nz,l02a4h        ;02ab 20 f7
+
     ret                 ;02ad c9
 
 blink:
@@ -659,7 +665,7 @@ e_030eh:
     in a,(pio0_dra)     ;030e db 60
     ld b,a              ;0310 47
     ld a,01h            ;0311 3e 01
-    bit 1,b             ;0313 cb 48
+    bit 1,b             ;Bit 1 = -SECTOR SIZE 2 (UB4:4)
     jr z,l0318h         ;0315 28 01
     inc a               ;0317 3c
 l0318h:
@@ -669,17 +675,20 @@ l0318h:
     inc a               ;031d 3c
 l031eh:
     ld (606fh),a        ;031e 32 6f 60
-    ld a,0dfh           ;0321 3e df
+    ld a,11011111b      ;Bit 5 = -COMPL
     out (pio2_dra),a    ;0323 d3 68
 l0325h:
     call e_0289h        ;0325 cd 89 02
     ei                  ;0328 fb
+
     in a,(pio2_dra)     ;0329 db 68
-    bit 7,a             ;032b cb 7f
+    bit 7,a             ;Bit 7 = -DRV.ACK
     jr z,l0325h         ;032d 28 f6
+
     in a,(pio2_dra)     ;032f db 68
-    bit 7,a             ;0331 cb 7f
+    bit 7,a             ;Bit 7 = -DRV.ACK
     jr z,l0325h         ;0333 28 f0
+
     ld a,(606fh)        ;0335 3a 6f 60
     dec a               ;0338 3d
     jr z,l0341h         ;0339 28 06
@@ -790,7 +799,7 @@ e_03f1h:
     call nz,sub_0438h   ;0405 c4 38 04
 l0408h:
     in a,(pio0_drb)     ;0408 db 61
-    bit 2,a             ;040a cb 57
+    bit 2,a             ;Bit 2 = -HSXSTB
     jr z,l0408h         ;040c 28 fa
 l040eh:
     xor a               ;040e af
@@ -844,8 +853,11 @@ e_0449h:
     ld de,1400h         ;0456 11 00 14
     add hl,de           ;0459 19
     in a,(hsxclr)       ;045a db 74
-    ld a,0f5h           ;045c 3e f5
+
+    ld a,11110101b      ;Bit 3 = -HSXFER
+                        ;Bit 1 = -DRV.ACK
     out (pio2_dra),a    ;045e d3 68
+
     ld a,0d5h           ;0460 3e d5
     call sub_0438h      ;0462 cd 38 04
     out (pio2_dra),a    ;0465 d3 68
@@ -878,20 +890,23 @@ l0486h:
 
 e_0489h:
     di                  ;0489 f3
-    ld a,0ffh           ;048a 3e ff
+
+    ld a,11111111b      ;048a 3e ff
     out (pio0_dra),a    ;048c d3 60
-    ld a,0feh           ;048e 3e fe
+
+    ld a,11111110b      ;Bit 0 = -TIMEOUT DISABLE (UB4:8)
     out (pio3_dra),a    ;0490 d3 6c
+
     in a,(hsxclr)       ;0492 db 74
     call e_0439h        ;0494 cd 39 04
     ld a,4fh            ;0497 3e 4f
     out (pio2_crb),a    ;0499 d3 6b
-    in a,(pio2_drb)     ;049b db 69
+    in a,(pio2_drb)     ;Read data byte from host
     ld a,4ah            ;049d 3e 4a
     out (pio2_crb),a    ;049f d3 6b
     ld a,83h            ;04a1 3e 83
     out (pio2_crb),a    ;04a3 d3 6b
-    ld a,0efh           ;04a5 3e ef
+    ld a,11101111b      ;Bit 4 = PIO RDY
     out (pio2_dra),a    ;04a7 d3 68
 l04a9h:
     di                  ;04a9 f3
@@ -901,15 +916,19 @@ l04a9h:
 l04b0h:
     djnz l04b0h         ;04b0 10 fe
     jr l04a9h           ;04b2 18 f5
-    ld a,0cfh           ;04b4 3e cf
+
+    ld a,11001111b      ;Bit 5 = -COMPL
+                        ;Bit 4 = PIO RDY
     out (pio2_dra),a    ;04b6 d3 68
-    ld a,0ffh           ;04b8 3e ff
+
+    ld a,11111111b      ;04b8 3e ff
     out (pio3_dra),a    ;04ba d3 6c
+
     ld a,03h            ;04bc 3e 03
     out (pio2_crb),a    ;04be d3 6b
     out (pio2_cra),a    ;04c0 d3 6a
     out (ctc_ch3),a     ;04c2 d3 7f
-    in a,(pio2_drb)     ;04c4 db 69
+    in a,(pio2_drb)     ;Read data byte from host
     pop hl              ;04c6 e1
     ei                  ;04c7 fb
 l04c8h:
@@ -935,8 +954,11 @@ l04e6h:
 sub_04eah:
     push af             ;04ea f5
     in a,(hsxclr)       ;04eb db 74
-    ld a,0f5h           ;04ed 3e f5
+
+    ld a,11110101b      ;Bit 1 = -DRV.ACK
+                        ;Bit 3 = -HSXFER
     out (pio2_dra),a    ;04ef d3 68
+
     ld a,(95f7h)        ;04f1 3a f7 95
     ld a,(7000h)        ;04f4 3a 00 70
     pop af              ;04f7 f1
@@ -971,8 +993,9 @@ l0529h:
     ld h,04h            ;0529 26 04
 l052bh:
     in a,(pio2_dra)     ;052b db 68
-    bit 7,a             ;052d cb 7f
+    bit 7,a             ;Bit 7 = -DRV.ACK
     jr z,l0540h         ;052f 28 0f
+
     dec hl              ;0531 2b
     ld a,h              ;0532 7c
     or l                ;0533 b5
@@ -981,34 +1004,40 @@ l052bh:
 l0537h:
     call e_0289h        ;0537 cd 89 02
     in a,(pio2_dra)     ;053a db 68
-    bit 7,a             ;053c cb 7f
+    bit 7,a             ;Bit 7 = -DRV.ACK
     jr nz,l0537h        ;053e 20 f7
 l0540h:
-    ld a,0ffh           ;0540 3e ff
+    ld a,11111111b      ;0540 3e ff
     out (pio2_dra),a    ;0542 d3 68
 l0544h:
     call e_0289h        ;0544 cd 89 02
+
     in a,(pio2_dra)     ;0547 db 68
-    bit 7,a             ;0549 cb 7f
+    bit 7,a             ;Bit 7 = -DRV.ACK
     jr z,l0544h         ;054b 28 f7
+
     in a,(pio2_dra)     ;054d db 68
-    bit 7,a             ;054f cb 7f
+    bit 7,a             ;Bit 7 = -DRV.ACK
     jr z,l0544h         ;0551 28 f1
+
     ld a,0cfh           ;0553 3e cf
     jr l055fh           ;0555 18 08
 
 e_0557h:
-    ld a,7fh            ;0557 3e 7f
+    ld a,01111111b      ;Bit 7 = ACTIVITY LED ("BUSY")
     out (pio0_dra),a    ;0559 d3 60
+
     in a,(hsxclr)       ;055b db 74
-    ld a,0d5h           ;055d 3e d5
+
+    ld a,11010101b      ;055d 3e d5
 l055fh:
     out (pio2_dra),a    ;055f d3 68
     ret                 ;0561 c9
 
 e_0562h:
-    ld a,0ffh           ;0562 3e ff
+    ld a,11111111b      ;Bit 7 = ACTIVITY LED ("BUSY")
     out (pio0_dra),a    ;0564 d3 60
+
     ld a,0dfh           ;0566 3e df
     jr l055fh           ;0568 18 f5
 
@@ -1030,10 +1059,13 @@ l0579h:
 
 e_057dh:
     di                  ;057d f3
-    ld a,0fdh           ;057e 3e fd
+
+    ld a,11111101b      ;Bit 1 = -UNIT SELECT 1 (UB4:7)
     out (pio3_dra),a    ;0580 d3 6c
-    ld a,0dfh           ;0582 3e df
+
+    ld a,11011111b      ;Bit 5 = -COMPL
     out (pio2_dra),a    ;0584 d3 68
+
     halt                ;0586 76
 
 e_0587h:
@@ -1054,12 +1086,12 @@ e_059bh:
     ld (6075h),a        ;059b 32 75 60
     ld a,(7000h)        ;059e 3a 00 70
     in a,(xferstb)      ;05a1 db 78
-    ld a,0d0h           ;05a3 3e d0
+    ld a,11010000b      ;05a3 3e d0
     out (pio2_dra),a    ;05a5 d3 68
     ld a,(7475h)        ;05a7 3a 75 74
-    ld a,0f0h           ;05aa 3e f0
+    ld a,11110000b      ;05aa 3e f0
     out (pio2_dra),a    ;05ac d3 68
-    ld a,0d0h           ;05ae 3e d0
+    ld a,11010000b      ;05ae 3e d0
     out (pio2_dra),a    ;05b0 d3 68
     in a,(hsxclr)       ;05b2 db 74
     ret                 ;05b4 c9
@@ -1069,7 +1101,7 @@ e_059bh:
     ld b,05h            ;05ba 06 05
 l05bch:
     in a,(pio2_dra)     ;05bc db 68
-    bit 6,a             ;05be cb 77
+    bit 6,a             ;Bit 6 = -SYNC
     jr nz,l05c9h        ;05c0 20 07
     djnz l05bch         ;05c2 10 f8
     pop af              ;05c4 f1
@@ -1079,13 +1111,13 @@ l05c5h:
 l05c9h:
     ei                  ;05c9 fb
     reti                ;05ca ed 4d
-    in a,(pio2_drb)     ;05cc db 69
+    in a,(pio2_drb)     ;Read data byte from host
     cp d                ;05ce ba
     jp nz,l0608h        ;05cf c2 08 06
     call sub_06bch      ;05d2 cd bc 06
     ld c,69h            ;05d5 0e 69
     ei                  ;05d7 fb
-    in a,(pio2_drb)     ;05d8 db 69
+    in a,(pio2_drb)     ;Read data byte from host
     ld (hl),a           ;05da 77
     cpl                 ;05db 2f
     or 00h              ;05dc f6 00
@@ -1094,19 +1126,19 @@ l05c9h:
     cp b                ;05e2 b8
     jr z,l0601h         ;05e3 28 1c
     jr l0608h           ;05e5 18 21
-    in a,(pio2_drb)     ;05e7 db 69
+    in a,(pio2_drb)     ;Read data byte from host
     cp d                ;05e9 ba
     jp nz,l0608h        ;05ea c2 08 06
     nop                 ;05ed 00
     nop                 ;05ee 00
     ei                  ;05ef fb
     call sub_06bch      ;05f0 cd bc 06
-    in a,(pio2_drb)     ;05f3 db 69
+    in a,(pio2_drb)     ;Read data byte from host
     cp c                ;05f5 b9
     jr nz,l0608h        ;05f6 20 10
     or 00h              ;05f8 f6 00
     or 00h              ;05fa f6 00
-    in a,(pio2_drb)     ;05fc db 69
+    in a,(pio2_drb)     ;Read data byte from host
     cp b                ;05fe b8
     jr nz,l0608h        ;05ff 20 07
 l0601h:
@@ -1252,21 +1284,23 @@ l06d5h:
     ld b,a              ;06e0 47
     in a,(pio0_drb)     ;06e1 db 61
     and 10001111b       ;06e3 e6 8f
-    bit 5,b             ;06e5 cb 68
+    bit 5,b             ;Bit 5 = HEAD SEL 2^1
     jr z,l06ebh         ;06e7 28 02
-    set 4,a             ;06e9 cb e7
+    set 4,a             ;Bit 4 = HEAD SEL 2^0
 l06ebh:
-    bit 6,b             ;06eb cb 70
+    bit 6,b             ;Bit 6 = HEAD SEL 2^2
     jr z,l06f1h         ;06ed 28 02
-    set 5,a             ;06ef cb ef
+    set 5,a             ;Bit 5 = HEAD SEL 2^1
 l06f1h:
-    bit 7,b             ;06f1 cb 78
+    bit 7,b             ;Bit 7 = REDUCE WR CURRENT
     jr z,l06f7h         ;06f3 28 02
-    set 6,a             ;06f5 cb f7
+    set 6,a             ;Bit 6 = HEAD SEL 2^2
 l06f7h:
     out (pio0_drb),a    ;06f7 d3 61
     ld a,b              ;06f9 78
-    and 00011111b       ;06fa e6 1f
+    and 00011111b       ;Bit 7 = REDUCE WR CURRENT
+                        ;Bit 6 = HEAD SEL 2^2
+                        ;Bit 5 = HEAD SEL 2^1
     ld b,a              ;06fc 47
     ld a,14h            ;06fd 3e 14
     sub b               ;06ff 90
@@ -1449,11 +1483,14 @@ l083fh:
     call sub_08f7h      ;084e cd f7 08
     pop af              ;0851 f1
     call 8dfch          ;0852 cd fc 8d
-    ld a,0ffh           ;0855 3e ff
+
+    ld a,11111111b      ;0855 3e ff
     out (pio0_dra),a    ;0857 d3 60
+
     in a,(pio3_dra)     ;0859 db 6c
-    res 7,a             ;085b cb bf
+    res 7,a             ;Bit 7 = -WRITE DISABLE
     out (pio3_dra),a    ;085d d3 6c
+
     ld a,23h            ;085f 3e 23
     out (ctc_ch3),a     ;0861 d3 7f
     ld hl,l0000h        ;0863 21 00 00
@@ -1494,13 +1531,17 @@ l0887h:
     ld a,(6014h)        ;089c 3a 14 60
     cp 0ffh             ;089f fe ff
     jr nz,l08a7h        ;08a1 20 04
+
     in a,(pio0_dra)     ;08a3 db 60
-    and 00010000b       ;08a5 e6 10
+    and 00010000b       ;Bit 4 = CRC ERROR
+
 l08a7h:
-    ld a,0ffh           ;08a7 3e ff
+    ld a,11111111b      ;08a7 3e ff
     out (pio0_dra),a    ;08a9 d3 60
+
     ld a,23h            ;08ab 3e 23
     out (ctc_ch3),a     ;08ad d3 7f
+
     ld hl,l0000h        ;08af 21 00 00
     ld (6100h),hl       ;08b2 22 00 61
     ret z               ;08b5 c8
@@ -1517,11 +1558,14 @@ l08c9h:
     ld (6014h),a        ;08c9 32 14 60
     pop af              ;08cc f1
     scf                 ;08cd 37
+
     in a,(pio3_dra)     ;08ce db 6c
-    res 7,a             ;08d0 cb bf
+    res 7,a             ;Bit 7 = -WRITE DISABLE
     out (pio3_dra),a    ;08d2 d3 6c
-    ld a,0ffh           ;08d4 3e ff
+
+    ld a,11111111b      ;08d4 3e ff
     out (pio0_dra),a    ;08d6 d3 60
+
     call sub_0b0ah      ;08d8 cd 0a 0b
     push hl             ;08db e5
     ld hl,(6100h)       ;08dc 2a 00 61
@@ -1537,8 +1581,10 @@ l08c9h:
     ld (6100h),hl       ;08f2 22 00 61
     jr l08ffh           ;08f5 18 08
 sub_08f7h:
-    ld a,7fh            ;08f7 3e 7f
+
+    ld a,01111111b      ;Bit 7 = ACTIVITY LED ("BUSY")
     out (pio0_dra),a    ;08f9 d3 60
+
     ld a,03h            ;08fb 3e 03
     out (pio0_cra),a    ;08fd d3 62
 l08ffh:
@@ -1664,8 +1710,10 @@ l09afh:
     nop                 ;09d2 00
     nop                 ;09d3 00
     call 6ffdh          ;09d4 cd fd 6f
-    ld a,0ffh           ;09d7 3e ff
+
+    ld a,11111111b      ;09d7 3e ff
     out (pio0_dra),a    ;09d9 d3 60
+
     ld a,23h            ;09db 3e 23
     out (ctc_ch3),a     ;09dd d3 7f
     ld a,(63fdh)        ;09df 3a fd 63
@@ -1736,11 +1784,11 @@ sub_0a53h:
     ret z               ;0a63 c8
     jp m,l0a6dh         ;0a64 fa 6d 0a
     in a,(pio0_drb)     ;0a67 db 61
-    set 1,a             ;0a69 cb cf
+    set 1,a             ;Bit 1 = DIRECTION IN
     jr l0a78h           ;0a6b 18 0b
 l0a6dh:
     in a,(pio0_drb)     ;0a6d db 61
-    res 1,a             ;0a6f cb 8f
+    res 1,a             ;Bit 1 = DIRECTION IN
     ex de,hl            ;0a71 eb
     ld hl,l0000h        ;0a72 21 00 00
     or a                ;0a75 b7
@@ -1764,7 +1812,7 @@ l0a84h:
     call e_0439h        ;0a99 cd 39 04
     ld a,4fh            ;0a9c 3e 4f
     out (pio2_crb),a    ;0a9e d3 6b
-    in a,(pio2_drb)     ;0aa0 db 69
+    in a,(pio2_drb)     ;Read data byte from host
     ld a,83h            ;0aa2 3e 83
     out (pio2_crb),a    ;0aa4 d3 6b
     ld a,0efh           ;0aa6 3e ef
@@ -1791,12 +1839,12 @@ l0ac7h:
     res 7,a             ;0acc cb bf
     out (pio3_dra),a    ;0ace d3 6c
     in a,(pio0_drb)     ;0ad0 db 61
-    set 1,a             ;0ad2 cb cf
+    set 1,a             ;Bit 1 = DIRECTION IN
     out (pio0_drb),a    ;0ad4 d3 61
     ld hl,000ch         ;0ad6 21 0c 00
     call sub_0b17h      ;0ad9 cd 17 0b
     in a,(pio0_drb)     ;0adc db 61
-    res 1,a             ;0ade cb 8f
+    res 1,a             ;Bit 1 = DIRECTION IN
     out (pio0_drb),a    ;0ae0 d3 61
 l0ae2h:
     in a,(pio3_dra)     ;0ae2 db 6c
@@ -1804,10 +1852,10 @@ l0ae2h:
     jr z,l0afah         ;0ae6 28 12
     call e_0289h        ;0ae8 cd 89 02
     in a,(pio0_drb)     ;0aeb db 61
-    set 3,a             ;0aed cb df
+    set 3,a             ;Bit 3 = STEP
     out (pio0_drb),a    ;0aef d3 61
     res 3,a             ;0af1 cb 9f
-    out (pio0_drb),a    ;0af3 d3 61
+    out (pio0_drb),a    ;Bit 3 = STEP
     call sub_0b4eh      ;0af5 cd 4e 0b
     jr l0ae2h           ;0af8 18 e8
 l0afah:
@@ -1851,9 +1899,9 @@ sub_0b34h:
     call e_0289h        ;0b34 cd 89 02
 l0b37h:
     in a,(pio0_drb)     ;0b37 db 61
-    set 3,a             ;0b39 cb df
+    set 3,a             ;Bit 3 = STEP
     out (pio0_drb),a    ;0b3b d3 61
-    res 3,a             ;0b3d cb 9f
+    res 3,a             ;Bit 3 = STEP
     out (pio0_drb),a    ;0b3f d3 61
     ex (sp),hl          ;0b41 e3
     ex (sp),hl          ;0b42 e3
@@ -1867,8 +1915,9 @@ l0b37h:
     ret                 ;0b4d c9
 sub_0b4eh:
     in a,(pio0_dra)     ;0b4e db 60
-    bit 0,a             ;0b50 cb 47
+    bit 0,a             ;Bit 0 = -SEEK COMPLETE
     jr nz,sub_0b4eh     ;0b52 20 fa
+
     ret                 ;0b54 c9
 l0b55h:
     in a,(pio3_drb)     ;0b55 db 6d
@@ -1925,8 +1974,9 @@ l0ba9h:
     ret                 ;0bc0 c9
 l0bc1h:
     in a,(pio3_dra)     ;0bc1 db 6c
-    bit 4,a             ;0bc3 cb 67
+    bit 4,a             ;Bit 4 = -RXD
     ret nz              ;0bc5 c0
+
     ld a,(heads)        ;0bc6 3a 09 60
     rrca                ;0bc9 0f
     rrca                ;0bca 0f
@@ -2015,14 +2065,15 @@ sub_0c49h:
     ret z               ;0c4e c8
 l0c4fh:
     in a,(pio3_dra)     ;0c4f db 6c
-    res 1,a             ;0c51 cb 8f
+    res 1,a             ;Bit 1 = -UNIT SELECT 1 (UB4:7)
     out (pio3_dra),a    ;0c53 d3 6c
     ret                 ;0c55 c9
 
 e_0c56h:
     ld a,0ffh           ;0c56 3e ff
-    res 7,a             ;0c58 cb bf
+    res 7,a             ;Bit 7 = -WRITE DISABLE
     out (pio3_dra),a    ;0c5a d3 6c
+
     ld a,0ffh           ;0c5c 3e ff
     ld (6014h),a        ;0c5e 32 14 60
     ld (6015h),a        ;0c61 32 15 60
