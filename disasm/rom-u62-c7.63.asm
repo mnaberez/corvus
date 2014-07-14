@@ -83,8 +83,8 @@ ctc_ch3:    equ ctc+3   ;  Channel 3 Register
 
 last_cyl:   equ 6002h   ;Number of heads (byte)
 heads:      equ 6009h   ;Last cylinder number (word)
-tracks:     equ 600ah   ;Number of cylinders (word)
-cylinders:  equ 600eh   ;Number of tracks (word)
+tracks:     equ 600ah   ;Number of tracks (word)
+cylinders:  equ 600eh   ;Number of cylinders (word)
 capacity:   equ 606dh   ;Capacity in 512-byte blocks (word)
 reserved:   equ 60aeh   ;Number of tracks reserved for firmware (byte)
 spares:     equ 61fdh   ;Number of tracks reserved for spares (byte)
@@ -121,7 +121,7 @@ l0008h:
     ld (bc),a           ;0035 02
     rst 20h             ;0036 e7
     dec b               ;0037 05
-    jp l00c6h           ;0038 c3 c6 00
+    jp e_00c6h          ;0038 c3 c6 00
     nop                 ;003b 00
     nop                 ;003c 00
 ;called from prep code
@@ -160,36 +160,38 @@ l0008h:
     nop                 ;0063 00
     nop                 ;0064 00
     nop                 ;0065 00
-    jp l00c6h           ;0066 c3 c6 00
+
+    jp e_00c6h          ;0066 c3 c6 00
     ld c,06h            ;0069 0e 06
-    jp l030eh           ;006b c3 0e 03
-    jp l0367h           ;006e c3 67 03
-    jp l03d4h           ;0071 c3 d4 03
+    jp e_030eh          ;006b c3 0e 03
+    jp e_0367h          ;006e c3 67 03
+    jp e_03d4h          ;0071 c3 d4 03
 ;called from prep code
-    jp l03f1h           ;0074 c3 f1 03
+    jp e_03f1h          ;0074 c3 f1 03
 ;called from prep code
-    jp l0439h           ;0077 c3 39 04
-    jp l0440h           ;007a c3 40 04
-    jp l0449h           ;007d c3 49 04
-    jp l047ah           ;0080 c3 7a 04
-    jp l0482h           ;0083 c3 82 04
-    jp l0489h           ;0086 c3 89 04
-    jp l051ch           ;0089 c3 1c 05
-    jp l0557h           ;008c c3 57 05
-    jp l0562h           ;008f c3 62 05
-    jp l056ah           ;0092 c3 6a 05
-    jp l057dh           ;0095 c3 7d 05
-    jp l059bh           ;0098 c3 9b 05
-    jp l0587h           ;009b c3 87 05
-    jp l0289h           ;009e c3 89 02
-    jp l0c65h           ;00a1 c3 65 0c
-    jp l0c41h           ;00a4 c3 41 0c
+    jp e_0439h          ;0077 c3 39 04
+    jp e_0440h          ;007a c3 40 04
+    jp e_0449h          ;007d c3 49 04
+    jp e_047ah          ;0080 c3 7a 04
+    jp e_0482h          ;0083 c3 82 04
+    jp e_0489h          ;0086 c3 89 04
+    jp e_051ch          ;0089 c3 1c 05
+    jp e_0557h          ;008c c3 57 05
+    jp e_0562h          ;008f c3 62 05
+    jp e_056ah          ;0092 c3 6a 05
+    jp e_057dh          ;0095 c3 7d 05
+    jp e_059bh          ;0098 c3 9b 05
+    jp e_0587h          ;009b c3 87 05
+    jp e_0289h          ;009e c3 89 02
+    jp e_0c65h          ;00a1 c3 65 0c
+    jp e_0c41h          ;00a4 c3 41 0c
 ;called from prep code
-    jp l0c56h           ;00a7 c3 56 0c
-    jp l0902h           ;00aa c3 02 09
-    jp l0924h           ;00ad c3 24 09
-    jp l0d39h           ;00b0 c3 39 0d
-    jp l0d7dh           ;00b3 c3 7d 0d
+    jp e_0c56h          ;00a7 c3 56 0c
+    jp e_0902h          ;00aa c3 02 09
+    jp e_0924h          ;00ad c3 24 09
+    jp e_0d39h          ;00b0 c3 39 0d
+    jp e_0d7dh          ;00b3 c3 7d 0d
+
     nop                 ;00b6 00
     nop                 ;00b7 00
     ld c,(hl)           ;00b8 4e
@@ -202,7 +204,8 @@ l0008h:
     ex af,af'           ;00bf 08
     jp l04e6h           ;00c0 c3 e6 04
     jp l0a84h           ;00c3 c3 84 0a
-l00c6h:
+
+e_00c6h:
     in a,(pio3_dra)     ;00c6 db 6c
     res 7,a             ;00c8 cb bf
     out (pio3_dra),a    ;00ca d3 6c
@@ -344,7 +347,7 @@ l017bh:
 l0192h:
     cpi                 ;0192 ed a1
 l0194h:
-    jp nz,l057dh        ;0194 c2 7d 05
+    jp nz,e_057dh       ;0194 c2 7d 05
     jp pe,l0192h        ;0197 ea 92 01
     rla                 ;019a 17
     cp 01h              ;019b fe 01
@@ -370,20 +373,20 @@ l01a9h:
     ld (6104h),a        ;01b8 32 04 61
     call sub_020ah      ;01bb cd 0a 02
 l01beh:
-    call l0289h         ;01be cd 89 02
+    call e_0289h        ;01be cd 89 02
     call blink          ;01c1 cd ae 02
     in a,(pio0_drb)     ;01c4 db 61
     bit 0,a             ;01c6 cb 47
     jr nz,l01beh        ;01c8 20 f4
 l01cah:
-    call l0289h         ;01ca cd 89 02
+    call e_0289h        ;01ca cd 89 02
     in a,(pio0_dra)     ;01cd db 60
     bit 0,a             ;01cf cb 47
     jr nz,l01cah        ;01d1 20 f7
     call l0ac7h         ;01d3 cd c7 0a
     di                  ;01d6 f3
     ld sp,61edh         ;01d7 31 ed 61
-    call l0289h         ;01da cd 89 02
+    call e_0289h        ;01da cd 89 02
     in a,(pio3_dra)     ;01dd db 6c
     set 0,a             ;01df cb c7
     set 1,a             ;01e1 cb cf
@@ -395,7 +398,7 @@ l01cah:
     out (pio0_dra),a    ;  Write new port state
 
     call sub_020ah      ;01eb cd 0a 02
-    call l0439h         ;01ee cd 39 04
+    call e_0439h        ;01ee cd 39 04
     ld hl,l0000h        ;01f1 21 00 00
     ld (81feh),hl       ;01f4 22 fe 81
     ld (600ch),hl       ;01f7 22 0c 60
@@ -404,7 +407,7 @@ l01cah:
     ld (81fdh),a        ;01fe 32 fd 81
     ld hl,5aa5h         ;0201 21 a5 5a
     ld (6070h),hl       ;0204 22 70 60
-    jp l030eh           ;0207 c3 0e 03
+    jp e_030eh          ;0207 c3 0e 03
 sub_020ah:
     ld b,0ch            ;020a 06 0c
 l020ch:
@@ -499,7 +502,7 @@ set_spares:
 
     ld d,1eh            ;026c 16 1e
 l026eh:
-    call l0c56h         ;026e cd 56 0c
+    call e_0c56h        ;026e cd 56 0c
     in a,(ctc_ch0)      ;0271 db 7c
     ld c,a              ;0273 4f
 l0274h:
@@ -511,10 +514,11 @@ l0274h:
     ret z               ;027f c8
     dec d               ;0280 15
     jr nz,l026eh        ;0281 20 eb
-    call l0289h         ;0283 cd 89 02
+    call e_0289h        ;0283 cd 89 02
     or 0ffh             ;0286 f6 ff
     ret                 ;0288 c9
-l0289h:
+
+e_0289h:
     di                  ;0289 f3
     ld hl,(6070h)       ;028a 2a 70 60
     ld a,h              ;028d 7c
@@ -534,7 +538,7 @@ l02a1h:
     out (ctc_ch2),a     ;02a1 d3 7e
     ret                 ;02a3 c9
 l02a4h:
-    call l0289h         ;02a4 cd 89 02
+    call e_0289h        ;02a4 cd 89 02
     in a,(pio0_drb)     ;02a7 db 61
     bit 0,a             ;02a9 cb 47
     jr nz,l02a4h        ;02ab 20 f7
@@ -651,7 +655,7 @@ drive_20mb:
     dw 1836             ;Number of tracks (tracks)
     dw 35860            ;Capacity in 512-byte blocks (capacity)
 
-l030eh:
+e_030eh:
     in a,(pio0_dra)     ;030e db 60
     ld b,a              ;0310 47
     ld a,01h            ;0311 3e 01
@@ -668,7 +672,7 @@ l031eh:
     ld a,0dfh           ;0321 3e df
     out (pio2_dra),a    ;0323 d3 68
 l0325h:
-    call l0289h         ;0325 cd 89 02
+    call e_0289h        ;0325 cd 89 02
     ei                  ;0328 fb
     in a,(pio2_dra)     ;0329 db 68
     bit 7,a             ;032b cb 7f
@@ -680,7 +684,7 @@ l0325h:
     dec a               ;0338 3d
     jr z,l0341h         ;0339 28 06
     xor a               ;033b af
-    call l051ch         ;033c cd 1c 05
+    call e_051ch        ;033c cd 1c 05
     jr l035ah           ;033f 18 19
 l0341h:
     ld b,a              ;0341 47
@@ -688,25 +692,26 @@ l0341h:
     ld e,a              ;0343 5f
 l0344h:
     djnz l0344h         ;0344 10 fe
-    call l0557h         ;0346 cd 57 05
+    call e_0557h        ;0346 cd 57 05
 l0349h:
     djnz l0349h         ;0349 10 fe
     ld a,60h            ;034b 3e 60
-    call l059bh         ;034d cd 9b 05
+    call e_059bh        ;034d cd 9b 05
     in a,(pio3_dra)     ;0350 db 6c
     bit 3,a             ;0352 cb 5f
-    call z,l0587h       ;0354 cc 87 05
-    call l0562h         ;0357 cd 62 05
+    call z,e_0587h      ;0354 cc 87 05
+    call e_0562h        ;0357 cd 62 05
 l035ah:
     in a,(pio3_drb)     ;035a db 6d
     bit 4,a             ;035c cb 67
-    jr z,l0367h         ;035e 28 07
+    jr z,e_0367h        ;035e 28 07
 
     ld de,8006h         ;0360 11 06 80
     ld bc,2000h         ;0363 01 00 20
     rst 28h             ;0366 ef
-l0367h:
-    call l0c56h         ;0367 cd 56 0c
+
+e_0367h:
+    call e_0c56h        ;0367 cd 56 0c
     ld hl,60bdh         ;036a 21 bd 60
     ld (hl),a           ;036d 77
     in a,(pio3_dra)     ;036e db 6c
@@ -714,7 +719,7 @@ l0367h:
     jr z,l0375h         ;0372 28 01
     inc (hl)            ;0374 34
 l0375h:
-    call l0489h         ;0375 cd 89 04
+    call e_0489h        ;0375 cd 89 04
     ld (6010h),a        ;0378 32 10 60
     cp 11h              ;037b fe 11
     jr z,l03a0h         ;037d 28 21
@@ -724,39 +729,40 @@ l0375h:
     dec a               ;0387 3d
     jr z,l0390h         ;0388 28 06
     xor a               ;038a af
-    call l051ch         ;038b cd 1c 05
-    jr l0367h           ;038e 18 d7
+    call e_051ch        ;038b cd 1c 05
+    jr e_0367h          ;038e 18 d7
 l0390h:
     ld h,a              ;0390 67
     ld l,a              ;0391 6f
     ld (6012h),hl       ;0392 22 12 60
-    call l0557h         ;0395 cd 57 05
-    call l03f1h         ;0398 cd f1 03
-    call l0562h         ;039b cd 62 05
-    jr l0367h           ;039e 18 c7
+    call e_0557h        ;0395 cd 57 05
+    call e_03f1h        ;0398 cd f1 03
+    call e_0562h        ;039b cd 62 05
+    jr e_0367h          ;039e 18 c7
 l03a0h:
-    call l0489h         ;03a0 cd 89 04
+    call e_0489h        ;03a0 cd 89 04
     ld hl,606fh         ;03a3 21 6f 60
     cp (hl)             ;03a6 be
     jr z,l03c3h         ;03a7 28 1a
     ld a,01h            ;03a9 3e 01
-    call l051ch         ;03ab cd 1c 05
-    jr nz,l0367h        ;03ae 20 b7
+    call e_051ch        ;03ab cd 1c 05
+    jr nz,e_0367h       ;03ae 20 b7
     ld a,07h            ;03b0 3e 07
     ld (6015h),a        ;03b2 32 15 60
-    call l0289h         ;03b5 cd 89 02
-    call l0557h         ;03b8 cd 57 05
-    call l03f1h         ;03bb cd f1 03
-    call l0562h         ;03be cd 62 05
-    jr l0367h           ;03c1 18 a4
+    call e_0289h        ;03b5 cd 89 02
+    call e_0557h        ;03b8 cd 57 05
+    call e_03f1h        ;03bb cd f1 03
+    call e_0562h        ;03be cd 62 05
+    jr e_0367h          ;03c1 18 a4
 l03c3h:
-    call l0557h         ;03c3 cd 57 05
+    call e_0557h        ;03c3 cd 57 05
     ld bc,0200h         ;03c6 01 00 02
-    call l0449h         ;03c9 cd 49 04
+    call e_0449h        ;03c9 cd 49 04
     ld de,8000h         ;03cc 11 00 80
     ldir                ;03cf ed b0
     jp 8001h            ;03d1 c3 01 80
-l03d4h:
+
+e_03d4h:
     ld a,(6011h)        ;03d4 3a 11 60
     or 80h              ;03d7 f6 80
     ld b,a              ;03d9 47
@@ -770,13 +776,14 @@ l03d4h:
     ld hl,l0000h        ;03e8 21 00 00
     ld (6012h),hl       ;03eb 22 12 60
     jp l06d5h           ;03ee c3 d5 06
-l03f1h:
-    call l03d4h         ;03f1 cd d4 03
+
+e_03f1h:
+    call e_03d4h        ;03f1 cd d4 03
     ld hl,(6012h)       ;03f4 2a 12 60
     ld a,(60bdh)        ;03f7 3a bd 60
     or a                ;03fa b7
     jr nz,l0416h        ;03fb 20 19
-    call l0440h         ;03fd cd 40 04
+    call e_0440h        ;03fd cd 40 04
     ld a,(7411h)        ;0400 3a 11 74
     ld a,l              ;0403 7d
     or h                ;0404 b4
@@ -812,18 +819,21 @@ l0423h:
     jr l0423h           ;0436 18 eb
 sub_0438h:
     jp (hl)             ;0438 e9
-l0439h:
+
+e_0439h:
     ld a,17h            ;0439 3e 17
     out (pio2_crb),a    ;043b d3 6b
     out (pio2_crb),a    ;043d d3 6b
     ret                 ;043f c9
-l0440h:
+
+e_0440h:
     ld a,(7000h)        ;0440 3a 00 70
 sub_0443h:
     in a,(xferstb)      ;0443 db 78
     ld a,0f4h           ;0445 3e f4
     jr l0486h           ;0447 18 3d
-l0449h:
+
+e_0449h:
     ld hl,8400h         ;0449 21 00 84
     or a                ;044c b7
     sbc hl,bc           ;044d ed 42
@@ -852,25 +862,28 @@ l0469h:
     jr nz,l0469h        ;0476 20 f1
     pop hl              ;0478 e1
     ret                 ;0479 c9
-l047ah:
+
+e_047ah:
     ld a,0c5h           ;047a 3e c5
     out (pio2_dra),a    ;047c d3 68
     ld a,0cdh           ;047e 3e cd
     jr l0486h           ;0480 18 04
-l0482h:
+
+e_0482h:
     in a,(hsxclr)       ;0482 db 74
     ld a,0d7h           ;0484 3e d7
 l0486h:
     out (pio2_dra),a    ;0486 d3 68
     ret                 ;0488 c9
-l0489h:
+
+e_0489h:
     di                  ;0489 f3
     ld a,0ffh           ;048a 3e ff
     out (pio0_dra),a    ;048c d3 60
     ld a,0feh           ;048e 3e fe
     out (pio3_dra),a    ;0490 d3 6c
     in a,(hsxclr)       ;0492 db 74
-    call l0439h         ;0494 cd 39 04
+    call e_0439h        ;0494 cd 39 04
     ld a,4fh            ;0497 3e 4f
     out (pio2_crb),a    ;0499 d3 6b
     in a,(pio2_drb)     ;049b db 69
@@ -882,7 +895,7 @@ l0489h:
     out (pio2_dra),a    ;04a7 d3 68
 l04a9h:
     di                  ;04a9 f3
-    call l0289h         ;04aa cd 89 02
+    call e_0289h        ;04aa cd 89 02
     ei                  ;04ad fb
     ld b,80h            ;04ae 06 80
 l04b0h:
@@ -905,9 +918,9 @@ l04c8h:
     jr z,l04e4h         ;04cd 28 15
     cp 0ffh             ;04cf fe ff
     jr nz,l04dfh        ;04d1 20 0c
-    ld hl,l0367h        ;04d3 21 67 03
+    ld hl,e_0367h       ;04d3 21 67 03
     ex (sp),hl          ;04d6 e3
-    call l0440h         ;04d7 cd 40 04
+    call e_0440h        ;04d7 cd 40 04
     call sub_0506h      ;04da cd 06 05
     jr l04e4h           ;04dd 18 05
 l04dfh:
@@ -930,7 +943,7 @@ sub_04eah:
 l04f8h:
     ld (6076h),a        ;04f8 32 76 60
     ld a,0f4h           ;04fb 3e f4
-    call l059bh         ;04fd cd 9b 05
+    call e_059bh        ;04fd cd 9b 05
     call sub_0443h      ;0500 cd 43 04
     ld a,(7411h)        ;0503 3a 11 74
 sub_0506h:
@@ -944,8 +957,9 @@ l0511h:
     djnz l0511h         ;0514 10 fb
     pop bc              ;0516 c1
     ld a,0f0h           ;0517 3e f0
-    jp l059bh           ;0519 c3 9b 05
-l051ch:
+    jp e_059bh          ;0519 c3 9b 05
+
+e_051ch:
     or a                ;051c b7
     jr z,l0537h         ;051d 28 18
     cp 02h              ;051f fe 02
@@ -965,7 +979,7 @@ l052bh:
     jr nz,l052bh        ;0534 20 f5
     ret                 ;0536 c9
 l0537h:
-    call l0289h         ;0537 cd 89 02
+    call e_0289h        ;0537 cd 89 02
     in a,(pio2_dra)     ;053a db 68
     bit 7,a             ;053c cb 7f
     jr nz,l0537h        ;053e 20 f7
@@ -973,7 +987,7 @@ l0540h:
     ld a,0ffh           ;0540 3e ff
     out (pio2_dra),a    ;0542 d3 68
 l0544h:
-    call l0289h         ;0544 cd 89 02
+    call e_0289h        ;0544 cd 89 02
     in a,(pio2_dra)     ;0547 db 68
     bit 7,a             ;0549 cb 7f
     jr z,l0544h         ;054b 28 f7
@@ -982,7 +996,8 @@ l0544h:
     jr z,l0544h         ;0551 28 f1
     ld a,0cfh           ;0553 3e cf
     jr l055fh           ;0555 18 08
-l0557h:
+
+e_0557h:
     ld a,7fh            ;0557 3e 7f
     out (pio0_dra),a    ;0559 d3 60
     in a,(hsxclr)       ;055b db 74
@@ -990,12 +1005,14 @@ l0557h:
 l055fh:
     out (pio2_dra),a    ;055f d3 68
     ret                 ;0561 c9
-l0562h:
+
+e_0562h:
     ld a,0ffh           ;0562 3e ff
     out (pio0_dra),a    ;0564 d3 60
     ld a,0dfh           ;0566 3e df
     jr l055fh           ;0568 18 f5
-l056ah:
+
+e_056ah:
     di                  ;056a f3
     ld a,b              ;056b 78
     or a                ;056c b7
@@ -1010,27 +1027,30 @@ l0579h:
     out (ctc_ch3),a     ;0579 d3 7f
     ei                  ;057b fb
     ret                 ;057c c9
-l057dh:
+
+e_057dh:
     di                  ;057d f3
     ld a,0fdh           ;057e 3e fd
     out (pio3_dra),a    ;0580 d3 6c
     ld a,0dfh           ;0582 3e df
     out (pio2_dra),a    ;0584 d3 68
     halt                ;0586 76
-l0587h:
+
+e_0587h:
     ld a,d              ;0587 7a
     cp 0ffh             ;0588 fe ff
     jr z,l0593h         ;058a 28 07
     and 07h             ;058c e6 07
     or 0d0h             ;058e f6 d0
-    call l059bh         ;0590 cd 9b 05
+    call e_059bh        ;0590 cd 9b 05
 l0593h:
     ld a,e              ;0593 7b
     cp 0ffh             ;0594 fe ff
     ret z               ;0596 c8
     and 07h             ;0597 e6 07
     or 0e0h             ;0599 f6 e0
-l059bh:
+
+e_059bh:
     ld (6075h),a        ;059b 32 75 60
     ld a,(7000h)        ;059e 3a 00 70
     in a,(xferstb)      ;05a1 db 78
@@ -1269,7 +1289,7 @@ sub_0711h:
     call l0ac7h         ;0715 cd c7 0a
     pop hl              ;0718 e1
     ld (81feh),hl       ;0719 22 fe 81
-    jp l0c41h           ;071c c3 41 0c
+    jp e_0c41h          ;071c c3 41 0c
 l071fh:
     xor a               ;071f af
     ld (60b9h),a        ;0720 32 b9 60
@@ -1298,7 +1318,7 @@ l074ch:
     call sub_0711h      ;0752 cd 11 07
     jr l072dh           ;0755 18 d6
 l0757h:
-    call l0c41h         ;0757 cd 41 0c
+    call e_0c41h        ;0757 cd 41 0c
     ret nz              ;075a c0
     ld a,0ah            ;075b 3e 0a
     jr l0767h           ;075d 18 08
@@ -1316,10 +1336,10 @@ l076bh:
     ret                 ;0770 c9
 sub_0771h:
     call sub_0976h      ;0771 cd 76 09
-    call l0c56h         ;0774 cd 56 0c
+    call e_0c56h        ;0774 cd 56 0c
     bit 7,(hl)          ;0777 cb 7e
     call z,l0a43h       ;0779 cc 43 0a
-    call l0c41h         ;077c cd 41 0c
+    call e_0c41h        ;077c cd 41 0c
     ret nz              ;077f c0
     rst 30h             ;0780 f7
     call l086fh         ;0781 cd 6f 08
@@ -1349,7 +1369,7 @@ l07afh:
     ld hl,6024h         ;07b2 21 24 60
     dec (hl)            ;07b5 35
     jr nz,l079eh        ;07b6 20 e6
-    call l0c41h         ;07b8 cd 41 0c
+    call e_0c41h        ;07b8 cd 41 0c
     jr nz,l076bh        ;07bb 20 ae
     ld a,08h            ;07bd 3e 08
     jr l0767h           ;07bf 18 a6
@@ -1358,10 +1378,10 @@ l07c1h:
     ld (6025h),a        ;07c3 32 25 60
 l07c6h:
     call l0799h         ;07c6 cd 99 07
-    call l0c41h         ;07c9 cd 41 0c
+    call e_0c41h        ;07c9 cd 41 0c
     ret nz              ;07cc c0
     call l071fh         ;07cd cd 1f 07
-    call l0c41h         ;07d0 cd 41 0c
+    call e_0c41h        ;07d0 cd 41 0c
     ret z               ;07d3 c8
     ld a,06h            ;07d4 3e 06
     ld (6014h),a        ;07d6 32 14 60
@@ -1382,7 +1402,7 @@ sub_07e8h:
     ld (6021h),a        ;07f6 32 21 60
 l07f9h:
     call sub_0a0dh      ;07f9 cd 0d 0a
-    call l0c41h         ;07fc cd 41 0c
+    call e_0c41h        ;07fc cd 41 0c
     jr nz,l0811h        ;07ff 20 10
     call sub_09a4h      ;0801 cd a4 09
     call sub_0c49h      ;0804 cd 49 0c
@@ -1412,11 +1432,11 @@ l081ch:
 l0832h:
     ld (6015h),a        ;0832 32 15 60
 l0835h:
-    jp l0c41h           ;0835 c3 41 0c
+    jp e_0c41h          ;0835 c3 41 0c
 l0838h:
     call sub_0793h      ;0838 cd 93 07
 l083bh:
-    call set_spares      ;083b cd 66 02
+    call set_spares     ;083b cd 66 02
     rst 30h             ;083e f7
 l083fh:
     in a,(pio3_dra)     ;083f db 6c
@@ -1524,7 +1544,8 @@ sub_08f7h:
 l08ffh:
     ei                  ;08ff fb
     reti                ;0900 ed 4d
-l0902h:
+
+e_0902h:
     ld a,(60b6h)        ;0902 3a b6 60
     ld (81fdh),a        ;0905 32 fd 81
     ld hl,(60b7h)       ;0908 2a b7 60
@@ -1543,7 +1564,8 @@ l0902h:
     rst 10h             ;0920 d7
     ret nz              ;0921 c0
     jr sub_0944h        ;0922 18 20
-l0924h:
+
+e_0924h:
     ld a,(60b6h)        ;0924 3a b6 60
     ld (81fdh),a        ;0927 32 fd 81
     ld hl,(60b7h)       ;092a 2a b7 60
@@ -1562,7 +1584,7 @@ l0924h:
     rst 18h             ;0942 df
     ret nz              ;0943 c0
 sub_0944h:
-    call l0d39h         ;0944 cd 39 0d
+    call e_0d39h        ;0944 cd 39 0d
     ld a,(60bbh)        ;0947 3a bb 60
     dec a               ;094a 3d
     ld (60bbh),a        ;094b 32 bb 60
@@ -1598,7 +1620,7 @@ sub_0976h:
     ret                 ;0986 c9
 sub_0987h:
     ld hl,81fdh         ;0987 21 fd 81
-    ld a,(spares)        ;098a 3a fd 61
+    ld a,(spares)       ;098a 3a fd 61
     cp (hl)             ;098d be
     ret z               ;098e c8
     ld a,0bh            ;098f 3e 0b
@@ -1617,7 +1639,7 @@ sub_09a4h:
     ld a,1eh            ;09a4 3e 1e
     ld (6020h),a        ;09a6 32 20 60
 l09a9h:
-    call l0c56h         ;09a9 cd 56 0c
+    call e_0c56h        ;09a9 cd 56 0c
     in a,(ctc_ch0)      ;09ac db 7c
     ld c,a              ;09ae 4f
 l09afh:
@@ -1697,8 +1719,8 @@ l0a3fh:
     ld (6015h),a        ;0a3f 32 15 60
     ret                 ;0a42 c9
 l0a43h:
-    call l0289h         ;0a43 cd 89 02
-    call l0c56h         ;0a46 cd 56 0c
+    call e_0289h        ;0a43 cd 89 02
+    call e_0c56h        ;0a46 cd 56 0c
     call sub_0958h      ;0a49 cd 58 09
     ret c               ;0a4c d8
     ld hl,(81feh)       ;0a4d 2a fe 81
@@ -1737,9 +1759,9 @@ l0a84h:
     ld (6011h),a        ;0a8b 32 11 60
     ld hl,l0000h        ;0a8e 21 00 00
     ld (6012h),hl       ;0a91 22 12 60
-    call l03f1h         ;0a94 cd f1 03
+    call e_03f1h        ;0a94 cd f1 03
     in a,(hsxclr)       ;0a97 db 74
-    call l0439h         ;0a99 cd 39 04
+    call e_0439h        ;0a99 cd 39 04
     ld a,4fh            ;0a9c 3e 4f
     out (pio2_crb),a    ;0a9e d3 6b
     in a,(pio2_drb)     ;0aa0 db 69
@@ -1747,7 +1769,7 @@ l0a84h:
     out (pio2_crb),a    ;0aa4 d3 6b
     ld a,0efh           ;0aa6 3e ef
     out (pio2_dra),a    ;0aa8 d3 68
-    call l0562h         ;0aaa cd 62 05
+    call e_0562h        ;0aaa cd 62 05
     ld hl,0149h         ;0aad 21 49 01
     ld (6004h),hl       ;0ab0 22 04 60
     call sub_0a53h      ;0ab3 cd 53 0a
@@ -1780,7 +1802,7 @@ l0ae2h:
     in a,(pio3_dra)     ;0ae2 db 6c
     bit 6,a             ;0ae4 cb 77
     jr z,l0afah         ;0ae6 28 12
-    call l0289h         ;0ae8 cd 89 02
+    call e_0289h        ;0ae8 cd 89 02
     in a,(pio0_drb)     ;0aeb db 61
     set 3,a             ;0aed cb df
     out (pio0_drb),a    ;0aef d3 61
@@ -1826,7 +1848,7 @@ l0b2fh:
 l0b33h:
     ret                 ;0b33 c9
 sub_0b34h:
-    call l0289h         ;0b34 cd 89 02
+    call e_0289h        ;0b34 cd 89 02
 l0b37h:
     in a,(pio0_drb)     ;0b37 db 61
     set 3,a             ;0b39 cb df
@@ -1867,7 +1889,7 @@ l0b6bh:
     ret                 ;0b74 c9
 sub_0b75h:
     call sub_0a0dh      ;0b75 cd 0d 0a
-    call l0c41h         ;0b78 cd 41 0c
+    call e_0c41h        ;0b78 cd 41 0c
     ret nz              ;0b7b c0
     ld a,(81fdh)        ;0b7c 3a fd 81
     and 0e0h            ;0b7f e6 e0
@@ -1929,7 +1951,7 @@ l0bc1h:
     or 0ffh             ;0bee f6 ff
     ret                 ;0bf0 c9
 l0bf1h:
-    jp l0c41h           ;0bf1 c3 41 0c
+    jp e_0c41h          ;0bf1 c3 41 0c
 l0bf4h:
     nop                 ;0bf4 00
     ld c,b              ;0bf5 48
@@ -1949,7 +1971,7 @@ l0c00h:
     ld hl,l0bf4h        ;0c02 21 f4 0b
 l0c05h:
     ld (6069h),hl       ;0c05 22 69 60
-    call l0289h         ;0c08 cd 89 02
+    call e_0289h        ;0c08 cd 89 02
     ld a,b              ;0c0b 78
     or a                ;0c0c b7
     ret z               ;0c0d c8
@@ -1964,7 +1986,7 @@ l0c05h:
     ld a,01h            ;0c1f 3e 01
     ld (81feh),a        ;0c21 32 fe 81
     rst 10h             ;0c24 d7
-    jp nz,l057dh        ;0c25 c2 7d 05
+    jp nz,e_057dh       ;0c25 c2 7d 05
 l0c28h:
     ld hl,(6069h)       ;0c28 2a 69 60
     ld e,(hl)           ;0c2b 5e
@@ -1981,7 +2003,8 @@ l0c38h:
     inc hl              ;0c3d 23
     inc hl              ;0c3e 23
     jr l0c05h           ;0c3f 18 c4
-l0c41h:
+
+e_0c41h:
     ld a,(6015h)        ;0c41 3a 15 60
     cp 0ffh             ;0c44 fe ff
     ret z               ;0c46 c8
@@ -1995,7 +2018,8 @@ l0c4fh:
     res 1,a             ;0c51 cb 8f
     out (pio3_dra),a    ;0c53 d3 6c
     ret                 ;0c55 c9
-l0c56h:
+
+e_0c56h:
     ld a,0ffh           ;0c56 3e ff
     res 7,a             ;0c58 cb bf
     out (pio3_dra),a    ;0c5a d3 6c
@@ -2003,7 +2027,8 @@ l0c56h:
     ld (6014h),a        ;0c5e 32 14 60
     ld (6015h),a        ;0c61 32 15 60
     ret                 ;0c64 c9
-l0c65h:
+
+e_0c65h:
     ld a,(601ah)        ;0c65 3a 1a 60
     ld b,a              ;0c68 47
     ld hl,(81fah)       ;0c69 2a fa 81
@@ -2053,7 +2078,7 @@ l0c8eh:
     jr nz,l0cc6h        ;0cb0 20 14
     inc l               ;0cb2 2c
     jr nz,l0cc6h        ;0cb3 20 11
-    jp l0d39h           ;0cb5 c3 39 0d
+    jp e_0d39h          ;0cb5 c3 39 0d
 l0cb8h:
     ld a,(60b6h)        ;0cb8 3a b6 60
     ld (81fdh),a        ;0cbb 32 fd 81
@@ -2107,7 +2132,7 @@ l0cc6h:
     ld (60b7h),hl       ;0d13 22 b7 60
 l0d16h:
     call sub_0958h      ;0d16 cd 58 09
-    jp l0c41h           ;0d19 c3 41 0c
+    jp e_0c41h          ;0d19 c3 41 0c
 l0d1ch:
     add hl,de           ;0d1c 19
     xor a               ;0d1d af
@@ -2130,7 +2155,8 @@ l0d2bh:
     cp c                ;0d35 b9
     jr nc,l0d2bh        ;0d36 30 f3
     ret                 ;0d38 c9
-l0d39h:
+
+e_0d39h:
     xor a               ;0d39 af
     ld (60b9h),a        ;0d3a 32 b9 60
     ld a,(60b6h)        ;0d3d 3a b6 60
@@ -2149,7 +2175,7 @@ l0d58h:
     ld a,(60bch)        ;0d58 3a bc 60
     inc a               ;0d5b 3c
     cp 14h              ;0d5c fe 14
-    call z,l0d7dh       ;0d5e cc 7d 0d
+    call z,e_0d7dh      ;0d5e cc 7d 0d
     ld (60bch),a        ;0d61 32 bc 60
     ld h,00h            ;0d64 26 00
     ld l,a              ;0d66 6f
@@ -2161,8 +2187,9 @@ l0d58h:
     ld (81fdh),a        ;0d71 32 fd 81
     ld (60b6h),a        ;0d74 32 b6 60
     call sub_0958h      ;0d77 cd 58 09
-    jp l0c41h           ;0d7a c3 41 0c
-l0d7dh:
+    jp e_0c41h          ;0d7a c3 41 0c
+
+e_0d7dh:
     call sub_0d9eh      ;0d7d cd 9e 0d
     ld bc,(60b1h)       ;0d80 ed 4b b1 60
     inc bc              ;0d84 03
@@ -2177,7 +2204,7 @@ l0d7dh:
     sbc hl,bc           ;0d92 ed 42
     jr nz,l0d9ch        ;0d94 20 06
     ld (60afh),de       ;0d96 ed 53 af 60
-    jr l0d7dh           ;0d9a 18 e1
+    jr e_0d7dh          ;0d9a 18 e1
 l0d9ch:
     xor a               ;0d9c af
     ret                 ;0d9d c9
