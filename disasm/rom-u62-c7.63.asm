@@ -314,54 +314,68 @@ l013ch:                 ;
     ld (hl),a           ;  Store fill byte (01h) in 6000h
     ldir                ;  Copy BC bytes from (HL) to (DE)
 
+;TODO Does this test 6xxx?
     ld hl,6000h         ;0148 21 00 60
     ld b,04h            ;014b 06 04
 l014dh:
-    cpi                 ;014d ed a1
+    cpi                 ;CP (HL), INC HL, DEC BC
     jr nz,l0194h        ;014f 20 43
     jp pe,l014dh        ;0151 ea 4d 01
 
+;TODO Does this fill 8xxx?
     ld h,80h            ;0154 26 80
     ld de,8001h         ;0156 11 01 80
     ld bc,03ffh         ;0159 01 ff 03
     ld (hl),a           ;015c 77
-    ldir                ;015d ed b0
+    ldir                ;Copy BC bytes from (HL) to (DE)
 
+;TODO Does this test 8xxx?
     ld hl,8000h         ;015f 21 00 80
     ld b,04h            ;0162 06 04
 l0164h:
-    cpi                 ;0164 ed a1
+    cpi                 ;CP (HL), INC HL, DEC BC
     jr nz,l0194h        ;0166 20 2c
     jp pe,l0164h        ;0168 ea 64 01
+
+;TODO Does this fill Axxx?
     ld h,0a0h           ;016b 26 a0
     ld de,0a001h        ;016d 11 01 a0
     ld bc,03ffh         ;0170 01 ff 03
     ld (hl),a           ;0173 77
-    ldir                ;0174 ed b0
+    ldir                ;Copy BC bytes from (HL) to (DE)
+
+;TODO Does this test Axxx?
     ld hl,0a000h        ;0176 21 00 a0
     ld b,04h            ;0179 06 04
 l017bh:
-    cpi                 ;017b ed a1
+    cpi                 ;CP (HL), INC HL, DEC BC
     jr nz,l0194h        ;017d 20 15
     jp pe,l017bh        ;017f ea 7b 01
+
+;TODO Does this fill 48xx?
     ld h,48h            ;0182 26 48
     ld de,4801h         ;0184 11 01 48
     ld bc,03ffh         ;0187 01 ff 03
     ld (hl),a           ;018a 77
-    ldir                ;018b ed b0
+    ldir                ;Copy BC bytes from (HL) to (DE)
+
+;TODO Does this test 48xx?
     ld hl,4800h         ;018d 21 00 48
     ld b,04h            ;0190 06 04
 l0192h:
-    cpi                 ;0192 ed a1
+    cpi                 ;CP (HL), INC HL, DEC BC
 l0194h:
     jp nz,e_057dh       ;0194 c2 7d 05
     jp pe,l0192h        ;0197 ea 92 01
+
     rla                 ;019a 17
     cp 01h              ;019b fe 01
     jr nz,l013ch        ;019d 20 9d
     jr l01a3h           ;019f 18 02
+
 sub_01a1h:
     reti                ;01a1 ed 4d
+
 l01a3h:
     ld h,00h            ;01a3 26 00
     ld de,10ffh         ;01a5 11 ff 10
@@ -373,12 +387,18 @@ l01a9h:
     jr nz,l01a9h        ;01ac 20 fb
     dec d               ;01ae 15
     jr nz,l01a9h        ;01af 20 f8
+
     add a,(hl)          ;01b1 86
     jr nz,l0194h        ;01b2 20 e0
+
+;TODO Is this drive type detection?
     in a,(pio3_drb)     ;01b4 db 6d
-    and 01000100b       ;01b6 e6 44
+    and 01000100b       ;Bit 6 = 12MB1, Bit 2 = 6MB1
     ld (6104h),a        ;01b8 32 04 61
+
     call sub_020ah      ;01bb cd 0a 02
+
+;TODO Is this waiting for the mechanism to spin up?
 l01beh:
     call e_0289h        ;01be cd 89 02
     call blink          ;01c1 cd ae 02
@@ -538,7 +558,7 @@ e_0289h:
     ld (6070h),hl       ;0290 22 70 60
 
     in a,(pio3_drb)     ;0293 db 6d
-    bit 4,a             ;0295 cb 67
+    bit 4,a             ;Bit 4 = -FORMAT ENABLE
     ld a,43h            ;0297 3e 43
     jr z,l02a1h         ;0299 28 06
 
@@ -714,12 +734,12 @@ l0349h:
     ld a,60h            ;034b 3e 60
     call e_059bh        ;034d cd 9b 05
     in a,(pio3_dra)     ;0350 db 6c
-    bit 3,a             ;0352 cb 5f
+    bit 3,a             ;Bit 3 = SYSTEM/-DIAG (UB4:5)
     call z,e_0587h      ;0354 cc 87 05
     call e_0562h        ;0357 cd 62 05
 l035ah:
     in a,(pio3_drb)     ;035a db 6d
-    bit 4,a             ;035c cb 67
+    bit 4,a             ;Bit 4 = -FORMAT ENABLE
     jr z,e_0367h        ;035e 28 07
 
     ld de,8006h         ;0360 11 06 80
@@ -731,14 +751,16 @@ e_0367h:
     ld hl,60bdh         ;036a 21 bd 60
     ld (hl),a           ;036d 77
     in a,(pio3_dra)     ;036e db 6c
-    bit 2,a             ;0370 cb 57
+    bit 2,a             ;Bit 2 = -ALT SEL
     jr z,l0375h         ;0372 28 01
     inc (hl)            ;0374 34
 l0375h:
     call e_0489h        ;0375 cd 89 04
+
     ld (6010h),a        ;0378 32 10 60
     cp 11h              ;037b fe 11
     jr z,l03a0h         ;037d 28 21
+
     ld a,0fh            ;037f 3e 0f
     ld (6015h),a        ;0381 32 15 60
     ld a,(606fh)        ;0384 3a 6f 60
@@ -1102,6 +1124,7 @@ e_059bh:
     out (pio2_dra),a    ;05b0 d3 68
     in a,(hsxclr)       ;05b2 db 74
     ret                 ;05b4 c9
+
     djnz l05c9h         ;05b5 10 12
     pop bc              ;05b7 c1
     jr l05c5h           ;05b8 18 0b
@@ -1118,9 +1141,11 @@ l05c5h:
 l05c9h:
     ei                  ;05c9 fb
     reti                ;05ca ed 4d
+
     in a,(pio2_drb)     ;Read data byte from host
     cp d                ;05ce ba
     jp nz,l0608h        ;05cf c2 08 06
+
     call sub_06bch      ;05d2 cd bc 06
     ld c,69h            ;05d5 0e 69
     ei                  ;05d7 fb
@@ -1481,8 +1506,9 @@ l083bh:
     rst 30h             ;083e f7
 l083fh:
     in a,(pio3_dra)     ;083f db 6c
-    set 7,a             ;0841 cb ff
+    set 7,a             ;Bit 7 = -WRITE DISABLE
     out (pio3_dra),a    ;0843 d3 6c
+
     ld a,02h            ;0845 3e 02
     ld (81fch),a        ;0847 32 fc 81
     ld a,0b8h           ;084a 3e b8
@@ -1840,37 +1866,48 @@ l0a84h:
     out (pio0_dra),a    ;  Write new port state
 
     halt                ;0ac6 76
+
 l0ac7h:
     call l02a4h         ;0ac7 cd a4 02
+
     in a,(pio3_dra)     ;0aca db 6c
-    res 7,a             ;0acc cb bf
+    res 7,a             ;Bit 7 = -WRITE DISABLE
     out (pio3_dra),a    ;0ace d3 6c
+
     in a,(pio0_drb)     ;0ad0 db 61
     set 1,a             ;Bit 1 = DIRECTION IN
     out (pio0_drb),a    ;0ad4 d3 61
+
     ld hl,000ch         ;0ad6 21 0c 00
     call sub_0b17h      ;0ad9 cd 17 0b
+
     in a,(pio0_drb)     ;0adc db 61
     res 1,a             ;Bit 1 = DIRECTION IN
     out (pio0_drb),a    ;0ae0 d3 61
+
 l0ae2h:
     in a,(pio3_dra)     ;0ae2 db 6c
-    bit 6,a             ;0ae4 cb 77
+    bit 6,a             ;Bit 6 = -TRACK 00
     jr z,l0afah         ;0ae6 28 12
+
     call e_0289h        ;0ae8 cd 89 02
-    in a,(pio0_drb)     ;0aeb db 61
+
+    in a,(pio0_drb)
     set 3,a             ;Bit 3 = STEP
-    out (pio0_drb),a    ;0aef d3 61
-    res 3,a             ;0af1 cb 9f
-    out (pio0_drb),a    ;Bit 3 = STEP
+    out (pio0_drb),a
+    res 3,a             ;Bit 3 = STEP
+    out (pio0_drb),a
+
     call sub_0b4eh      ;0af5 cd 4e 0b
     jr l0ae2h           ;0af8 18 e8
+
 l0afah:
     xor a               ;0afa af
     ld (81fdh),a        ;0afb 32 fd 81
     ld hl,l0000h        ;0afe 21 00 00
     ld (600ch),hl       ;0b01 22 0c 60
     ret                 ;0b04 c9
+
     ld a,02h            ;0b05 3e 02
     ld (6014h),a        ;0b07 32 14 60
 sub_0b0ah:
@@ -1881,6 +1918,7 @@ sub_0b0ah:
     xor a               ;0b12 af
     ld (6006h),a        ;0b13 32 06 60
     ret                 ;0b16 c9
+
 sub_0b17h:
     ld a,h              ;0b17 7c
     or l                ;0b18 b5
@@ -1905,11 +1943,12 @@ l0b33h:
 sub_0b34h:
     call e_0289h        ;0b34 cd 89 02
 l0b37h:
-    in a,(pio0_drb)     ;0b37 db 61
+    in a,(pio0_drb)
     set 3,a             ;Bit 3 = STEP
-    out (pio0_drb),a    ;0b3b d3 61
+    out (pio0_drb),a
     res 3,a             ;Bit 3 = STEP
-    out (pio0_drb),a    ;0b3f d3 61
+    out (pio0_drb),a
+
     ex (sp),hl          ;0b41 e3
     ex (sp),hl          ;0b42 e3
     ex (sp),hl          ;0b43 e3
@@ -1920,6 +1959,7 @@ l0b37h:
     jr nz,l0b37h        ;0b48 20 ed
     call sub_0b4eh      ;0b4a cd 4e 0b
     ret                 ;0b4d c9
+
 sub_0b4eh:
     in a,(pio0_dra)     ;0b4e db 60
     bit 0,a             ;Bit 0 = -SEEK COMPLETE
