@@ -207,13 +207,16 @@ l0008h:
 
 e_00c6h:
     in a,(pio3_dra)     ;00c6 db 6c
-    res 7,a             ;00c8 cb bf
+    res 7,a             ;Bit 7 = -WRITE DISABLE
     out (pio3_dra),a    ;00ca d3 6c
+
     in a,(pio3_dra)     ;00cc db 6c
-    bit 1,a             ;00ce cb 4f
+    bit 1,a             ;Bit 1 = -UNIT SELECT 1 (UB4:7)
     jr nz,l00d8h        ;00d0 20 06
+
     ld hl,6996h         ;00d2 21 96 69
     ld (6070h),hl       ;00d5 22 70 60
+
 l00d8h:
     call 8ffch          ;00d8 cd fc 8f
     ld d,0fdh           ;00db 16 fd
@@ -276,27 +279,31 @@ l010bh:                 ;
     dec e               ;  Decrement E
     jr nz,l010bh        ;  Loop until E=0
 
+                        ;D contains 0fch (set at l00dfh)
     ld a,d              ;0118 7a
     out (pio3_dra),a    ;0119 d3 6c
+
     in a,(begrdy)       ;011b db 70
     ld de,(6070h)       ;011d ed 5b 70 60
+
     ld hl,5aa5h         ;0121 21 a5 5a
     or a                ;0124 b7
     sbc hl,de           ;0125 ed 52
     jr z,l012fh         ;0127 28 06
+
     ld hl,0a55ah        ;0129 21 5a a5
     or a                ;012c b7
     sbc hl,de           ;012d ed 52
 l012fh:
     jp z,l01beh         ;012f ca be 01
 
-l0132h:
-    ld hl,l0000h        ;0132 21 00 00
-l0135h:
-    inc hl              ;0135 23
-    ld a,h              ;0136 7c
-    or l                ;0137 b5
-    jr nz,l0135h        ;0138 20 fb
+                        ;Long delay by counting in HL from 0000-FFFF:
+    ld hl,0             ;  HL = 0 (seed value)
+ld1:                    ;
+    inc hl              ;  Increment HL
+    ld a,h              ;  A = H | L
+    or l                ;
+    jr nz,ld1           ;  Loop until HL=0
 
                         ;Fill 6000-63ffh with 01h:
     ld a,01h            ;  A = 01h (fill byte)
