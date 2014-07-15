@@ -12,9 +12,9 @@ The "ROM" is a 2732 EPROM at address 0x0000.  The Z80 jumps to ROM at startup.
 It appears to contain low-level functions for accessing the drive, loading the
 firmware, and has just enough of the host commands to enter prep mode.
 
- - `rom-u62-c7.63.bin`: dump of the 2732 EPROM from my Corvus Rev B drive.
-   It is identical to the ROM listed in `imi5000h.c` in the MESS emulator,
-   which was dumped independently.
+- `rom-u62-c7.63.bin`: dump of the 2732 EPROM from my Corvus Rev B drive.
+  It is identical to the ROM listed in `imi5000h.c` in the MESS emulator,
+  which was dumped independently.
 
 Firmware
 ========
@@ -34,11 +34,11 @@ command that the Corvus manuals call the "prep block".  The prep block for
 the Rev B/H drive is Z80 machine code.  The drive stores the prep block in
 memory at `0x8000` and then jumps to it.
 
- - `prep-corvus-diag.bin`: prep block sent by the Corvus diagnostics program
-   `DIAG.COM` on the SSE SoftBox distribution disk.
+- `prep-corvus-diag.bin`: prep block sent by the Corvus diagnostics program
+  `DIAG.COM` on the SSE SoftBox distribution disk.
 
- - `prep-hardbox-configure`: prep block sent by the `CONFIGURE` program on
-   the SSE HardBox utility disk.
+- `prep-hardbox-configure.bin`: prep block sent by the `CONFIGURE` program on
+  the SSE HardBox utility disk.
 
 The prep block contains the actual implementation of all prep mode commands.
 Since the host sends the prep block, and the prep block can contain any Z80
