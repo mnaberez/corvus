@@ -758,7 +758,7 @@ l0375h:
     call e_0489h        ;0375 cd 89 04
 
     ld (6010h),a        ;0378 32 10 60
-    cp 11h              ;037b fe 11
+    cp 11h              ;Is it the command to enter prep mode?
     jr z,l03a0h         ;037d 28 21
 
     ld a,0fh            ;037f 3e 0f
@@ -777,6 +777,7 @@ l0390h:
     call e_03f1h        ;0398 cd f1 03
     call e_0562h        ;039b cd 62 05
     jr e_0367h          ;039e 18 c7
+
 l03a0h:
     call e_0489h        ;03a0 cd 89 04
     ld hl,606fh         ;03a3 21 6f 60
@@ -798,7 +799,7 @@ l03c3h:
     call e_0449h        ;03c9 cd 49 04
     ld de,8000h         ;03cc 11 00 80
     ldir                ;03cf ed b0
-    jp 8001h            ;03d1 c3 01 80
+    jp 8001h            ;Jump to the prep block code
 
 e_03d4h:
     ld a,(6011h)        ;03d4 3a 11 60
