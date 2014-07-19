@@ -39,7 +39,7 @@ l8015h:
     cp cmd_verify_drv
     jr z,verify_drive   ;Verify drive
 
-    ld a,8fh            ;802f 3e 8f
+    ld a,8fh            ;8Fh = Illegal Command response
     ld (6011h),a        ;8031 32 11 60
     ld hl,0000h         ;8034 21 00 00
     ld (6012h),hl       ;8037 22 12 60
