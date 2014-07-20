@@ -1,6 +1,20 @@
 ; z80dasm 1.1.3
 ; command line: z80dasm --origin=256 --address --labels --output=prep-corvus-diag.asm prep-corvus-diag.bin
 
+pio2:       equ 68h     ;Z80 PIO #2 (U44)
+pio2_dra:   equ pio2+0  ;  Data Register A
+pio2_drb:   equ pio2+1  ;  Data Register B
+pio2_cra:   equ pio2+2  ;  Control Register A
+pio2_crb:   equ pio2+3  ;  Control Register B
+
+hsxclr:     equ 74h     ;/HSXCLR
+
+ctc:        equ 7ch     ;Z80 CTC
+ctc_ch0:    equ ctc+0   ;  Channel 0 Register
+ctc_ch1:    equ ctc+1   ;  Channel 1 Register
+ctc_ch2:    equ ctc+2   ;  Channel 2 Register
+ctc_ch3:    equ ctc+3   ;  Channel 3 Register
+
 format:          equ 003dh  ;ROM Format the drive
 
 cmd_reset:       equ 00h  ;Reset drive (exit prep mode)
@@ -15,8 +29,8 @@ cmd_writ_firm:   equ 33h  ;Write a firmare block
     nop                 ;8001 00
 
     ld a,03h            ;8002 3e 03
-    out (6ah),a         ;8004 d3 6a
-    out (6bh),a         ;8006 d3 6b
+    out (pio2_cra),a    ;8004 d3 6a
+    out (pio2_crb),a    ;8006 d3 6b
 
                         ;The host is still waiting for a response
                         ;to the "enter prep mode" command.  Send
@@ -31,7 +45,7 @@ cmd_writ_firm:   equ 33h  ;Write a firmare block
 
 cmd_loop:
     ld a,03h            ;8015 3e 03
-    out (7eh),a         ;8017 d3 7e
+    out (ctc_ch2),a     ;8017 d3 7e
 
     call host_read      ;A = read 1 byte from the host
 
@@ -275,29 +289,29 @@ host_read:
     ld (480ch),a        ;81b2 32 0c 48
     ld hl,l81d5h        ;81b5 21 d5 81
     ld (480dh),hl       ;81b8 22 0d 48
-    in a,(74h)          ;81bb db 74
+    in a,(hsxclr)       ;81bb db 74
     call 0077h          ;81bd cd 77 00
     ld a,4fh            ;81c0 3e 4f
-    out (6bh),a         ;81c2 d3 6b
-    in a,(69h)          ;81c4 db 69
+    out (pio2_crb),a    ;81c2 d3 6b
+    in a,(pio2_drb)     ;81c4 db 69
     ld a,44h            ;81c6 3e 44
-    out (6bh),a         ;81c8 d3 6b
+    out (pio2_crb),a    ;81c8 d3 6b
     ld a,83h            ;81ca 3e 83
-    out (6bh),a         ;81cc d3 6b
+    out (pio2_crb),a    ;81cc d3 6b
     ld a,0edh           ;81ce 3e ed
-    out (68h),a         ;81d0 d3 68
+    out (pio2_dra),a    ;81d0 d3 68
     ei                  ;81d2 fb
 l81d3h:
     jr l81d3h           ;81d3 18 fe
 l81d5h:
     ld a,0cdh           ;81d5 3e cd
-    out (68h),a         ;81d7 d3 68
+    out (pio2_dra),a    ;81d7 d3 68
     ld a,01h            ;81d9 3e 01
-    out (7fh),a         ;81db d3 7f
+    out (ctc_ch3),a     ;81db d3 7f
     ld a,03h            ;81dd 3e 03
-    out (6bh),a         ;81df d3 6b
-    out (6ah),a         ;81e1 d3 6a
-    in a,(69h)          ;81e3 db 69
+    out (pio2_crb),a    ;81df d3 6b
+    out (pio2_cra),a    ;81e1 d3 6a
+    in a,(pio2_drb)     ;81e3 db 69
     pop hl              ;81e5 e1
     ei                  ;81e6 fb
     reti                ;81e7 ed 4d
@@ -306,7 +320,7 @@ host_read_bc:
 ;Read BC bytes from the host
 ;
     ld a,0d5h           ;81e9 3e d5
-    out (68h),a         ;81eb d3 68
+    out (pio2_dra),a    ;81eb d3 68
     jp 007dh            ;81ed c3 7d 00
 
 unused:
