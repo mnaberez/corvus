@@ -1,8 +1,6 @@
 ; z80dasm 1.1.3
 ; command line: z80dasm --origin=0 --address --labels --output=rom-u62-c7.63.asm rom-u62-c7.63.bin
 
-    org 0000h
-
 pio0:       equ 60h     ;Z80 PIO #0 (U45)
 pio0_dra:   equ pio0+0  ;  Data Register A:
                         ;    A7: ACTIVITY LED ("BUSY")
@@ -88,6 +86,8 @@ cylinders:  equ 600eh   ;Number of cylinders (word)
 capacity:   equ 606dh   ;Capacity in 512-byte blocks (word)
 reserved:   equ 60aeh   ;Number of tracks reserved for firmware (byte)
 spares:     equ 61fdh   ;Number of tracks reserved for spares (byte)
+
+    org 0000h
 
 ;called from prep code
 l0000h:
@@ -175,6 +175,7 @@ format:
 ;called from prep code
     jp e_0439h          ;0077 c3 39 04
     jp e_0440h          ;007a c3 40 04
+;called from prep code
     jp e_0449h          ;007d c3 49 04
     jp e_047ah          ;0080 c3 7a 04
     jp e_0482h          ;0083 c3 82 04
