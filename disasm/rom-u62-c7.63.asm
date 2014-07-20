@@ -100,25 +100,28 @@ l0008h:
 ;called from prep code
     jp e_0a43h          ;000b c3 43 0a
     ld b,48h            ;000e 06 48
+;called from prep code (via rst 10h)
     jp l071fh           ;0010 c3 1f 07
 ;called from prep code
     jp e_086fh          ;0013 c3 6f 08
     cp d                ;0016 ba
     dec b               ;0017 05
-    jp l0799h           ;0018 c3 99 07
+;called from prep code (via rst 18h)
+    jp e_0799h          ;0018 c3 99 07
     jp l083fh           ;001b c3 3f 08
     nop                 ;001e 00
     nop                 ;001f 00
-    jp l07c1h           ;0020 c3 c1 07
+;called from prep code (via rst 20h)
+    jp e_07c1h          ;0020 c3 c1 07
     jp l0ac7h           ;0023 c3 c7 0a
     or l                ;0026 b5
     dec b               ;0027 05
     jp l0c00h           ;0028 c3 00 0c
     jp l0d1ch           ;002b c3 1c 0d
-    call z,0c305h       ;002e cc 05 c3
-    defb 0ddh,06h,0c3h  ;illegal sequence
-    ld a,(bc)           ;0034 0a
-    ld (bc),a           ;0035 02
+    db 0cch, 05h        ;002e cc 05
+;called from prep code (via rst 30h)
+    jp e_06ddh          ;0030 c3 dd 06
+    jp l020ah           ;0033 c3 0a 02
     rst 20h             ;0036 e7
     dec b               ;0037 05
     jp e_00c6h          ;0038 c3 c6 00
@@ -397,7 +400,7 @@ l01a9h:
     and 01000100b       ;Bit 6 = 12MB1, Bit 2 = 6MB1
     ld (6104h),a        ;01b8 32 04 61
 
-    call sub_020ah      ;01bb cd 0a 02
+    call l020ah         ;01bb cd 0a 02
 
 ;TODO Is this waiting for the mechanism to spin up?
 l01beh:
@@ -429,7 +432,7 @@ l01cah:
     res 7,a             ;  Turn off bit 7 (low state turns LED on)
     out (pio0_dra),a    ;  Write new port state
 
-    call sub_020ah      ;01eb cd 0a 02
+    call l020ah         ;01eb cd 0a 02
     call e_0439h        ;01ee cd 39 04
     ld hl,l0000h        ;01f1 21 00 00
     ld (81feh),hl       ;01f4 22 fe 81
@@ -440,7 +443,8 @@ l01cah:
     ld hl,5aa5h         ;0201 21 a5 5a
     ld (6070h),hl       ;0204 22 70 60
     jp e_030eh          ;0207 c3 0e 03
-sub_020ah:
+
+l020ah:
     ld b,0ch            ;020a 06 0c
 l020ch:
     call sub_01a1h      ;020c cd a1 01
@@ -1314,6 +1318,8 @@ l06d5h:
     ld a,(6015h)        ;06d5 3a 15 60
     ld hl,6028h         ;06d8 21 28 60
     jr l06cbh           ;06db 18 ee
+
+e_06ddh:
     ld a,(81fdh)        ;06dd 3a fd 81
     ld b,a              ;06e0 47
     in a,(pio0_drb)     ;06e1 db 61
@@ -1422,7 +1428,7 @@ sub_0793h:
     ld hl,6006h         ;0793 21 06 60
     set 7,(hl)          ;0796 cb fe
     ret                 ;0798 c9
-l0799h:
+e_0799h:
     ld a,03h            ;0799 3e 03
     ld (6024h),a        ;079b 32 24 60
 l079eh:
@@ -1441,11 +1447,11 @@ l07afh:
     jr nz,l076bh        ;07bb 20 ae
     ld a,08h            ;07bd 3e 08
     jr l0767h           ;07bf 18 a6
-l07c1h:
+e_07c1h:
     ld a,03h            ;07c1 3e 03
     ld (6025h),a        ;07c3 32 25 60
 l07c6h:
-    call l0799h         ;07c6 cd 99 07
+    call e_0799h        ;07c6 cd 99 07
     call e_0c41h        ;07c9 cd 41 0c
     ret nz              ;07cc c0
     call l071fh         ;07cd cd 1f 07
