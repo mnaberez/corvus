@@ -1,6 +1,8 @@
 ; z80dasm 1.1.3
 ; command line: z80dasm --origin=32768 --address --labels --output=prep-hardbox-configure.asm prep-hardbox-configure.bin
 
+format:          equ 003dh  ;ROM Format the drive
+
 cmd_reset:       equ 00h  ;Reset drive (exit prep mode)
 cmd_format_drv:  equ 01h  ;Format drive
 cmd_verify_drv:  equ 07h  ;Verify drive
@@ -61,7 +63,7 @@ format_drive:
     call 007dh          ;803f cd 7d 00
     ld de,8200h         ;8042 11 00 82
     ldir                ;8045 ed b0
-    call 003dh          ;8047 cd 3d 00
+    call format         ;8047 cd 3d 00
     ld hl,0000h         ;804a 21 00 00
     ld (6012h),hl       ;804d 22 12 60
     jp l818ah           ;8050 c3 8a 81

@@ -1,6 +1,8 @@
 ; z80dasm 1.1.3
 ; command line: z80dasm --origin=256 --address --labels --output=prep-corvus-diag.asm prep-corvus-diag.bin
 
+format:          equ 003dh  ;ROM Format the drive
+
 cmd_reset:       equ 00h  ;Reset drive (exit prep mode)
 cmd_format_drv:  equ 01h  ;Format drive
 cmd_verify_drv:  equ 07h  ;Verify drive
@@ -82,7 +84,7 @@ format_drive:
     ldir                ;8055 ed b0
     ld hl,0000h         ;8057 21 00 00
     ld (var_2),hl       ;805a 22 fe 81
-    call 003dh          ;805d cd 3d 00
+    call format         ;805d cd 3d 00
     ld hl,0000h         ;8060 21 00 00
     ld (6012h),hl       ;8063 22 12 60
     jp finish_cmd       ;8066 c3 a0 81

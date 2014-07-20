@@ -125,7 +125,8 @@ l0008h:
     nop                 ;003b 00
     nop                 ;003c 00
 ;called from prep code
-    jp e_0b55h          ;003d c3 55 0b
+format:
+    jp format_          ;Format the drive
     adc a,d             ;0040 8a
     ex af,af'           ;0041 08
     add hl,bc           ;0042 09
@@ -1800,6 +1801,7 @@ l0a37h:
 l0a3fh:
     ld (6015h),a        ;0a3f 32 15 60
     ret                 ;0a42 c9
+
 e_0a43h:
     call e_0289h        ;0a43 cd 89 02
     call e_0c56h        ;0a46 cd 56 0c
@@ -1967,9 +1969,11 @@ sub_0b4eh:
     jr nz,sub_0b4eh     ;0b52 20 fa
     ret                 ;0b54 c9
 
-e_0b55h:
+format_:
+;Format the drive
+;
     in a,(pio3_drb)     ;0b55 db 6d
-    bit 4,a             ;0b57 cb 67
+    bit 4,a             ;Bit 4 = -FORMAT ENABLE
     ld a,09h            ;0b59 3e 09
     jp nz,l0a3fh        ;0b5b c2 3f 0a
 
@@ -2020,6 +2024,7 @@ l0ba9h:
     dec (hl)            ;0bbd 35
     jr nz,l0ba9h        ;0bbe 20 e9
     ret                 ;0bc0 c9
+
 l0bc1h:
     in a,(pio3_dra)     ;0bc1 db 6c
     bit 4,a             ;Bit 4 = -RXD
