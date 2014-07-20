@@ -30,7 +30,8 @@ cmd_writ_firm:   equ 33h  ;Write a firmare block
 cmd_loop:
     ld a,03h            ;8015 3e 03
     out (7eh),a         ;8017 d3 7e
-    call sub_81afh      ;8019 cd af 81
+
+    call host_read      ;A = read 1 byte from the host
 
     or a
     jr z,reset_drive    ;Reset drive (exit prep mode)
@@ -75,8 +76,8 @@ format_drive:
 ;Command byte (0x01) has already been read
 ;512 bytes left to read: format pattern
 ;
-    ld bc,0200h         ;804c 01 00 02
-    call sub_81e9h      ;804f cd e9 81
+    ld bc,0200h         ;BC = 512 bytes to read
+    call host_read_bc   ;Read BC bytes from the host
     ld de,8200h         ;8052 11 00 82
     ldir                ;8055 ed b0
     ld hl,0000h         ;8057 21 00 00
@@ -92,7 +93,7 @@ read_firm_blk:
 ;Command byte (0x32) has already been read
 ;1 byte left to read: head/sector
 ;
-    call sub_81afh      ;8069 cd af 81
+    call host_read      ;A = read 1 byte from the host
     ld (var_1),a        ;806c 32 fd 81
     ld hl,0000h         ;806f 21 00 00
     ld (var_2),hl       ;8072 22 fe 81
@@ -107,8 +108,8 @@ writ_firm_blk:
 ;Command byte (0x33) has already been read
 ;513 bytes left to read: 1 byte head/sector, 512 bytes data
 ;
-    ld bc,0201h         ;807f 01 01 02
-    call sub_81e9h      ;8082 cd e9 81
+    ld bc,0201h         ;BC = 513 bytes to read
+    call host_read_bc   ;Read BC bytes from the host
     ld a,(hl)           ;8085 7e
     ld (var_1),a        ;8086 32 fd 81
     ld hl,0000h         ;8089 21 00 00
@@ -264,7 +265,9 @@ sub_81a9h:
     cp 0ffh             ;81ac fe ff
     ret                 ;81ae c9
 
-sub_81afh:
+host_read:
+;Read 1 byte from the host, return it in A.
+;
     di                  ;81af f3
     ld a,0c3h           ;81b0 3e c3
     ld (480ch),a        ;81b2 32 0c 48
@@ -297,7 +300,9 @@ l81d5h:
     ei                  ;81e6 fb
     reti                ;81e7 ed 4d
 
-sub_81e9h:
+host_read_bc:
+;Read BC bytes from the host
+;
     ld a,0d5h           ;81e9 3e d5
     out (68h),a         ;81eb d3 68
     jp 007dh            ;81ed c3 7d 00
