@@ -98,11 +98,11 @@ l0000h:
 l0008h:
     jp l0dcch           ;0008 c3 cc 0d
 ;called from prep code
-    jp l0a43h           ;000b c3 43 0a
+    jp e_0a43h          ;000b c3 43 0a
     ld b,48h            ;000e 06 48
     jp l071fh           ;0010 c3 1f 07
 ;called from prep code
-    jp l086fh           ;0013 c3 6f 08
+    jp e_086fh          ;0013 c3 6f 08
     cp d                ;0016 ba
     dec b               ;0017 05
     jp l0799h           ;0018 c3 99 07
@@ -125,7 +125,7 @@ l0008h:
     nop                 ;003b 00
     nop                 ;003c 00
 ;called from prep code
-    jp l0b55h           ;003d c3 55 0b
+    jp e_0b55h          ;003d c3 55 0b
     adc a,d             ;0040 8a
     ex af,af'           ;0041 08
     add hl,bc           ;0042 09
@@ -540,7 +540,7 @@ l0274h:
     in a,(ctc_ch0)      ;0274 db 7c
     cp c                ;0276 b9
     jr z,l0274h         ;0277 28 fb
-    call l086fh         ;0279 cd 6f 08
+    call e_086fh        ;0279 cd 6f 08
     call sub_0c49h      ;027c cd 49 0c
     ret z               ;027f c8
     dec d               ;0280 15
@@ -1405,11 +1405,11 @@ sub_0771h:
     call sub_0976h      ;0771 cd 76 09
     call e_0c56h        ;0774 cd 56 0c
     bit 7,(hl)          ;0777 cb 7e
-    call z,l0a43h       ;0779 cc 43 0a
+    call z,e_0a43h      ;0779 cc 43 0a
     call e_0c41h        ;077c cd 41 0c
     ret nz              ;077f c0
     rst 30h             ;0780 f7
-    call l086fh         ;0781 cd 6f 08
+    call e_086fh        ;0781 cd 6f 08
     call sub_0c49h      ;0784 cd 49 0c
     ret nz              ;0787 c0
     call sub_0993h      ;0788 cd 93 09
@@ -1533,7 +1533,7 @@ l083fh:
     ret z               ;086c c8
     scf                 ;086d 37
     ret                 ;086e c9
-l086fh:
+e_086fh:
     ld a,40h            ;086f 3e 40
 l0871h:
     di                  ;0871 f3
@@ -1776,7 +1776,7 @@ sub_0a0dh:
     ld a,03h            ;0a12 3e 03
     ld (601eh),a        ;0a14 32 1e 60
 l0a17h:
-    call l0a43h         ;0a17 cd 43 0a
+    call e_0a43h        ;0a17 cd 43 0a
     call sub_0c49h      ;0a1a cd 49 0c
     ret z               ;0a1d c8
     call sub_06c0h      ;0a1e cd c0 06
@@ -1800,7 +1800,7 @@ l0a37h:
 l0a3fh:
     ld (6015h),a        ;0a3f 32 15 60
     ret                 ;0a42 c9
-l0a43h:
+e_0a43h:
     call e_0289h        ;0a43 cd 89 02
     call e_0c56h        ;0a46 cd 56 0c
     call sub_0958h      ;0a49 cd 58 09
@@ -1965,9 +1965,9 @@ sub_0b4eh:
     in a,(pio0_dra)     ;0b4e db 60
     bit 0,a             ;Bit 0 = -SEEK COMPLETE
     jr nz,sub_0b4eh     ;0b52 20 fa
-
     ret                 ;0b54 c9
-l0b55h:
+
+e_0b55h:
     in a,(pio3_drb)     ;0b55 db 6d
     bit 4,a             ;0b57 cb 67
     ld a,09h            ;0b59 3e 09
