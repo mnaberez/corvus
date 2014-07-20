@@ -11,15 +11,18 @@ cmd_writ_firm:   equ 33h  ;Write a firmare block
 
     nop                 ;8000 00
     nop                 ;8001 00
+
     ld a,03h            ;8002 3e 03
     out (6ah),a         ;8004 d3 6a
     out (6bh),a         ;8006 d3 6b
+
     xor a               ;8008 af
     ld (6011h),a        ;8009 32 11 60
     ld hl,0000h         ;800c 21 00 00
     ld (6012h),hl       ;800f 22 12 60
     call 0074h          ;8012 cd 74 00
-l8015h:
+
+cmd_loop:
     ld a,03h            ;8015 3e 03
     out (7eh),a         ;8017 d3 7e
     call sub_81afh      ;8019 cd af 81
@@ -43,7 +46,7 @@ l8015h:
     ld (6011h),a        ;8031 32 11 60
     ld hl,0000h         ;8034 21 00 00
     ld (6012h),hl       ;8037 22 12 60
-    jp l81a0h           ;803a c3 a0 81
+    jp finish_cmd       ;803a c3 a0 81
 
 reset_drive:
 ;Reset drive (exit prep mode)
@@ -72,7 +75,7 @@ format_drive:
     call 003dh          ;805d cd 3d 00
     ld hl,0000h         ;8060 21 00 00
     ld (6012h),hl       ;8063 22 12 60
-    jp l81a0h           ;8066 c3 a0 81
+    jp finish_cmd       ;8066 c3 a0 81
 
 read_firm_blk:
 ;Read a block of Corvus firmware
@@ -87,7 +90,7 @@ read_firm_blk:
     rst 10h             ;8075 d7
     ld hl,7600h         ;8076 21 00 76
     ld (6012h),hl       ;8079 22 12 60
-    jp l81a0h           ;807c c3 a0 81
+    jp finish_cmd       ;807c c3 a0 81
 
 writ_firm_blk:
 ;Write a block of Corvus firmware
@@ -102,13 +105,13 @@ writ_firm_blk:
     ld hl,0000h         ;8089 21 00 00
     ld (var_2),hl       ;808c 22 fe 81
     rst 20h             ;808f e7
-    jp nz,l81a0h        ;8090 c2 a0 81
+    jp nz,finish_cmd    ;8090 c2 a0 81
     ld hl,0001h         ;8093 21 01 00
     ld (var_2),hl       ;8096 22 fe 81
     rst 20h             ;8099 e7
     ld hl,0000h         ;809a 21 00 00
     ld (6012h),hl       ;809d 22 12 60
-    jp l81a0h           ;80a0 c3 a0 81
+    jp finish_cmd       ;80a0 c3 a0 81
 
 verify_drive:
 ;Verify drive
@@ -141,7 +144,7 @@ l80b6h:
     ld de,1400h         ;80d3 11 00 14
     add hl,de           ;80d6 19
     ld (6012h),hl       ;80d7 22 12 60
-    jp l81a0h           ;80da c3 a0 81
+    jp finish_cmd       ;80da c3 a0 81
 sub_80ddh:
     call 000bh          ;80dd cd 0b 00
     call sub_81a9h      ;80e0 cd a9 81
@@ -226,7 +229,7 @@ l8147h:
     jr nc,l8184h        ;817b 30 07
     ld a,10h            ;817d 3e 10
     ld (6015h),a        ;817f 32 15 60
-    jr l81a0h           ;8182 18 1c
+    jr finish_cmd       ;8182 18 1c
 l8184h:
     ld hl,6200h         ;8184 21 00 62
     ld de,8200h         ;8187 11 00 82
@@ -242,10 +245,10 @@ l8193h:
     jp nz,l8147h        ;819c c2 47 81
     ret                 ;819f c9
 
-l81a0h:
+finish_cmd:
     ld sp,61edh         ;81a0 31 ed 61
     call 0074h          ;81a3 cd 74 00
-    jp l8015h           ;81a6 c3 15 80
+    jp cmd_loop         ;81a6 c3 15 80
 
 sub_81a9h:
     ld a,(6014h)        ;81a9 3a 14 60
