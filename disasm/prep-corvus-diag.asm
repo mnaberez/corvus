@@ -16,7 +16,12 @@ cmd_writ_firm:   equ 33h  ;Write a firmare block
     out (6ah),a         ;8004 d3 6a
     out (6bh),a         ;8006 d3 6b
 
-    xor a               ;8008 af
+                        ;The host is still waiting for a response
+                        ;to the "enter prep mode" command.  Send
+                        ;the "OK" result byte to the host to
+                        ;finish the "enter prep mode" command.
+
+    xor a               ;A = 0 ("OK" result byte)
     ld (6011h),a        ;8009 32 11 60
     ld hl,0000h         ;800c 21 00 00
     ld (6012h),hl       ;800f 22 12 60
@@ -42,7 +47,11 @@ cmd_loop:
     cp cmd_verify_drv
     jr z,verify_drive   ;Verify drive
 
-    ld a,8fh            ;8Fh = Illegal Command response
+                        ;The command is not recognized.  Send the
+                        ;"illegal command" result byte and then
+                        ;loop to wait for another command.
+
+    ld a,8fh            ;A = 8Fh ("Illegal Command" result byte)
     ld (6011h),a        ;8031 32 11 60
     ld hl,0000h         ;8034 21 00 00
     ld (6012h),hl       ;8037 22 12 60
