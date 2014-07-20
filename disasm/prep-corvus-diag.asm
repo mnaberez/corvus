@@ -290,18 +290,11 @@ sub_81e9h:
     out (68h),a         ;81eb d3 68
     jp 007dh            ;81ed c3 7d 00
 
-    nop                 ;81f0 00
-    nop                 ;81f1 00
-    nop                 ;81f2 00
-    nop                 ;81f3 00
-    nop                 ;81f4 00
-    nop                 ;81f5 00
-    nop                 ;81f6 00
-    nop                 ;81f7 00
-    ret m               ;81f8 f8
-    ld bc,0000h         ;81f9 01 00 00
-    ld (bc),a           ;81fc 02
+unused:
+    db 0,0,0,0,0,0,0,0,0f8h,1,0,0,2
+
 l81fdh:
-    nop                 ;81fd 00
+    db 0
+
 l81feh:
-    defb 01h,001h       ;81fe 01 01
+    dw 0101h
