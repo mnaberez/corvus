@@ -268,107 +268,30 @@ sub_8193h:
     cp 0ffh             ;8196 fe ff
     ret                 ;8198 c9
 
-    nop                 ;8199 00
-    nop                 ;819a 00
-    nop                 ;819b 00
-    nop                 ;819c 00
-    nop                 ;819d 00
-    nop                 ;819e 00
-    nop                 ;819f 00
-    nop                 ;81a0 00
-    nop                 ;81a1 00
-    and d               ;81a2 a2
-    ld bc,0000h         ;81a3 01 00 00
-    ld (bc),a           ;81a6 02
-    nop                 ;81a7 00
-    ld bc,0001h         ;81a8 01 01 00
-    nop                 ;81ab 00
-    nop                 ;81ac 00
-    nop                 ;81ad 00
-    nop                 ;81ae 00
-    nop                 ;81af 00
-    nop                 ;81b0 00
-    nop                 ;81b1 00
-    nop                 ;81b2 00
-    nop                 ;81b3 00
-    nop                 ;81b4 00
-    nop                 ;81b5 00
-    nop                 ;81b6 00
-    nop                 ;81b7 00
-    nop                 ;81b8 00
-    nop                 ;81b9 00
-    nop                 ;81ba 00
-    nop                 ;81bb 00
-    nop                 ;81bc 00
-    nop                 ;81bd 00
-    nop                 ;81be 00
-    nop                 ;81bf 00
-    nop                 ;81c0 00
-    nop                 ;81c1 00
-    nop                 ;81c2 00
-    nop                 ;81c3 00
-    nop                 ;81c4 00
-    nop                 ;81c5 00
-    nop                 ;81c6 00
-    nop                 ;81c7 00
-    nop                 ;81c8 00
-    nop                 ;81c9 00
-    nop                 ;81ca 00
-    nop                 ;81cb 00
-    nop                 ;81cc 00
-    nop                 ;81cd 00
-    nop                 ;81ce 00
-    nop                 ;81cf 00
-    nop                 ;81d0 00
-    nop                 ;81d1 00
-    nop                 ;81d2 00
-    nop                 ;81d3 00
-    nop                 ;81d4 00
-    nop                 ;81d5 00
-    nop                 ;81d6 00
-    nop                 ;81d7 00
-    nop                 ;81d8 00
-    nop                 ;81d9 00
-    nop                 ;81da 00
-    nop                 ;81db 00
-    nop                 ;81dc 00
-    nop                 ;81dd 00
-    nop                 ;81de 00
-    nop                 ;81df 00
-    nop                 ;81e0 00
-    nop                 ;81e1 00
-    nop                 ;81e2 00
-    nop                 ;81e3 00
-    nop                 ;81e4 00
-    nop                 ;81e5 00
-    nop                 ;81e6 00
-    nop                 ;81e7 00
-    nop                 ;81e8 00
-    nop                 ;81e9 00
-    nop                 ;81ea 00
-    nop                 ;81eb 00
-    nop                 ;81ec 00
-    nop                 ;81ed 00
-    nop                 ;81ee 00
-    nop                 ;81ef 00
-    nop                 ;81f0 00
-    nop                 ;81f1 00
-    nop                 ;81f2 00
-    nop                 ;81f3 00
-    nop                 ;81f4 00
-    nop                 ;81f5 00
-    nop                 ;81f6 00
-    nop                 ;81f7 00
-    nop                 ;81f8 00
-    nop                 ;81f9 00
-    nop                 ;81fa 00
-    nop                 ;81fb 00
-    nop                 ;81fc 00
+unused:
+    db 0,0,0,0,0,0,0,0,0,0a2h,1,0,0,2,0,1,1,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+    db 0,0,0,0,0,0,0,0,0,0,0,0
+
+;The locations below are accessed by the ROM and can't be moved.
+
+l81f7h:
+    db 0                ;used by ROM at 046eh
+l81f8h:
+    db 0
+l81f9h:
+    db 0
+l81fah:
+    dw 0                ;used by ROM at 0c69h
+l81fch:
+    db 0                ;used by ROM at 0847h
 l81fdh:
-    nop                 ;81fd 00
+    db 0                ;used by ROM at 0afbh, 0b68h, 0b81h, ...
 l81feh:
-    nop                 ;81fe 00
-    nop                 ;81ff 00
+    dw 0                ;used by ROM at 01f4h, 0711h, 0719h, ...
 
 l8200h:
     ;512-byte buffer used to store the format pattern
