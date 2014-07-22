@@ -176,7 +176,8 @@ format:
     jp e_0439h          ;0077 c3 39 04
     jp e_0440h          ;007a c3 40 04
 ;called from prep code
-    jp e_0449h          ;007d c3 49 04
+hostread:
+    jp hostread_        ;Read BC bytes of data from the host
     jp e_047ah          ;0080 c3 7a 04
     jp e_0482h          ;0083 c3 82 04
     jp e_0489h          ;0086 c3 89 04
@@ -802,7 +803,7 @@ l03a0h:
 l03c3h:
     call e_0557h        ;03c3 cd 57 05
     ld bc,0200h         ;03c6 01 00 02
-    call e_0449h        ;03c9 cd 49 04
+    call hostread_      ;03c9 cd 49 04
     ld de,8000h         ;03cc 11 00 80
     ldir                ;03cf ed b0
     jp 8001h            ;Jump to the prep block code
@@ -878,7 +879,10 @@ sub_0443h:
     ld a,0f4h           ;0445 3e f4
     jr l0486h           ;0447 18 3d
 
-e_0449h:
+hostread_:
+;Read BC bytes of data from the host
+;Returns a pointer to the data read in HL
+;
     ld hl,8400h         ;0449 21 00 84
     or a                ;044c b7
     sbc hl,bc           ;044d ed 42
@@ -899,6 +903,7 @@ e_0449h:
     out (pio2_dra),a    ;0465 d3 68
     pop hl              ;0467 e1
     ret                 ;0468 c9
+
 l0469h:
     ld a,02h            ;0469 3e 02
     call sub_04eah      ;046b cd ea 04

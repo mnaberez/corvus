@@ -16,6 +16,7 @@ ctc_ch2:    equ ctc+2   ;  Channel 2 Register
 ctc_ch3:    equ ctc+3   ;  Channel 3 Register
 
 format:          equ 003dh  ;ROM Format the drive
+hostread:        equ 007dh  ;ROM Read BC bytes from the host
 
 cmd_reset:       equ 00h  ;Reset drive (exit prep mode)
 cmd_format_drv:  equ 01h  ;Format drive
@@ -47,7 +48,7 @@ cmd_loop:
     ld a,03h            ;8015 3e 03
     out (ctc_ch2),a     ;8017 d3 7e
 
-    call host_read      ;A = read 1 byte from the host
+    call _read_byte     ;A = read 1 byte from the host
 
     or a
     jr z,reset_drive    ;Reset drive (exit prep mode)
@@ -93,7 +94,7 @@ format_drive:
 ;512 bytes left to read: format pattern
 ;
     ld bc,0200h         ;BC = 512 bytes to read
-    call host_read_bc   ;Read BC bytes from the host
+    call _read_buf      ;Read BC bytes from the host
     ld de,l8200h        ;8052 11 00 82
     ldir                ;Copy BC bytes from (HL) to (DE)
     ld hl,0000h         ;8057 21 00 00
@@ -109,7 +110,7 @@ read_firm_blk:
 ;Command byte (0x32) has already been read
 ;1 byte left to read: head/sector
 ;
-    call host_read      ;A = read 1 byte from the host
+    call _read_byte     ;A = read 1 byte from the host
     ld (l81fdh),a       ;806c 32 fd 81
     ld hl,0000h         ;806f 21 00 00
     ld (l81feh),hl      ;8072 22 fe 81
@@ -125,7 +126,7 @@ writ_firm_blk:
 ;513 bytes left to read: 1 byte head/sector, 512 bytes data
 ;
     ld bc,0201h         ;BC = 513 bytes to read
-    call host_read_bc   ;Read BC bytes from the host
+    call _read_buf      ;Read BC bytes from the host
     ld a,(hl)           ;8085 7e
     ld (l81fdh),a       ;8086 32 fd 81
     ld hl,0000h         ;8089 21 00 00
@@ -281,7 +282,7 @@ sub_81a9h:
     cp 0ffh             ;81ac fe ff
     ret                 ;81ae c9
 
-host_read:
+_read_byte:
 ;Read 1 byte from the host, return it in A.
 ;
     di                  ;81af f3
@@ -316,12 +317,12 @@ l81d5h:
     ei                  ;81e6 fb
     reti                ;81e7 ed 4d
 
-host_read_bc:
+_read_buf:
 ;Read BC bytes from the host
 ;
     ld a,0d5h           ;81e9 3e d5
     out (pio2_dra),a    ;81eb d3 68
-    jp 007dh            ;81ed c3 7d 00
+    jp hostread         ;81ed c3 7d 00
 
 unused:
     db 0,0,0,0,0,0,0

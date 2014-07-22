@@ -16,6 +16,7 @@ ctc_ch2:    equ ctc+2   ;  Channel 2 Register
 ctc_ch3:    equ ctc+3   ;  Channel 3 Register
 
 format:          equ 003dh  ;ROM Format the drive
+hostread:        equ 007dh  ;ROM Read BC bytes from the host
 
 cmd_reset:       equ 00h  ;Reset drive (exit prep mode)
 cmd_format_drv:  equ 01h  ;Format drive
@@ -36,7 +37,7 @@ cmd_loop:
     ld a,03h            ;800f 3e 03
     out (ctc_ch2),a     ;8011 d3 7e
     ld bc,0001h         ;8013 01 01 00
-    call 007dh          ;8016 cd 7d 00
+    call hostread       ;8016 cd 7d 00
     ld a,(hl)           ;8019 7e
 
     or a
@@ -75,7 +76,7 @@ format_drive:
 ;512 bytes left to read: format pattern
 ;
     ld bc,0200h         ;803c 01 00 02
-    call 007dh          ;803f cd 7d 00
+    call hostread       ;803f cd 7d 00
     ld de,l8200h        ;8042 11 00 82
     ldir                ;Copy BC bytes from (HL) to (DE)
     call format         ;8047 cd 3d 00
@@ -90,7 +91,7 @@ read_firm_blk:
 ;1 byte left to read: head/sector
 ;
     ld bc,0001h         ;8053 01 01 00
-    call 007dh          ;8056 cd 7d 00
+    call hostread       ;8056 cd 7d 00
     ld a,(hl)           ;8059 7e
     ld b,04h            ;805a 06 04
     ld c,a              ;805c 4f
@@ -108,7 +109,7 @@ writ_firm_blk:
 ;513 bytes left to read: 1 byte head/sector, 512 bytes data
 ;
     ld bc,0201h         ;806a 01 01 02
-    call 007dh          ;806d cd 7d 00
+    call hostread       ;806d cd 7d 00
     ld a,(hl)           ;8070 7e
     ld (l81fdh),a       ;8071 32 fd 81
     ld hl,0000h         ;8074 21 00 00
