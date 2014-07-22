@@ -36,9 +36,11 @@ cmd_writ_firm:   equ 33h  ;Write a firmare block
 cmd_loop:
     ld a,03h            ;800f 3e 03
     out (ctc_ch2),a     ;8011 d3 7e
-    ld bc,0001h         ;8013 01 01 00
-    call hostread       ;8016 cd 7d 00
-    ld a,(hl)           ;8019 7e
+
+                        ;Read a command byte from the host:
+    ld bc,0001h         ;  BC = 1 byte to read from the host
+    call hostread       ;  Read BC bytes from the host
+    ld a,(hl)           ;  A = command byte
 
     or a
     jr z,reset_drive    ;Reset drive (exit prep mode)
@@ -55,6 +57,7 @@ cmd_loop:
     cp cmd_verify_drv
     jr z,verify_drive   ;Verify drive
 
+                        ;Unrecognized command
                         ;Fall through into reset_drive
 
 reset_drive:
