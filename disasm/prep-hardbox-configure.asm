@@ -31,7 +31,8 @@ cmd_writ_firm:   equ 33h  ;Write a firmare block
     ld hl,0000h         ;8006 21 00 00
     ld (6012h),hl       ;8009 22 12 60
     call 0074h          ;800c cd 74 00
-l800fh:
+
+cmd_loop:
     ld a,03h            ;800f 3e 03
     out (ctc_ch2),a     ;8011 d3 7e
     ld bc,0001h         ;8013 01 01 00
@@ -80,7 +81,7 @@ format_drive:
     call format         ;8047 cd 3d 00
     ld hl,0000h         ;804a 21 00 00
     ld (6012h),hl       ;804d 22 12 60
-    jp l818ah           ;8050 c3 8a 81
+    jp finish_cmd       ;8050 c3 8a 81
 
 read_firm_blk:
 ;Read a block of Corvus firmware
@@ -98,7 +99,7 @@ read_firm_blk:
 l8061h:
     ld hl,0b600h        ;8061 21 00 b6
     ld (6012h),hl       ;8064 22 12 60
-    jp l818ah           ;8067 c3 8a 81
+    jp finish_cmd       ;8067 c3 8a 81
 
 writ_firm_blk:
 ;Read a block of Corvus firmware
@@ -113,13 +114,13 @@ writ_firm_blk:
     ld hl,0000h         ;8074 21 00 00
     ld (l81feh),hl      ;8077 22 fe 81
     rst 20h             ;807a e7
-    jp nz,l818ah        ;807b c2 8a 81
+    jp nz,finish_cmd    ;807b c2 8a 81
     ld hl,0001h         ;807e 21 01 00
     ld (l81feh),hl      ;8081 22 fe 81
     rst 20h             ;8084 e7
     ld hl,0000h         ;8085 21 00 00
     ld (6012h),hl       ;8088 22 12 60
-    jp l818ah           ;808b c3 8a 81
+    jp finish_cmd       ;808b c3 8a 81
 
 verify_drive:
 ;Verify drive
@@ -154,7 +155,7 @@ l80abh:
     ld de,1400h         ;80c0 11 00 14
     add hl,de           ;80c3 19
     ld (6012h),hl       ;80c4 22 12 60
-    jp l818ah           ;80c7 c3 8a 81
+    jp finish_cmd       ;80c7 c3 8a 81
 sub_80cah:
     call 000bh          ;80ca cd 0b 00
     call sub_8193h      ;80cd cd 93 81
@@ -257,10 +258,10 @@ l817dh:
     jp nz,l8120h        ;8186 c2 20 81
     ret                 ;8189 c9
 
-l818ah:
+finish_cmd:
     ld sp,61edh         ;818a 31 ed 61
     call 0074h          ;818d cd 74 00
-    jp l800fh           ;8190 c3 0f 80
+    jp cmd_loop         ;8190 c3 0f 80
 
 sub_8193h:
     ld a,(6014h)        ;8193 3a 14 60
