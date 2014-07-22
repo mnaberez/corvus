@@ -76,8 +76,8 @@ format_drive:
 ;
     ld bc,0200h         ;803c 01 00 02
     call 007dh          ;803f cd 7d 00
-    ld de,8200h         ;8042 11 00 82
-    ldir                ;8045 ed b0
+    ld de,l8200h        ;8042 11 00 82
+    ldir                ;Copy BC bytes from (HL) to (DE)
     call format         ;8047 cd 3d 00
     ld hl,0000h         ;804a 21 00 00
     ld (6012h),hl       ;804d 22 12 60
@@ -236,9 +236,9 @@ l8120h:
 l8158h:
     ld (0a200h),a       ;8158 32 00 a2
     ld hl,6200h         ;815b 21 00 62
-    ld de,8200h         ;815e 11 00 82
+    ld de,l8200h        ;815e 11 00 82
     ld bc,0200h         ;8161 01 00 02
-    ldir                ;8164 ed b0
+    ldir                ;Copy BC bytes from (HL) to (DE)
     rst 18h             ;8166 df
     call 00a7h          ;8167 cd a7 00
     ld a,(l81fdh)       ;816a 3a fd 81
@@ -369,3 +369,7 @@ l81fdh:
 l81feh:
     nop                 ;81fe 00
     nop                 ;81ff 00
+
+l8200h:
+    ;512-byte buffer used to store the format pattern
+    ;and for an unknown purpose in the verify command
