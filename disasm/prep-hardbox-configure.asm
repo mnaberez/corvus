@@ -1,6 +1,20 @@
 ; z80dasm 1.1.3
 ; command line: z80dasm --origin=32768 --address --labels --output=prep-hardbox-configure.asm prep-hardbox-configure.bin
 
+pio2:       equ 68h     ;Z80 PIO #2 (U44)
+pio2_dra:   equ pio2+0  ;  Data Register A
+pio2_drb:   equ pio2+1  ;  Data Register B
+pio2_cra:   equ pio2+2  ;  Control Register A
+pio2_crb:   equ pio2+3  ;  Control Register B
+
+hsxclr:     equ 74h     ;/HSXCLR
+
+ctc:        equ 7ch     ;Z80 CTC
+ctc_ch0:    equ ctc+0   ;  Channel 0 Register
+ctc_ch1:    equ ctc+1   ;  Channel 1 Register
+ctc_ch2:    equ ctc+2   ;  Channel 2 Register
+ctc_ch3:    equ ctc+3   ;  Channel 3 Register
+
 format:          equ 003dh  ;ROM Format the drive
 
 cmd_reset:       equ 00h  ;Reset drive (exit prep mode)
@@ -12,14 +26,14 @@ cmd_writ_firm:   equ 33h  ;Write a firmare block
     org 8000h
 
     ld a,03h            ;8000 3e 03
-    out (6ah),a         ;8002 d3 6a
-    out (6bh),a         ;8004 d3 6b
+    out (pio2_cra),a    ;8002 d3 6a
+    out (pio2_crb),a    ;8004 d3 6b
     ld hl,0000h         ;8006 21 00 00
     ld (6012h),hl       ;8009 22 12 60
     call 0074h          ;800c cd 74 00
 l800fh:
     ld a,03h            ;800f 3e 03
-    out (7eh),a         ;8011 d3 7e
+    out (ctc_ch2),a     ;8011 d3 7e
     ld bc,0001h         ;8013 01 01 00
     call 007dh          ;8016 cd 7d 00
     ld a,(hl)           ;8019 7e
