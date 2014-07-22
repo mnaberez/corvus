@@ -833,7 +833,7 @@ e_03f1h:
     ld a,(7411h)        ;0400 3a 11 74
     ld a,l              ;0403 7d
     or h                ;0404 b4
-    call nz,sub_0438h   ;0405 c4 38 04
+    call nz,jp_hl       ;0405 c4 38 04
 l0408h:
     in a,(pio0_drb)     ;0408 db 61
     bit 2,a             ;Bit 2 = -HSXSTB
@@ -863,7 +863,8 @@ l0423h:
     call sub_04eah      ;0432 cd ea 04
     inc hl              ;0435 23
     jr l0423h           ;0436 18 eb
-sub_0438h:
+
+jp_hl:
     jp (hl)             ;0438 e9
 
 e_0439h:
@@ -899,7 +900,7 @@ hostread_:
     out (pio2_dra),a    ;045e d3 68
 
     ld a,0d5h           ;0460 3e d5
-    call sub_0438h      ;0462 cd 38 04
+    call jp_hl          ;0462 cd 38 04
     out (pio2_dra),a    ;0465 d3 68
     pop hl              ;0467 e1
     ret                 ;0468 c9
