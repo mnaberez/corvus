@@ -424,9 +424,10 @@ l01cah:
     di                  ;01d6 f3
     ld sp,61edh         ;01d7 31 ed 61
     call e_0289h        ;01da cd 89 02
+
     in a,(pio3_dra)     ;01dd db 6c
-    set 0,a             ;01df cb c7
-    set 1,a             ;01e1 cb cf
+    set 0,a             ;Bit 0 = -TIMEOUT DISABLE (UB4:8)
+    set 1,a             ;Bit 1 = -UNIT SELECT 1 (UB4:7)
     out (pio3_dra),a    ;01e3 d3 6c
 
                         ;Turn the "BUSY" LED on:
@@ -575,6 +576,7 @@ e_0289h:
 l02a1h:
     out (ctc_ch2),a     ;02a1 d3 7e
     ret                 ;02a3 c9
+
 l02a4h:
     call e_0289h        ;02a4 cd 89 02
 
@@ -703,7 +705,7 @@ e_030eh:
     jr z,l0318h         ;0315 28 01
     inc a               ;0317 3c
 l0318h:
-    bit 2,b             ;0318 cb 50
+    bit 2,b             ;Bit 2 = -SECTOR SIZE 1 (UB4:1)
     jr z,l031eh         ;031a 28 02
     inc a               ;031c 3c
     inc a               ;031d 3c
