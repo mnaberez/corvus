@@ -29,6 +29,12 @@ cmd_writ_firm:   equ 33h  ;Write a firmare block
     ld a,03h            ;8000 3e 03
     out (pio2_cra),a    ;8002 d3 6a
     out (pio2_crb),a    ;8004 d3 6b
+
+                        ;The host is still waiting for a response
+                        ;to the "enter prep mode" command.  Send
+                        ;the "OK" result byte to the host to
+                        ;finish the "enter prep mode" command.
+
     ld hl,0000h         ;8006 21 00 00
     ld (6012h),hl       ;8009 22 12 60
     call 0074h          ;800c cd 74 00
