@@ -1941,9 +1941,10 @@ sub_0b17h:
     ld a,h              ;0b17 7c
     or l                ;0b18 b5
     jr z,l0b33h         ;0b19 28 18
+
 l0b1bh:
     push hl             ;0b1b e5
-    ld bc,l012fh+2      ;0b1c 01 31 01
+    ld bc,305           ;305 = Last cylinder number?
     or a                ;0b1f b7
     sbc hl,bc           ;0b20 ed 42
     jr z,l0b2fh         ;0b22 28 0b
@@ -1958,6 +1959,7 @@ l0b2fh:
     call sub_0b34h      ;0b30 cd 34 0b
 l0b33h:
     ret                 ;0b33 c9
+
 sub_0b34h:
     call e_0289h        ;0b34 cd 89 02
 l0b37h:
