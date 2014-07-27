@@ -89,42 +89,42 @@ spares:     equ 61fdh   ;Number of tracks reserved for spares (byte)
 
     org 0000h
 
-;called from prep code
+;called from prep code in reset_drive only
 l0000h:
-    jp l00dfh           ;0000 c3 df 00
-    jp l0bc1h           ;0003 c3 c1 0b
+    jp e_00             ;0000 c3 df 00
+    jp e_03             ;0003 c3 c1 0b
     nop                 ;0006 00
     nop                 ;0007 00
 l0008h:
-    jp l0dcch           ;0008 c3 cc 0d
+    jp e_08             ;0008 c3 cc 0d
 ;called from prep code
-    jp e_0a43h          ;000b c3 43 0a
+    jp e_0b             ;000b c3 43 0a
     ld b,48h            ;000e 06 48
 ;called from prep code (via rst 10h)
-    jp l071fh           ;0010 c3 1f 07
+    jp e_10             ;0010 c3 1f 07
 ;called from prep code
-    jp e_086fh          ;0013 c3 6f 08
+    jp e_13             ;0013 c3 6f 08
     cp d                ;0016 ba
     dec b               ;0017 05
 ;called from prep code (via rst 18h)
-    jp e_0799h          ;0018 c3 99 07
-    jp l083fh           ;001b c3 3f 08
+    jp e_18             ;0018 c3 99 07
+    jp e_1b             ;001b c3 3f 08
     nop                 ;001e 00
     nop                 ;001f 00
 ;called from prep code (via rst 20h)
-    jp e_07c1h          ;0020 c3 c1 07
-    jp l0ac7h           ;0023 c3 c7 0a
+    jp e_20             ;0020 c3 c1 07
+    jp e_23             ;0023 c3 c7 0a
     or l                ;0026 b5
     dec b               ;0027 05
-    jp l0c00h           ;0028 c3 00 0c
-    jp l0d1ch           ;002b c3 1c 0d
+    jp e_28             ;0028 c3 00 0c
+    jp e_2b             ;002b c3 1c 0d
     db 0cch, 05h        ;002e cc 05
 ;called from prep code (via rst 30h)
-    jp e_06ddh          ;0030 c3 dd 06
-    jp l020ah           ;0033 c3 0a 02
+    jp e_30             ;0030 c3 dd 06
+    jp e_33             ;0033 c3 0a 02
     rst 20h             ;0036 e7
     dec b               ;0037 05
-    jp e_00c6h          ;0038 c3 c6 00
+    jp e_38             ;0038 c3 c6 00
     nop                 ;003b 00
     nop                 ;003c 00
 ;called from prep code
@@ -165,38 +165,38 @@ format:
     nop                 ;0064 00
     nop                 ;0065 00
 
-    jp e_00c6h          ;0066 c3 c6 00
+    jp e_38             ;0066 c3 c6 00
     ld c,06h            ;0069 0e 06
-    jp e_030eh          ;006b c3 0e 03
-    jp e_0367h          ;006e c3 67 03
-    jp e_03d4h          ;0071 c3 d4 03
-;called from prep code
-    jp e_03f1h          ;0074 c3 f1 03
-;called from prep code
-    jp e_0439h          ;0077 c3 39 04
-    jp e_0440h          ;007a c3 40 04
+    jp e_6b             ;006b c3 0e 03
+    jp e_6e             ;006e c3 67 03
+    jp e_71             ;0071 c3 d4 03
+;called from prep code after every command
+    jp e_74             ;0074 c3 f1 03
+;called from prep code in _read_byte only
+    jp e_77             ;0077 c3 39 04
+    jp e_7a             ;007a c3 40 04
 ;called from prep code
 hostread:
     jp hostread_        ;Read BC bytes of data from the host
-    jp e_047ah          ;0080 c3 7a 04
-    jp e_0482h          ;0083 c3 82 04
-    jp e_0489h          ;0086 c3 89 04
-    jp e_051ch          ;0089 c3 1c 05
-    jp e_0557h          ;008c c3 57 05
-    jp e_0562h          ;008f c3 62 05
-    jp e_056ah          ;0092 c3 6a 05
-    jp e_057dh          ;0095 c3 7d 05
-    jp e_059bh          ;0098 c3 9b 05
-    jp e_0587h          ;009b c3 87 05
-    jp e_0289h          ;009e c3 89 02
-    jp e_0c65h          ;00a1 c3 65 0c
-    jp e_0c41h          ;00a4 c3 41 0c
+    jp e_80             ;0080 c3 7a 04
+    jp e_83             ;0083 c3 82 04
+    jp e_86             ;0086 c3 89 04
+    jp e_89             ;0089 c3 1c 05
+    jp e_8c             ;008c c3 57 05
+    jp e_8f             ;008f c3 62 05
+    jp e_92             ;0092 c3 6a 05
+    jp e_95             ;0095 c3 7d 05
+    jp e_98             ;0098 c3 9b 05
+    jp e_9b             ;009b c3 87 05
+    jp e_9e             ;009e c3 89 02
+    jp e_a1             ;00a1 c3 65 0c
+    jp e_a4             ;00a4 c3 41 0c
 ;called from prep code
-    jp e_0c56h          ;00a7 c3 56 0c
-    jp e_0902h          ;00aa c3 02 09
-    jp e_0924h          ;00ad c3 24 09
-    jp e_0d39h          ;00b0 c3 39 0d
-    jp e_0d7dh          ;00b3 c3 7d 0d
+    jp e_a7             ;00a7 c3 56 0c
+    jp e_aa             ;00aa c3 02 09
+    jp e_ad             ;00ad c3 24 09
+    jp e_b0             ;00b0 c3 39 0d
+    jp e_b3             ;00b3 c3 7d 0d
 
     nop                 ;00b6 00
     nop                 ;00b7 00
@@ -208,10 +208,10 @@ hostread:
     nop                 ;00bd 00
     rst 0               ;00be c7
     ex af,af'           ;00bf 08
-    jp l04e6h           ;00c0 c3 e6 04
-    jp l0a84h           ;00c3 c3 84 0a
+    jp e_c0             ;00c0 c3 e6 04
+    jp e_c3             ;00c3 c3 84 0a
 
-e_00c6h:
+e_38:
     in a,(pio3_dra)     ;00c6 db 6c
     res 7,a             ;Bit 7 = ST-412 -WRITE DISABLE
     out (pio3_dra),a    ;00ca d3 6c
@@ -227,7 +227,10 @@ l00d8h:
     call 8ffch          ;00d8 cd fc 8f
     ld d,0fdh           ;00db 16 fd
     jr l00e1h           ;00dd 18 02
-l00dfh:
+
+e_00:
+;called from prep code in reset_drive only
+;
     ld d,0fch           ;00df 16 fc
 l00e1h:
     ld sp,61edh         ;00e1 31 ed 61
@@ -285,7 +288,7 @@ l010bh:                 ;
     dec e               ;  Decrement E
     jr nz,l010bh        ;  Loop until E=0
 
-                        ;D contains 0fch (set at l00dfh)
+                        ;D contains 0fch (set at e_00)
     ld a,d              ;0118 7a
     out (pio3_dra),a    ;0119 d3 6c
 
@@ -301,7 +304,7 @@ l010bh:                 ;
     or a                ;012c b7
     sbc hl,de           ;012d ed 52
 l012fh:
-    jp z,spin_up         ;012f ca be 01
+    jp z,spin_up        ;012f ca be 01
 
                         ;Long delay by counting in HL from 0000-FFFF:
     ld hl,0             ;  HL = 0 (seed value)
@@ -371,7 +374,7 @@ l017bh:
 l0192h:
     cpi                 ;CP (HL), INC HL, DEC BC
 l0194h:
-    jp nz,e_057dh       ;0194 c2 7d 05
+    jp nz,e_95          ;0194 c2 7d 05
     jp pe,l0192h        ;0197 ea 92 01
 
     rla                 ;019a 17
@@ -402,13 +405,13 @@ l01a9h:
     and 01000100b       ;Bit 6 = 12MB1, Bit 2 = 6MB1
     ld (6104h),a        ;01b8 32 04 61
 
-    call l020ah         ;01bb cd 0a 02
+    call e_33           ;01bb cd 0a 02
 
 spin_up:
 ;Wait for the mechanism to spin up.  This may take 15 seconds or so.
 ;Blink the "BUSY" LED on the front panel until the mechanism is ready.
 ;
-    call e_0289h        ;TODO Disable interrupts, Swap 6070h/6071h,
+    call e_9e           ;TODO Disable interrupts, Swap 6070h/6071h,
                         ;     do something with ctc_ch2
     call blink          ;Blink the "BUSY" LED on the front panel
 
@@ -417,17 +420,17 @@ spin_up:
     jr nz,spin_up       ;Loop until the mechanism is ready
 
 l01cah:
-    call e_0289h        ;TODO Disable interrupts, Swap 6070h/6071h,
+    call e_9e           ;TODO Disable interrupts, Swap 6070h/6071h,
                         ;     do something with ctc_ch2
 
     in a,(pio0_dra)
     bit 0,a             ;Bit 0 = ST-412 -SEEK COMPLETE
     jr nz,l01cah        ;Loop until -SEEK COMPLETE goes low
 
-    call l0ac7h         ;01d3 cd c7 0a
+    call e_23           ;01d3 cd c7 0a
     di                  ;01d6 f3
     ld sp,61edh         ;01d7 31 ed 61
-    call e_0289h        ;TODO Disable interrupts, Swap 6070h/6071h,
+    call e_9e           ;TODO Disable interrupts, Swap 6070h/6071h,
                         ;     do something with ctc_ch2
 
     in a,(pio3_dra)     ;01dd db 6c
@@ -440,8 +443,8 @@ l01cah:
     res 7,a             ;  Turn off bit 7 (low state turns LED on)
     out (pio0_dra),a    ;  Write new port state
 
-    call l020ah         ;01eb cd 0a 02
-    call e_0439h        ;01ee cd 39 04
+    call e_33           ;01eb cd 0a 02
+    call e_77           ;01ee cd 39 04
     ld hl,0             ;01f1 21 00 00
     ld (81feh),hl       ;01f4 22 fe 81
     ld (600ch),hl       ;01f7 22 0c 60
@@ -450,9 +453,9 @@ l01cah:
     ld (81fdh),a        ;01fe 32 fd 81
     ld hl,5aa5h         ;0201 21 a5 5a
     ld (6070h),hl       ;0204 22 70 60
-    jp e_030eh          ;0207 c3 0e 03
+    jp e_6b             ;0207 c3 0e 03
 
-l020ah:
+e_33:
     ld b,0ch            ;020a 06 0c
 l020ch:
     call sub_01a1h      ;020c cd a1 01
@@ -546,24 +549,24 @@ set_spares:
 
     ld d,1eh            ;026c 16 1e
 l026eh:
-    call e_0c56h        ;026e cd 56 0c
+    call e_a7           ;026e cd 56 0c
     in a,(ctc_ch0)      ;0271 db 7c
     ld c,a              ;0273 4f
 l0274h:
     in a,(ctc_ch0)      ;0274 db 7c
     cp c                ;0276 b9
     jr z,l0274h         ;0277 28 fb
-    call e_086fh        ;0279 cd 6f 08
+    call e_13           ;0279 cd 6f 08
     call sub_0c49h      ;027c cd 49 0c
     ret z               ;027f c8
     dec d               ;0280 15
     jr nz,l026eh        ;0281 20 eb
-    call e_0289h        ;TODO Disable interrupts, Swap 6070h/6071h,
+    call e_9e           ;TODO Disable interrupts, Swap 6070h/6071h,
                         ;     do something with ctc_ch2
     or 0ffh             ;0286 f6 ff
     ret                 ;0288 c9
 
-e_0289h:
+e_9e:
 ;Disable interrupts, Swap 6070h/6071h, do something with ctc_ch2
 ;
     di                  ;Disable Interrupts
@@ -590,7 +593,7 @@ l02a1h:
 wait_ready:
 ;Do ??? and wait until READY goes low
 ;
-    call e_0289h        ;TODO Disable interrupts, Swap 6070h/6071h,
+    call e_9e           ;TODO Disable interrupts, Swap 6070h/6071h,
                         ;     do something with ctc_ch2
 
     in a,(pio0_drb)     ;02a7 db 61
@@ -710,7 +713,7 @@ drive_20mb:
     dw 1836             ;Number of tracks (tracks)
     dw 35860            ;Capacity in 512-byte blocks (capacity)
 
-e_030eh:
+e_6b:
     in a,(pio0_dra)     ;030e db 60
     ld b,a              ;0310 47
     ld a,01h            ;0311 3e 01
@@ -724,10 +727,11 @@ l0318h:
     inc a               ;031d 3c
 l031eh:
     ld (606fh),a        ;031e 32 6f 60
+
     ld a,11011111b      ;Bit 5 = -COMPL
     out (pio2_dra),a    ;0323 d3 68
 l0325h:
-    call e_0289h        ;TODO Disable interrupts, Swap 6070h/6071h,
+    call e_9e           ;TODO Disable interrupts, Swap 6070h/6071h,
                         ;     do something with ctc_ch2
     ei                  ;0328 fb
 
@@ -743,7 +747,7 @@ l0325h:
     dec a               ;0338 3d
     jr z,l0341h         ;0339 28 06
     xor a               ;033b af
-    call e_051ch        ;033c cd 1c 05
+    call e_89           ;033c cd 1c 05
     jr l035ah           ;033f 18 19
 l0341h:
     ld b,a              ;0341 47
@@ -751,28 +755,28 @@ l0341h:
     ld e,a              ;0343 5f
 l0344h:
     djnz l0344h         ;0344 10 fe
-    call e_0557h        ;0346 cd 57 05
+    call e_8c           ;0346 cd 57 05
 l0349h:
     djnz l0349h         ;0349 10 fe
     ld a,60h            ;034b 3e 60
-    call e_059bh        ;034d cd 9b 05
+    call e_98           ;034d cd 9b 05
 
     in a,(pio3_dra)     ;0350 db 6c
     bit 3,a             ;Bit 3 = SYSTEM/-DIAG (UB4:5)
-    call z,e_0587h      ;0354 cc 87 05
+    call z,e_9b         ;0354 cc 87 05
 
-    call e_0562h        ;0357 cd 62 05
+    call e_8f           ;0357 cd 62 05
 l035ah:
     in a,(pio3_drb)     ;035a db 6d
     bit 4,a             ;Bit 4 = Panel -FORMAT ENABLE
-    jr z,e_0367h        ;035e 28 07
+    jr z,e_6e           ;035e 28 07
 
     ld de,8006h         ;0360 11 06 80
     ld bc,2000h         ;0363 01 00 20
     rst 28h             ;0366 ef
 
-e_0367h:
-    call e_0c56h        ;0367 cd 56 0c
+e_6e:
+    call e_a7           ;0367 cd 56 0c
     ld hl,60bdh         ;036a 21 bd 60
     ld (hl),a           ;036d 77
 
@@ -782,7 +786,7 @@ e_0367h:
 
     inc (hl)            ;0374 34
 l0375h:
-    call e_0489h        ;0375 cd 89 04
+    call e_86           ;0375 cd 89 04
 
     ld (6010h),a        ;0378 32 10 60
     cp 11h              ;Is it the command to enter prep mode?
@@ -794,42 +798,42 @@ l0375h:
     dec a               ;0387 3d
     jr z,l0390h         ;0388 28 06
     xor a               ;038a af
-    call e_051ch        ;038b cd 1c 05
-    jr e_0367h          ;038e 18 d7
+    call e_89           ;038b cd 1c 05
+    jr e_6e             ;038e 18 d7
 l0390h:
     ld h,a              ;0390 67
     ld l,a              ;0391 6f
     ld (6012h),hl       ;0392 22 12 60
-    call e_0557h        ;0395 cd 57 05
-    call e_03f1h        ;0398 cd f1 03
-    call e_0562h        ;039b cd 62 05
-    jr e_0367h          ;039e 18 c7
+    call e_8c           ;0395 cd 57 05
+    call e_74           ;0398 cd f1 03
+    call e_8f           ;039b cd 62 05
+    jr e_6e             ;039e 18 c7
 
 l03a0h:
-    call e_0489h        ;03a0 cd 89 04
+    call e_86           ;03a0 cd 89 04
     ld hl,606fh         ;03a3 21 6f 60
     cp (hl)             ;03a6 be
     jr z,l03c3h         ;03a7 28 1a
     ld a,01h            ;03a9 3e 01
-    call e_051ch        ;03ab cd 1c 05
-    jr nz,e_0367h       ;03ae 20 b7
+    call e_89           ;03ab cd 1c 05
+    jr nz,e_6e          ;03ae 20 b7
     ld a,07h            ;03b0 3e 07
     ld (6015h),a        ;03b2 32 15 60
-    call e_0289h        ;TODO Disable interrupts, Swap 6070h/6071h,
+    call e_9e           ;TODO Disable interrupts, Swap 6070h/6071h,
                         ;     do something with ctc_ch2
-    call e_0557h        ;03b8 cd 57 05
-    call e_03f1h        ;03bb cd f1 03
-    call e_0562h        ;03be cd 62 05
-    jr e_0367h          ;03c1 18 a4
+    call e_8c           ;03b8 cd 57 05
+    call e_74           ;03bb cd f1 03
+    call e_8f           ;03be cd 62 05
+    jr e_6e             ;03c1 18 a4
 l03c3h:
-    call e_0557h        ;03c3 cd 57 05
+    call e_8c           ;03c3 cd 57 05
     ld bc,0200h         ;03c6 01 00 02
     call hostread_      ;03c9 cd 49 04
     ld de,8000h         ;03cc 11 00 80
     ldir                ;03cf ed b0
     jp 8001h            ;Jump to the prep block code
 
-e_03d4h:
+e_71:
     ld a,(6011h)        ;03d4 3a 11 60
     or 10000000b        ;03d7 f6 80
     ld b,a              ;03d9 47
@@ -846,13 +850,15 @@ e_03d4h:
     ld (6012h),hl       ;03eb 22 12 60
     jp l06d5h           ;03ee c3 d5 06
 
-e_03f1h:
-    call e_03d4h        ;03f1 cd d4 03
+e_74:
+;called from prep code after every command
+;
+    call e_71           ;03f1 cd d4 03
     ld hl,(6012h)       ;03f4 2a 12 60
     ld a,(60bdh)        ;03f7 3a bd 60
     or a                ;03fa b7
     jr nz,l0416h        ;03fb 20 19
-    call e_0440h        ;03fd cd 40 04
+    call e_7a           ;03fd cd 40 04
     ld a,(7411h)        ;0400 3a 11 74
     ld a,l              ;0403 7d
     or h                ;0404 b4
@@ -890,13 +896,15 @@ l0423h:
 jp_hl:
     jp (hl)             ;0438 e9
 
-e_0439h:
+e_77:
+;called from prep code in _read_byte only
+;
     ld a,17h            ;0439 3e 17
     out (pio2_crb),a    ;043b d3 6b
     out (pio2_crb),a    ;043d d3 6b
     ret                 ;043f c9
 
-e_0440h:
+e_7a:
     ld a,(7000h)        ;0440 3a 00 70
 sub_0443h:
     in a,(xferstb)      ;0443 db 78
@@ -940,20 +948,20 @@ l0469h:
     pop hl              ;0478 e1
     ret                 ;0479 c9
 
-e_047ah:
+e_80:
     ld a,0c5h           ;047a 3e c5
     out (pio2_dra),a    ;047c d3 68
     ld a,0cdh           ;047e 3e cd
     jr l0486h           ;0480 18 04
 
-e_0482h:
+e_83:
     in a,(hsxclr)       ;0482 db 74
     ld a,0d7h           ;0484 3e d7
 l0486h:
     out (pio2_dra),a    ;0486 d3 68
     ret                 ;0488 c9
 
-e_0489h:
+e_86:
     di                  ;0489 f3
 
     ld a,11111111b      ;048a 3e ff
@@ -963,7 +971,7 @@ e_0489h:
     out (pio3_dra),a    ;0490 d3 6c
 
     in a,(hsxclr)       ;0492 db 74
-    call e_0439h        ;0494 cd 39 04
+    call e_77           ;0494 cd 39 04
     ld a,4fh            ;0497 3e 4f
     out (pio2_crb),a    ;0499 d3 6b
     in a,(pio2_drb)     ;Read data byte from host
@@ -975,7 +983,7 @@ e_0489h:
     out (pio2_dra),a    ;04a7 d3 68
 l04a9h:
     di                  ;04a9 f3
-    call e_0289h        ;TODO Disable interrupts, Swap 6070h/6071h,
+    call e_9e           ;TODO Disable interrupts, Swap 6070h/6071h,
                         ;     do something with ctc_ch2
     ei                  ;04ad fb
     ld b,80h            ;04ae 06 80
@@ -1003,18 +1011,18 @@ l04c8h:
     jr z,l04e4h         ;04cd 28 15
     cp 0ffh             ;04cf fe ff
     jr nz,l04dfh        ;04d1 20 0c
-    ld hl,e_0367h       ;04d3 21 67 03
+    ld hl,e_6e          ;04d3 21 67 03
     ex (sp),hl          ;04d6 e3
-    call e_0440h        ;04d7 cd 40 04
+    call e_7a           ;04d7 cd 40 04
     call sub_0506h      ;04da cd 06 05
     jr l04e4h           ;04dd 18 05
 l04dfh:
     push af             ;04df f5
-    call l04e6h         ;04e0 cd e6 04
+    call e_c0           ;04e0 cd e6 04
     pop af              ;04e3 f1
 l04e4h:
     reti                ;04e4 ed 4d
-l04e6h:
+e_c0:
     ld a,01h            ;04e6 3e 01
     jr l04f8h           ;04e8 18 0e
 sub_04eah:
@@ -1031,7 +1039,7 @@ sub_04eah:
 l04f8h:
     ld (6076h),a        ;04f8 32 76 60
     ld a,0f4h           ;04fb 3e f4
-    call e_059bh        ;04fd cd 9b 05
+    call e_98           ;04fd cd 9b 05
     call sub_0443h      ;0500 cd 43 04
     ld a,(7411h)        ;0503 3a 11 74
 sub_0506h:
@@ -1045,9 +1053,9 @@ l0511h:
     djnz l0511h         ;0514 10 fb
     pop bc              ;0516 c1
     ld a,0f0h           ;0517 3e f0
-    jp e_059bh          ;0519 c3 9b 05
+    jp e_98             ;0519 c3 9b 05
 
-e_051ch:
+e_89:
     or a                ;051c b7
     jr z,l0537h         ;051d 28 18
     cp 02h              ;051f fe 02
@@ -1068,7 +1076,7 @@ l052bh:
     jr nz,l052bh        ;0534 20 f5
     ret                 ;0536 c9
 l0537h:
-    call e_0289h        ;TODO Disable interrupts, Swap 6070h/6071h,
+    call e_9e           ;TODO Disable interrupts, Swap 6070h/6071h,
                         ;     do something with ctc_ch2
     in a,(pio2_dra)     ;053a db 68
     bit 7,a             ;Bit 7 = -DRV.ACK
@@ -1077,7 +1085,7 @@ l0540h:
     ld a,11111111b      ;0540 3e ff
     out (pio2_dra),a    ;0542 d3 68
 l0544h:
-    call e_0289h        ;TODO Disable interrupts, Swap 6070h/6071h,
+    call e_9e           ;TODO Disable interrupts, Swap 6070h/6071h,
                         ;     do something with ctc_ch2
 
     in a,(pio2_dra)     ;0547 db 68
@@ -1091,7 +1099,7 @@ l0544h:
     ld a,0cfh           ;0553 3e cf
     jr l055fh           ;0555 18 08
 
-e_0557h:
+e_8c:
     ld a,01111111b      ;Bit 7 = ACTIVITY LED ("BUSY")
     out (pio0_dra),a    ;0559 d3 60
 
@@ -1102,14 +1110,14 @@ l055fh:
     out (pio2_dra),a    ;055f d3 68
     ret                 ;0561 c9
 
-e_0562h:
+e_8f:
     ld a,11111111b      ;Bit 7 = ACTIVITY LED ("BUSY")
     out (pio0_dra),a    ;0564 d3 60
 
     ld a,0dfh           ;0566 3e df
     jr l055fh           ;0568 18 f5
 
-e_056ah:
+e_92:
     di                  ;056a f3
     ld a,b              ;056b 78
     or a                ;056c b7
@@ -1125,7 +1133,7 @@ l0579h:
     ei                  ;057b fb
     ret                 ;057c c9
 
-e_057dh:
+e_95:
     di                  ;057d f3
 
     ld a,11111101b      ;Bit 1 = -UNIT SELECT 1 (UB4:7)
@@ -1136,13 +1144,13 @@ e_057dh:
 
     halt                ;0586 76
 
-e_0587h:
+e_9b:
     ld a,d              ;0587 7a
     cp 0ffh             ;0588 fe ff
     jr z,l0593h         ;058a 28 07
     and 00000111b       ;058c e6 07
     or 11010000b        ;058e f6 d0
-    call e_059bh        ;0590 cd 9b 05
+    call e_98           ;0590 cd 9b 05
 l0593h:
     ld a,e              ;0593 7b
     cp 0ffh             ;0594 fe ff
@@ -1150,7 +1158,7 @@ l0593h:
     and 00000111b       ;0597 e6 07
     or 0e0h             ;0599 f6 e0
 
-e_059bh:
+e_98:
     ld (6075h),a        ;059b 32 75 60
     ld a,(7000h)        ;059e 3a 00 70
     in a,(xferstb)      ;05a1 db 78
@@ -1353,7 +1361,8 @@ l06d5h:
     ld hl,6028h         ;06d8 21 28 60
     jr l06cbh           ;06db 18 ee
 
-e_06ddh:
+e_30:
+;called from prep code in verify_drive only
     ld a,(81fdh)        ;06dd 3a fd 81
     ld b,a              ;06e0 47
     in a,(pio0_drb)     ;06e1 db 61
@@ -1394,11 +1403,14 @@ l070dh:
 sub_0711h:
     ld hl,(81feh)       ;0711 2a fe 81
     push hl             ;0714 e5
-    call l0ac7h         ;0715 cd c7 0a
+    call e_23           ;0715 cd c7 0a
     pop hl              ;0718 e1
     ld (81feh),hl       ;0719 22 fe 81
-    jp e_0c41h          ;071c c3 41 0c
-l071fh:
+    jp e_a4             ;071c c3 41 0c
+
+e_10:
+;called from prep code in verify_drive only
+;
     xor a               ;071f af
     ld (60b9h),a        ;0720 32 b9 60
     ld a,03h            ;0723 3e 03
@@ -1426,7 +1438,7 @@ l074ch:
     call sub_0711h      ;0752 cd 11 07
     jr l072dh           ;0755 18 d6
 l0757h:
-    call e_0c41h        ;0757 cd 41 0c
+    call e_a4           ;0757 cd 41 0c
     ret nz              ;075a c0
     ld a,0ah            ;075b 3e 0a
     jr l0767h           ;075d 18 08
@@ -1444,13 +1456,13 @@ l076bh:
     ret                 ;0770 c9
 sub_0771h:
     call sub_0976h      ;0771 cd 76 09
-    call e_0c56h        ;0774 cd 56 0c
+    call e_a7           ;0774 cd 56 0c
     bit 7,(hl)          ;0777 cb 7e
-    call z,e_0a43h      ;0779 cc 43 0a
-    call e_0c41h        ;077c cd 41 0c
+    call z,e_0b         ;0779 cc 43 0a
+    call e_a4           ;077c cd 41 0c
     ret nz              ;077f c0
     rst 30h             ;0780 f7
-    call e_086fh        ;0781 cd 6f 08
+    call e_13           ;0781 cd 6f 08
     call sub_0c49h      ;0784 cd 49 0c
     ret nz              ;0787 c0
     call sub_0993h      ;0788 cd 93 09
@@ -1462,7 +1474,10 @@ sub_0793h:
     ld hl,6006h         ;0793 21 06 60
     set 7,(hl)          ;0796 cb fe
     ret                 ;0798 c9
-e_0799h:
+
+e_18:
+;called from prep code in verify_drive only
+;
     ld a,03h            ;0799 3e 03
     ld (6024h),a        ;079b 32 24 60
 l079eh:
@@ -1477,19 +1492,22 @@ l07afh:
     ld hl,6024h         ;07b2 21 24 60
     dec (hl)            ;07b5 35
     jr nz,l079eh        ;07b6 20 e6
-    call e_0c41h        ;07b8 cd 41 0c
+    call e_a4           ;07b8 cd 41 0c
     jr nz,l076bh        ;07bb 20 ae
     ld a,08h            ;07bd 3e 08
     jr l0767h           ;07bf 18 a6
-e_07c1h:
+
+e_20:
+;called from prep code in writ_firm_blk only
+;
     ld a,03h            ;07c1 3e 03
     ld (6025h),a        ;07c3 32 25 60
 l07c6h:
-    call e_0799h        ;07c6 cd 99 07
-    call e_0c41h        ;07c9 cd 41 0c
+    call e_18           ;07c6 cd 99 07
+    call e_a4           ;07c9 cd 41 0c
     ret nz              ;07cc c0
-    call l071fh         ;07cd cd 1f 07
-    call e_0c41h        ;07d0 cd 41 0c
+    call e_10           ;07cd cd 1f 07
+    call e_a4           ;07d0 cd 41 0c
     ret z               ;07d3 c8
     ld a,06h            ;07d4 3e 06
     ld (6014h),a        ;07d6 32 14 60
@@ -1510,7 +1528,7 @@ sub_07e8h:
     ld (6021h),a        ;07f6 32 21 60
 l07f9h:
     call sub_0a0dh      ;07f9 cd 0d 0a
-    call e_0c41h        ;07fc cd 41 0c
+    call e_a4           ;07fc cd 41 0c
     jr nz,l0811h        ;07ff 20 10
     call sub_09a4h      ;0801 cd a4 09
     call sub_0c49h      ;0804 cd 49 0c
@@ -1540,13 +1558,14 @@ l081ch:
 l0832h:
     ld (6015h),a        ;0832 32 15 60
 l0835h:
-    jp e_0c41h          ;0835 c3 41 0c
+    jp e_a4             ;0835 c3 41 0c
 l0838h:
     call sub_0793h      ;0838 cd 93 07
 l083bh:
     call set_spares     ;083b cd 66 02
     rst 30h             ;083e f7
-l083fh:
+
+e_1b:
     in a,(pio3_dra)     ;083f db 6c
     set 7,a             ;Bit 7 = ST-412 -WRITE DISABLE
     out (pio3_dra),a    ;0843 d3 6c
@@ -1574,7 +1593,10 @@ l083fh:
     ret z               ;086c c8
     scf                 ;086d 37
     ret                 ;086e c9
-e_086fh:
+
+e_13:
+;called from prep code in verify_drive only
+;
     ld a,40h            ;086f 3e 40
 l0871h:
     di                  ;0871 f3
@@ -1669,7 +1691,7 @@ l08ffh:
     ei                  ;08ff fb
     reti                ;0900 ed 4d
 
-e_0902h:
+e_aa:
     ld a,(60b6h)        ;0902 3a b6 60
     ld (81fdh),a        ;0905 32 fd 81
     ld hl,(60b7h)       ;0908 2a b7 60
@@ -1689,7 +1711,7 @@ e_0902h:
     ret nz              ;0921 c0
     jr sub_0944h        ;0922 18 20
 
-e_0924h:
+e_ad:
     ld a,(60b6h)        ;0924 3a b6 60
     ld (81fdh),a        ;0927 32 fd 81
     ld hl,(60b7h)       ;092a 2a b7 60
@@ -1708,7 +1730,7 @@ e_0924h:
     rst 18h             ;0942 df
     ret nz              ;0943 c0
 sub_0944h:
-    call e_0d39h        ;0944 cd 39 0d
+    call e_b0           ;0944 cd 39 0d
     ld a,(60bbh)        ;0947 3a bb 60
     dec a               ;094a 3d
     ld (60bbh),a        ;094b 32 bb 60
@@ -1763,7 +1785,7 @@ sub_09a4h:
     ld a,1eh            ;09a4 3e 1e
     ld (6020h),a        ;09a6 32 20 60
 l09a9h:
-    call e_0c56h        ;09a9 cd 56 0c
+    call e_a7           ;09a9 cd 56 0c
     in a,(ctc_ch0)      ;09ac db 7c
     ld c,a              ;09ae 4f
 l09afh:
@@ -1822,7 +1844,7 @@ sub_0a0dh:
     ld a,03h            ;0a12 3e 03
     ld (601eh),a        ;0a14 32 1e 60
 l0a17h:
-    call e_0a43h        ;0a17 cd 43 0a
+    call e_0b           ;0a17 cd 43 0a
     call sub_0c49h      ;0a1a cd 49 0c
     ret z               ;0a1d c8
     call sub_06c0h      ;0a1e cd c0 06
@@ -1847,10 +1869,12 @@ l0a3fh:
     ld (6015h),a        ;0a3f 32 15 60
     ret                 ;0a42 c9
 
-e_0a43h:
-    call e_0289h        ;TODO Disable interrupts, Swap 6070h/6071h,
+e_0b:
+;called from prep code in verify_drive only
+;
+    call e_9e           ;TODO Disable interrupts, Swap 6070h/6071h,
                         ;     do something with ctc_ch2
-    call e_0c56h        ;0a46 cd 56 0c
+    call e_a7           ;0a46 cd 56 0c
     call sub_0958h      ;0a49 cd 58 09
     ret c               ;0a4c d8
     ld hl,(81feh)       ;0a4d 2a fe 81
@@ -1883,7 +1907,7 @@ l0a78h:
     ld (600ch),hl       ;0a80 22 0c 60
     ret                 ;0a83 c9
 
-l0a84h:
+e_c3:
     ld a,03h            ;0a84 3e 03
     out (pio2_cra),a    ;0a86 d3 6a
     out (pio2_crb),a    ;0a88 d3 6b
@@ -1893,9 +1917,9 @@ l0a84h:
     ld hl,0             ;0a8e 21 00 00
     ld (6012h),hl       ;0a91 22 12 60
 
-    call e_03f1h        ;0a94 cd f1 03
+    call e_74           ;0a94 cd f1 03
     in a,(hsxclr)       ;0a97 db 74
-    call e_0439h        ;0a99 cd 39 04
+    call e_77           ;0a99 cd 39 04
     ld a,4fh            ;0a9c 3e 4f
     out (pio2_crb),a    ;0a9e d3 6b
     in a,(pio2_drb)     ;Read data byte from host
@@ -1903,7 +1927,7 @@ l0a84h:
     out (pio2_crb),a    ;0aa4 d3 6b
     ld a,0efh           ;0aa6 3e ef
     out (pio2_dra),a    ;0aa8 d3 68
-    call e_0562h        ;0aaa cd 62 05
+    call e_8f           ;0aaa cd 62 05
     ld hl,0149h         ;0aad 21 49 01
     ld (6004h),hl       ;0ab0 22 04 60
     call sub_0a53h      ;0ab3 cd 53 0a
@@ -1921,7 +1945,7 @@ l0a84h:
 
     halt                ;0ac6 76
 
-l0ac7h:
+e_23:
     call wait_ready     ;Do ??? and wait until READY goes low
 
     in a,(pio3_dra)     ;0aca db 6c
@@ -1944,7 +1968,7 @@ l0ae2h:
     bit 6,a             ;Bit 6 = ST-412 -TRACK 00
     jr z,l0afah         ;0ae6 28 12
 
-    call e_0289h        ;TODO Disable interrupts, Swap 6070h/6071h,
+    call e_9e           ;TODO Disable interrupts, Swap 6070h/6071h,
                         ;     do something with ctc_ch2
 
     in a,(pio0_drb)
@@ -2000,7 +2024,7 @@ l0b33h:
 step_bc_times:
 ;Pulse the STEP line BC times
 ;
-    call e_0289h        ;TODO Disable interrupts, Swap 6070h/6071h,
+    call e_9e           ;TODO Disable interrupts, Swap 6070h/6071h,
                         ;     do something with ctc_ch2
 l0b37h:
     in a,(pio0_drb)
@@ -2024,7 +2048,7 @@ wait_seek_cmpl:
 ;
     in a,(pio0_dra)     ;0b4e db 60
     bit 0,a             ;Bit 0 = ST-412 -SEEK COMPLETE
-    jr nz,wait_seek_cmpl ;0b52 20 fa
+    jr nz,wait_seek_cmpl;0b52 20 fa
     ret                 ;0b54 c9
 
 format_:
@@ -2035,7 +2059,7 @@ format_:
     ld a,09h            ;0b59 3e 09
     jp nz,l0a3fh        ;0b5b c2 3f 0a
 
-    call l0ac7h         ;0b5e cd c7 0a
+    call e_23           ;0b5e cd c7 0a
     ld hl,0             ;0b61 21 00 00
     ld (81feh),hl       ;0b64 22 fe 81
     xor a               ;0b67 af
@@ -2043,12 +2067,12 @@ format_:
 l0b6bh:
     call sub_0b75h      ;0b6b cd 75 0b
     ret nz              ;0b6e c0
-    call l0bc1h         ;0b6f cd c1 0b
+    call e_03           ;0b6f cd c1 0b
     jr z,l0b6bh         ;0b72 28 f7
     ret                 ;0b74 c9
 sub_0b75h:
     call sub_0a0dh      ;0b75 cd 0d 0a
-    call e_0c41h        ;0b78 cd 41 0c
+    call e_a4           ;0b78 cd 41 0c
     ret nz              ;0b7b c0
     ld a,(81fdh)        ;0b7c 3a fd 81
     and 11100000b       ;0b7f e6 e0
@@ -2072,7 +2096,7 @@ sub_0ba1h:
     ld a,(81fdh)        ;0ba6 3a fd 81
 l0ba9h:
     ld (81fdh),a        ;0ba9 32 fd 81
-    call l083fh         ;0bac cd 3f 08
+    call e_1b           ;0bac cd 3f 08
     rr c                ;0baf cb 19
     rr e                ;0bb1 cb 1b
     rr d                ;0bb3 cb 1a
@@ -2083,7 +2107,7 @@ l0ba9h:
     jr nz,l0ba9h        ;0bbe 20 e9
     ret                 ;0bc0 c9
 
-l0bc1h:
+e_03:
     in a,(pio3_dra)     ;0bc1 db 6c
     bit 4,a             ;Bit 4 = -RXD
     ret nz              ;0bc5 c0
@@ -2112,7 +2136,7 @@ l0bc1h:
     or 0ffh             ;0bee f6 ff
     ret                 ;0bf0 c9
 l0bf1h:
-    jp e_0c41h          ;0bf1 c3 41 0c
+    jp e_a4             ;0bf1 c3 41 0c
 l0bf4h:
     nop                 ;0bf4 00
     ld c,b              ;0bf5 48
@@ -2126,13 +2150,16 @@ l0bf4h:
     and b               ;0bfd a0
     nop                 ;0bfe 00
     and d               ;0bff a2
-l0c00h:
+
+e_28:
+;called from prep code in read_firm_blk only
+;
     pop hl              ;0c00 e1
     push de             ;0c01 d5
     ld hl,l0bf4h        ;0c02 21 f4 0b
 l0c05h:
     ld (6069h),hl       ;0c05 22 69 60
-    call e_0289h        ;TODO Disable interrupts, Swap 6070h/6071h,
+    call e_9e           ;TODO Disable interrupts, Swap 6070h/6071h,
                         ;     do something with ctc_ch2
     ld a,b              ;0c0b 78
     or a                ;0c0c b7
@@ -2148,7 +2175,7 @@ l0c05h:
     ld a,01h            ;0c1f 3e 01
     ld (81feh),a        ;0c21 32 fe 81
     rst 10h             ;0c24 d7
-    jp nz,e_057dh       ;0c25 c2 7d 05
+    jp nz,e_95          ;0c25 c2 7d 05
 l0c28h:
     ld hl,(6069h)       ;0c28 2a 69 60
     ld e,(hl)           ;0c2b 5e
@@ -2166,7 +2193,9 @@ l0c38h:
     inc hl              ;0c3e 23
     jr l0c05h           ;0c3f 18 c4
 
-e_0c41h:
+e_a4:
+;called from prep code in verify_drive only
+;
     ld a,(6015h)        ;0c41 3a 15 60
     cp 0ffh             ;0c44 fe ff
     ret z               ;0c46 c8
@@ -2181,7 +2210,9 @@ l0c4fh:
     out (pio3_dra),a    ;0c53 d3 6c
     ret                 ;0c55 c9
 
-e_0c56h:
+e_a7:
+;called from prep code in reset_drive only
+;
     ld a,0ffh           ;0c56 3e ff
     res 7,a             ;Bit 7 = ST-412 -WRITE DISABLE
     out (pio3_dra),a    ;0c5a d3 6c
@@ -2191,7 +2222,7 @@ e_0c56h:
     ld (6015h),a        ;0c61 32 15 60
     ret                 ;0c64 c9
 
-e_0c65h:
+e_a1:
     ld a,(601ah)        ;0c65 3a 1a 60
     ld b,a              ;0c68 47
     ld hl,(81fah)       ;0c69 2a fa 81
@@ -2241,7 +2272,7 @@ l0c8eh:
     jr nz,l0cc6h        ;0cb0 20 14
     inc l               ;0cb2 2c
     jr nz,l0cc6h        ;0cb3 20 11
-    jp e_0d39h          ;0cb5 c3 39 0d
+    jp e_b0             ;0cb5 c3 39 0d
 l0cb8h:
     ld a,(60b6h)        ;0cb8 3a b6 60
     ld (81fdh),a        ;0cbb 32 fd 81
@@ -2267,7 +2298,7 @@ l0cc6h:
     inc hl              ;0ce0 23
     ld d,(hl)           ;0ce1 56
     pop hl              ;0ce2 e1
-    call l0d1ch         ;0ce3 cd 1c 0d
+    call e_2b           ;0ce3 cd 1c 0d
     dec hl              ;0ce6 2b
     dec hl              ;0ce7 2b
     ld (60afh),hl       ;0ce8 22 af 60
@@ -2295,8 +2326,8 @@ l0cc6h:
     ld (60b7h),hl       ;0d13 22 b7 60
 l0d16h:
     call sub_0958h      ;0d16 cd 58 09
-    jp e_0c41h          ;0d19 c3 41 0c
-l0d1ch:
+    jp e_a4             ;0d19 c3 41 0c
+e_2b:
     add hl,de           ;0d1c 19
     xor a               ;0d1d af
     ld (60b9h),a        ;0d1e 32 b9 60
@@ -2319,7 +2350,7 @@ l0d2bh:
     jr nc,l0d2bh        ;0d36 30 f3
     ret                 ;0d38 c9
 
-e_0d39h:
+e_b0:
     xor a               ;0d39 af
     ld (60b9h),a        ;0d3a 32 b9 60
     ld a,(60b6h)        ;0d3d 3a b6 60
@@ -2338,7 +2369,7 @@ l0d58h:
     ld a,(60bch)        ;0d58 3a bc 60
     inc a               ;0d5b 3c
     cp 14h              ;0d5c fe 14
-    call z,e_0d7dh      ;0d5e cc 7d 0d
+    call z,e_b3         ;0d5e cc 7d 0d
     ld (60bch),a        ;0d61 32 bc 60
     ld h,00h            ;0d64 26 00
     ld l,a              ;0d66 6f
@@ -2350,9 +2381,9 @@ l0d58h:
     ld (81fdh),a        ;0d71 32 fd 81
     ld (60b6h),a        ;0d74 32 b6 60
     call sub_0958h      ;0d77 cd 58 09
-    jp e_0c41h          ;0d7a c3 41 0c
+    jp e_a4             ;0d7a c3 41 0c
 
-e_0d7dh:
+e_b3:
     call sub_0d9eh      ;0d7d cd 9e 0d
     ld bc,(60b1h)       ;0d80 ed 4b b1 60
     inc bc              ;0d84 03
@@ -2367,7 +2398,7 @@ e_0d7dh:
     sbc hl,bc           ;0d92 ed 42
     jr nz,l0d9ch        ;0d94 20 06
     ld (60afh),de       ;0d96 ed 53 af 60
-    jr e_0d7dh          ;0d9a 18 e1
+    jr e_b3             ;0d9a 18 e1
 l0d9ch:
     xor a               ;0d9c af
     ret                 ;0d9d c9
@@ -2397,7 +2428,8 @@ l0dc4h:
     ld (81fdh),a        ;0dc5 32 fd 81
     ld (60b6h),a        ;0dc8 32 b6 60
     ret                 ;0dcb c9
-l0dcch:
+
+e_08:
     push hl             ;0dcc e5
     ld hl,0             ;0dcd 21 00 00
     ld b,18h            ;0dd0 06 18
