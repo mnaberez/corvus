@@ -1951,16 +1951,18 @@ l0b1bh:
     jp m,l0b2fh         ;0b24 fa 2f 0b
     pop de              ;0b27 d1
     push hl             ;0b28 e5
-    call sub_0b34h      ;0b29 cd 34 0b
+    call step_bc_times  ;0b29 cd 34 0b
     pop hl              ;0b2c e1
     jr l0b1bh           ;0b2d 18 ec
 l0b2fh:
     pop bc              ;0b2f c1
-    call sub_0b34h      ;0b30 cd 34 0b
+    call step_bc_times  ;0b30 cd 34 0b
 l0b33h:
     ret                 ;0b33 c9
 
-sub_0b34h:
+step_bc_times:
+;Pulse the STEP line BC times
+;
     call e_0289h        ;0b34 cd 89 02
 l0b37h:
     in a,(pio0_drb)
@@ -1968,17 +1970,16 @@ l0b37h:
     out (pio0_drb),a
     res 3,a             ;Bit 3 = STEP
     out (pio0_drb),a
-
-    ex (sp),hl          ;0b41 e3
-    ex (sp),hl          ;0b42 e3
-    ex (sp),hl          ;0b43 e3
-    ex (sp),hl          ;0b44 e3
-    dec bc              ;0b45 0b
-    ld a,b              ;0b46 78
-    or c                ;0b47 b1
-    jr nz,l0b37h        ;0b48 20 ed
-    call wait_seek_cmpl ;0b4a cd 4e 0b
-    ret                 ;0b4d c9
+    ex (sp),hl          ;Waste time
+    ex (sp),hl
+    ex (sp),hl
+    ex (sp),hl
+    dec bc              ;Decrement BC
+    ld a,b
+    or c
+    jr nz,l0b37h        ;Loop until BC=0
+    call wait_seek_cmpl ;Wait until -SEEK COMPLETE goes low
+    ret
 
 wait_seek_cmpl:
 ;Wait until -SEEK COMPLETE goes low
