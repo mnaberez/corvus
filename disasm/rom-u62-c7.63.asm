@@ -173,7 +173,7 @@ format:
 ;called from prep code after every command
     jp e_74             ;0074 c3 f1 03
 ;called from prep code in _read_byte only
-    jp e_77             ;0077 c3 39 04
+    jp e_77             ;TODO sets up PIO2 CRB (host data bus port)
     jp e_7a             ;007a c3 40 04
 ;called from prep code
 hostread:
@@ -444,7 +444,7 @@ l01cah:
     out (pio0_dra),a    ;  Write new port state
 
     call e_33           ;01eb cd 0a 02
-    call e_77           ;01ee cd 39 04
+    call e_77           ;TODO sets up PIO2 CRB (host data bus port)
     ld hl,0             ;01f1 21 00 00
     ld (81feh),hl       ;01f4 22 fe 81
     ld (600ch),hl       ;01f7 22 0c 60
@@ -898,11 +898,12 @@ jp_hl:
 
 e_77:
 ;called from prep code in _read_byte only
+;TODO sets up PIO2 CRB (host data bus port)
 ;
-    ld a,17h            ;0439 3e 17
-    out (pio2_crb),a    ;043b d3 6b
-    out (pio2_crb),a    ;043d d3 6b
-    ret                 ;043f c9
+    ld a,00010111b
+    out (pio2_crb),a    ;PIO2 Port B = Host data bus port
+    out (pio2_crb),a
+    ret
 
 e_7a:
     ld a,(7000h)        ;0440 3a 00 70
@@ -971,7 +972,7 @@ e_86:
     out (pio3_dra),a    ;0490 d3 6c
 
     in a,(hsxclr)       ;0492 db 74
-    call e_77           ;0494 cd 39 04
+    call e_77           ;TODO sets up PIO2 CRB (host data bus port)
     ld a,4fh            ;0497 3e 4f
     out (pio2_crb),a    ;0499 d3 6b
     in a,(pio2_drb)     ;Read data byte from host
@@ -1919,7 +1920,7 @@ e_c3:
 
     call e_74           ;0a94 cd f1 03
     in a,(hsxclr)       ;0a97 db 74
-    call e_77           ;0a99 cd 39 04
+    call e_77           ;TODO sets up PIO2 CRB (host data bus port)
     ld a,4fh            ;0a9c 3e 4f
     out (pio2_crb),a    ;0a9e d3 6b
     in a,(pio2_drb)     ;Read data byte from host
