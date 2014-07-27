@@ -168,22 +168,23 @@ format:
     jp e_38             ;0066 c3 c6 00
     ld c,06h            ;0069 0e 06
     jp e_6b             ;006b c3 0e 03
-    jp e_6e             ;006e c3 67 03
+hostloop:
+    jp hostloop_        ;Wait for a command from the host and process it
     jp e_71             ;0071 c3 d4 03
 ;called from prep code after every command
-    jp e_74             ;0074 c3 f1 03
+    jp e_74             ;0074 TODO Send response buffer to host?
 ;called from prep code in _read_byte only
-    jp e_77             ;TODO sets up PIO2 CRB (host data bus port)
+    jp e_77             ;0077 TODO sets up PIO2 CRB (host data bus port)
     jp e_7a             ;007a c3 40 04
 ;called from prep code
 hostread:
     jp hostread_        ;Read BC bytes of data from the host
-    jp e_80             ;0080 c3 7a 04
-    jp e_83             ;0083 c3 82 04
+    jp e_80             ;TODO Pulse -HSXFER?
+    jp e_83             ;TODO HSXCLR then -HSXFER=0?
     jp e_86             ;0086 c3 89 04
     jp e_89             ;0089 c3 1c 05
-    jp e_8c             ;008c c3 57 05
-    jp e_8f             ;008f c3 62 05
+    jp e_8c             ;TODO "BUSY" LED on, then HSXCLR, then pio2_dra?
+    jp e_8f             ;TODO "BUSY" LED off, then set pio2_dra?
     jp e_92             ;0092 c3 6a 05
     jp e_95             ;0095 c3 7d 05
     jp e_98             ;0098 c3 9b 05
@@ -192,7 +193,7 @@ hostread:
     jp e_a1             ;00a1 c3 65 0c
     jp e_a4             ;00a4 c3 41 0c
 ;called from prep code
-    jp e_a7             ;00a7 c3 56 0c
+    jp e_a7             ;00a7 TODO -WRITE DISABLE=low, 6014h=0FFh, 6015h=0FFh?
     jp e_aa             ;00aa c3 02 09
     jp e_ad             ;00ad c3 24 09
     jp e_b0             ;00b0 c3 39 0d
@@ -549,7 +550,7 @@ set_spares:
 
     ld d,1eh            ;026c 16 1e
 l026eh:
-    call e_a7           ;026e cd 56 0c
+    call e_a7           ;TODO -WRITE DISABLE=low, 6014h=0FFh, 6015h=0FFh?
     in a,(ctc_ch0)      ;0271 db 7c
     ld c,a              ;0273 4f
 l0274h:
@@ -755,7 +756,7 @@ l0341h:
     ld e,a              ;0343 5f
 l0344h:
     djnz l0344h         ;0344 10 fe
-    call e_8c           ;0346 cd 57 05
+    call e_8c           ;TODO "BUSY" LED on, then HSXCLR, then set pio2_dra?
 l0349h:
     djnz l0349h         ;0349 10 fe
     ld a,60h            ;034b 3e 60
@@ -765,18 +766,20 @@ l0349h:
     bit 3,a             ;Bit 3 = SYSTEM/-DIAG (UB4:5)
     call z,e_9b         ;0354 cc 87 05
 
-    call e_8f           ;0357 cd 62 05
+    call e_8f           ;TODO "BUSY" LED off, then set pio2_dra?
 l035ah:
     in a,(pio3_drb)     ;035a db 6d
     bit 4,a             ;Bit 4 = Panel -FORMAT ENABLE
-    jr z,e_6e           ;035e 28 07
+    jr z,hostloop_      ;Jump to host command loop
 
     ld de,8006h         ;0360 11 06 80
     ld bc,2000h         ;0363 01 00 20
     rst 28h             ;0366 ef
 
-e_6e:
-    call e_a7           ;0367 cd 56 0c
+hostloop_:
+;Wait for a command from the host and process it
+;
+    call e_a7           ;TODO -WRITE DISABLE=low, 6014h=0FFh, 6015h=0FFh?
     ld hl,60bdh         ;036a 21 bd 60
     ld (hl),a           ;036d 77
 
@@ -799,15 +802,16 @@ l0375h:
     jr z,l0390h         ;0388 28 06
     xor a               ;038a af
     call e_89           ;038b cd 1c 05
-    jr e_6e             ;038e 18 d7
+    jr hostloop_        ;Jump to host command loop
+
 l0390h:
     ld h,a              ;0390 67
     ld l,a              ;0391 6f
     ld (6012h),hl       ;0392 22 12 60
-    call e_8c           ;0395 cd 57 05
-    call e_74           ;0398 cd f1 03
-    call e_8f           ;039b cd 62 05
-    jr e_6e             ;039e 18 c7
+    call e_8c           ;TODO "BUSY" LED on, then HSXCLR, then set pio2_dra?
+    call e_74           ;TODO Send response buffer to host?
+    call e_8f           ;TODO "BUSY" LED off, then set pio2_dra?
+    jr hostloop_        ;Jump to host command loop
 
 l03a0h:
     call e_86           ;03a0 cd 89 04
@@ -816,17 +820,19 @@ l03a0h:
     jr z,l03c3h         ;03a7 28 1a
     ld a,01h            ;03a9 3e 01
     call e_89           ;03ab cd 1c 05
-    jr nz,e_6e          ;03ae 20 b7
+    jr nz,hostloop_     ;Jump to host command loop
+
     ld a,07h            ;03b0 3e 07
     ld (6015h),a        ;03b2 32 15 60
     call e_9e           ;TODO Disable interrupts, Swap 6070h/6071h,
                         ;     do something with ctc_ch2
-    call e_8c           ;03b8 cd 57 05
-    call e_74           ;03bb cd f1 03
-    call e_8f           ;03be cd 62 05
-    jr e_6e             ;03c1 18 a4
+    call e_8c           ;TODO "BUSY" LED on, then HSXCLR, then set pio2_dra?
+    call e_74           ;TODO Send response buffer to host?
+    call e_8f           ;TODO "BUSY" LED off, then set pio2_dra?
+    jr hostloop_        ;Jump to host command loop
+
 l03c3h:
-    call e_8c           ;03c3 cd 57 05
+    call e_8c           ;TODO "BUSY" LED on, then HSXCLR, then set pio2_dra?
     ld bc,0200h         ;03c6 01 00 02
     call hostread_      ;03c9 cd 49 04
     ld de,8000h         ;03cc 11 00 80
@@ -852,6 +858,7 @@ e_71:
 
 e_74:
 ;called from prep code after every command
+;TODO Send response buffer to host?
 ;
     call e_71           ;03f1 cd d4 03
     ld hl,(6012h)       ;03f4 2a 12 60
@@ -960,6 +967,8 @@ l0469h:
     ret                 ;0479 c9
 
 e_80:
+;TODO Pulse -HSXFER?
+;
     ld a,11000101b      ;Byte to write to pio2_dra:
                         ;  Bit 7 -DRV.ACK = 1
                         ;  Bit 6 -SYNC    = 1
@@ -983,6 +992,8 @@ e_80:
     jr out_pio2_dra2
 
 e_83:
+;TODO HSXCLR then -HSXFER=0?
+;
     in a,(hsxclr)
 
     ld a,11010111b      ;Byte to write to pio2_dra:
@@ -1051,7 +1062,7 @@ l04c8h:
     jr z,l04e4h         ;04cd 28 15
     cp 0ffh             ;04cf fe ff
     jr nz,l04dfh        ;04d1 20 0c
-    ld hl,e_6e          ;04d3 21 67 03
+    ld hl,hostloop_     ;TODO Host command loop?
     ex (sp),hl          ;04d6 e3
     call e_7a           ;04d7 cd 40 04
     call sub_0506h      ;04da cd 06 05
@@ -1062,6 +1073,7 @@ l04dfh:
     pop af              ;04e3 f1
 l04e4h:
     reti                ;04e4 ed 4d
+
 e_c0:
     ld a,01h            ;04e6 3e 01
     jr l04f8h           ;04e8 18 0e
@@ -1137,9 +1149,10 @@ l0544h:
     jr z,l0544h         ;0551 28 f1
 
     ld a,0cfh           ;0553 3e cf
-    jr out_pio2_dra1    ;out (pio2_dra) then ret
+    jr out_pio2_dra1    ;out (pio2_dra),a then ret
 
 e_8c:
+;TODO "BUSY" LED on, then HSXCLR, then set pio2_dra?
     ld a,01111111b      ;Bit 7 = ACTIVITY LED ("BUSY")
     out (pio0_dra),a    ;0559 d3 60
 
@@ -1154,11 +1167,12 @@ out_pio2_dra1:
     ret
 
 e_8f:
+;TODO "BUSY" LED off, then set pio2_dra?
     ld a,11111111b      ;Bit 7 = ACTIVITY LED ("BUSY")
     out (pio0_dra),a    ;0564 d3 60
 
     ld a,0dfh           ;0566 3e df
-    jr out_pio2_dra1    ;out (pio2_dra) then ret
+    jr out_pio2_dra1    ;out (pio2_dra),a then ret
 
 e_92:
     di                  ;056a f3
@@ -1499,7 +1513,7 @@ l076bh:
     ret                 ;0770 c9
 sub_0771h:
     call sub_0976h      ;0771 cd 76 09
-    call e_a7           ;0774 cd 56 0c
+    call e_a7           ;TODO -WRITE DISABLE=low, 6014h=0FFh, 6015h=0FFh?
     bit 7,(hl)          ;0777 cb 7e
     call z,e_0b         ;0779 cc 43 0a
     call e_a4           ;077c cd 41 0c
@@ -1828,7 +1842,7 @@ sub_09a4h:
     ld a,1eh            ;09a4 3e 1e
     ld (6020h),a        ;09a6 32 20 60
 l09a9h:
-    call e_a7           ;09a9 cd 56 0c
+    call e_a7           ;TODO -WRITE DISABLE=low, 6014h=0FFh, 6015h=0FFh?
     in a,(ctc_ch0)      ;09ac db 7c
     ld c,a              ;09ae 4f
 l09afh:
@@ -1917,7 +1931,7 @@ e_0b:
 ;
     call e_9e           ;TODO Disable interrupts, Swap 6070h/6071h,
                         ;     do something with ctc_ch2
-    call e_a7           ;0a46 cd 56 0c
+    call e_a7           ;TODO -WRITE DISABLE=low, 6014h=0FFh, 6015h=0FFh?
     call sub_0958h      ;0a49 cd 58 09
     ret c               ;0a4c d8
     ld hl,(81feh)       ;0a4d 2a fe 81
@@ -1960,7 +1974,7 @@ e_c3:
     ld hl,0             ;0a8e 21 00 00
     ld (6012h),hl       ;0a91 22 12 60
 
-    call e_74           ;0a94 cd f1 03
+    call e_74           ;TODO Send response buffer to host?
     in a,(hsxclr)       ;0a97 db 74
     call e_77           ;TODO sets up PIO2 CRB (host data bus port)
     ld a,4fh            ;0a9c 3e 4f
@@ -1970,7 +1984,7 @@ e_c3:
     out (pio2_crb),a    ;0aa4 d3 6b
     ld a,0efh           ;0aa6 3e ef
     out (pio2_dra),a    ;0aa8 d3 68
-    call e_8f           ;0aaa cd 62 05
+    call e_8f           ;TODO "BUSY" LED off, then set pio2_dra?
     ld hl,0149h         ;0aad 21 49 01
     ld (6004h),hl       ;0ab0 22 04 60
     call sub_0a53h      ;0ab3 cd 53 0a
@@ -2255,6 +2269,7 @@ l0c4fh:
 
 e_a7:
 ;called from prep code in reset_drive only
+;TODO -WRITE DISABLE=low, 6014h=0FFh, 6015h=0FFh?
 ;
     ld a,0ffh           ;0c56 3e ff
     res 7,a             ;Bit 7 = ST-412 -WRITE DISABLE
