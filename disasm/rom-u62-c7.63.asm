@@ -756,9 +756,11 @@ l0349h:
     djnz l0349h         ;0349 10 fe
     ld a,60h            ;034b 3e 60
     call e_059bh        ;034d cd 9b 05
+
     in a,(pio3_dra)     ;0350 db 6c
     bit 3,a             ;Bit 3 = SYSTEM/-DIAG (UB4:5)
     call z,e_0587h      ;0354 cc 87 05
+
     call e_0562h        ;0357 cd 62 05
 l035ah:
     in a,(pio3_drb)     ;035a db 6d
@@ -773,9 +775,11 @@ e_0367h:
     call e_0c56h        ;0367 cd 56 0c
     ld hl,60bdh         ;036a 21 bd 60
     ld (hl),a           ;036d 77
+
     in a,(pio3_dra)     ;036e db 6c
     bit 2,a             ;Bit 2 = -ALT SEL
     jr z,l0375h         ;0372 28 01
+
     inc (hl)            ;0374 34
 l0375h:
     call e_0489h        ;0375 cd 89 04
@@ -834,8 +838,10 @@ e_03d4h:
     ret z               ;03df c8
     or b                ;03e0 b0
     ld (6011h),a        ;03e1 32 11 60
+
     ld a,0fdh           ;03e4 3e fd
     out (pio3_dra),a    ;03e6 d3 6c
+
     ld hl,0             ;03e8 21 00 00
     ld (6012h),hl       ;03eb 22 12 60
     jp l06d5h           ;03ee c3 d5 06
@@ -1166,6 +1172,7 @@ l05bch:
     in a,(pio2_dra)     ;05bc db 68
     bit 6,a             ;Bit 6 = -SYNC
     jr nz,l05c9h        ;05c0 20 07
+
     djnz l05bch         ;05c2 10 f8
     pop af              ;05c4 f1
 l05c5h:
@@ -1584,12 +1591,15 @@ l0871h:
     ei                  ;0886 fb
 l0887h:
     halt                ;0887 76
+
     jr l0887h           ;0888 18 fd
     call sub_08f7h      ;088a cd f7 08
     pop af              ;088d f1
+
     in a,(pio3_dra)     ;088e db 6c
-    res 7,a             ;0890 cb bf
+    res 7,a             ;Bit 7 = ST-412 -WRITE DISABLE
     out (pio3_dra),a    ;0892 d3 6c
+
     nop                 ;0894 00
     nop                 ;0895 00
     nop                 ;0896 00
@@ -1769,9 +1779,11 @@ l09afh:
     jp l0871h           ;09c2 c3 71 08
     call sub_08f7h      ;09c5 cd f7 08
     pop af              ;09c8 f1
+
     in a,(pio3_dra)     ;09c9 db 6c
-    res 7,a             ;09cb cb bf
+    res 7,a             ;Bit 7 = ST-412 -WRITE DISABLE
     out (pio3_dra),a    ;09cd d3 6c
+
     nop                 ;09cf 00
     nop                 ;09d0 00
     nop                 ;09d1 00
@@ -1845,8 +1857,9 @@ e_0a43h:
     ld (6004h),hl       ;0a50 22 04 60
 sub_0a53h:
     in a,(pio3_dra)     ;0a53 db 6c
-    res 7,a             ;0a55 cb bf
+    res 7,a             ;Bit 7 = ST-412 -WRITE DISABLE
     out (pio3_dra),a    ;0a57 d3 6c
+
     ld de,(600ch)       ;0a59 ed 5b 0c 60
     ld hl,(6004h)       ;0a5d 2a 04 60
     or a                ;0a60 b7
@@ -1864,19 +1877,22 @@ l0a6dh:
     or a                ;0a75 b7
     sbc hl,de           ;0a76 ed 52
 l0a78h:
-    out (pio0_drb),a    ;0a78 d3 61
+    out (pio0_drb),a    ;Write data byte to host
     call sub_0b17h      ;0a7a cd 17 0b
     ld hl,(6004h)       ;0a7d 2a 04 60
     ld (600ch),hl       ;0a80 22 0c 60
     ret                 ;0a83 c9
+
 l0a84h:
     ld a,03h            ;0a84 3e 03
     out (pio2_cra),a    ;0a86 d3 6a
     out (pio2_crb),a    ;0a88 d3 6b
+
     xor a               ;0a8a af
     ld (6011h),a        ;0a8b 32 11 60
     ld hl,0             ;0a8e 21 00 00
     ld (6012h),hl       ;0a91 22 12 60
+
     call e_03f1h        ;0a94 cd f1 03
     in a,(hsxclr)       ;0a97 db 74
     call e_0439h        ;0a99 cd 39 04
@@ -1893,8 +1909,9 @@ l0a84h:
     call sub_0a53h      ;0ab3 cd 53 0a
     ld a,03h            ;0ab6 3e 03
     out (ctc_ch2),a     ;0ab8 d3 7e
+
     in a,(pio3_dra)     ;0aba db 6c
-    set 0,a             ;0abc cb c7
+    set 0,a             ;Bit 0 = -TIMEOUT DISABLE (UB4:8)
     out (pio3_dra),a    ;0abe d3 6c
 
                         ;Turn the "BUSY" LED off:
