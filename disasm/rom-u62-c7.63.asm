@@ -3,23 +3,23 @@
 
 pio0:       equ 60h     ;Z80 PIO #0 (U45)
 pio0_dra:   equ pio0+0  ;  Data Register A:
-                        ;    A7: ACTIVITY LED ("BUSY")
-                        ;    A6: -INDEX SEL
-                        ;    A5: WRITE FAULT
-                        ;    A4: CRC ERROR
-                        ;    A3: -SECTOR SEL
-                        ;    A2: -SECTOR SIZE 1 (UB4:1)
-                        ;    A1: -SECTOR SIZE 2 (UB4:4)
-                        ;    A0: -SEEK COMPLETE
+                        ;    A7: [Panel]  ACTIVITY LED ("BUSY")
+                        ;    A6: [ST-412] -INDEX SEL
+                        ;    A5: [ST-412] WRITE FAULT
+                        ;    A4: [ST-412] CRC ERROR
+                        ;    A3:          -SECTOR SEL
+                        ;    A2:          -SECTOR SIZE 1 (UB4:1)
+                        ;    A1:          -SECTOR SIZE 2 (UB4:4)
+                        ;    A0: [ST-412] -SEEK COMPLETE
 pio0_drb:   equ pio0+1  ;  Data Register B:
-                        ;    B7: REDUCE WR CURRENT
-                        ;    B6: HEAD SEL 2^2
-                        ;    B5: HEAD SEL 2^1
-                        ;    B4: HEAD SEL 2^0
-                        ;    B3: STEP
-                        ;    B2: -HSXSTB
-                        ;    B1: DIRECTION IN
-                        ;    B0: -READY
+                        ;    B7: [ST-412] REDUCE WR CURRENT
+                        ;    B6: [ST-412] HEAD SEL 2^2
+                        ;    B5: [ST-412] HEAD SEL 2^1
+                        ;    B4: [ST-412] HEAD SEL 2^0
+                        ;    B3: [ST-412] STEP
+                        ;    B2:          -HSXSTB
+                        ;    B1: [ST-412] DIRECTION IN
+                        ;    B0: [ST-412] -READY
 pio0_cra:   equ pio0+2  ;  Control Register A
 pio0_crb:   equ pio0+3  ;  Control Register B
 
@@ -27,45 +27,45 @@ pio1:       equ 64h     ;Z80 PIO #1 (Unpopulated)
 
 pio2:       equ 68h     ;Z80 PIO #2 (U44)
 pio2_dra:   equ pio2+0  ;  Data Register A
-                        ;    A7: -DRV.ACK
-                        ;    A6: -SYNC
-                        ;    A5: -COMPL
-                        ;    A4: PIO RDY
-                        ;    A3: -HSXFER
-                        ;    A2: -ALT SEL
-                        ;    A1: -DRV.ACK
-                        ;    A0: BUS DIR
+                        ;    A7:           -DRV.ACK
+                        ;    A6:           -SYNC
+                        ;    A5:           -COMPL
+                        ;    A4:           PIO RDY
+                        ;    A3:           -HSXFER
+                        ;    A2:           -ALT SEL
+                        ;    A1:           -DRV.ACK
+                        ;    A0: [Host]    BUS DIR
 pio2_drb:   equ pio2+1  ;  Data Register B
-                        ;    B7: Data Bit 7
-                        ;    B6: Data Bit 6
-                        ;    B5: Data Bit 5
-                        ;    B4: Data Bit 4
-                        ;    B3: Data Bit 3
-                        ;    B2: Data Bit 2
-                        ;    B1: Data Bit 1
-                        ;    B0: Data Bit 0
+                        ;    B7: [Host]    Data Bit 7
+                        ;    B6: [Host]    Data Bit 6
+                        ;    B5: [Host]    Data Bit 5
+                        ;    B4: [Host]    Data Bit 4
+                        ;    B3: [Host]    Data Bit 3
+                        ;    B2: [Host]    Data Bit 2
+                        ;    B1: [Host]    Data Bit 1
+                        ;    B0: [Host]    Data Bit 0
 pio2_cra:   equ pio2+2  ;  Control Register A
 pio2_crb:   equ pio2+3  ;  Control Register B
 
 pio3:       equ 6ch     ;Z80 PIO #3 (U46)
 pio3_dra:   equ pio3+0  ;  Data Register A
-                        ;    A7: -WRITE DISABLE
-                        ;    A6: -TRACK 00
-                        ;    A5: TXD
-                        ;    A4: -RXD
-                        ;    A3: SYSTEM/-DIAG (UB4:5)
-                        ;    A2: -UNIT SELECT 2 (UB4:6)
-                        ;    A1: -UNIT SELECT 1 (UB4:7)
-                        ;    A0: -TIMEOUT DISABLE (UB4:8)
+                        ;    A7: [ST-412] -WRITE DISABLE
+                        ;    A6: [ST-412] -TRACK 00
+                        ;    A5: [ST-412] TXD
+                        ;    A4: [ST-412] -RXD
+                        ;    A3:          SYSTEM/-DIAG (UB4:5)
+                        ;    A2:          -UNIT SELECT 2 (UB4:6)
+                        ;    A1:          -UNIT SELECT 1 (UB4:7)
+                        ;    A0:          -TIMEOUT DISABLE (UB4:8)
 pio3_drb:   equ pio3+1  ;  Data Register B
-                        ;    B7: 12MB2
-                        ;    B6: 12MB1
-                        ;    B5: 6MB2
-                        ;    B4: -FORMAT ENABLE
-                        ;    B3: -WRITE PROTECT (W2)
-                        ;    B2: 6MB1
-                        ;    B1: -DRV 2 SEL
-                        ;    B0: -DRV 1 SEL
+                        ;    B7:          12MB2
+                        ;    B6:          12MB1
+                        ;    B5:          6MB2
+                        ;    B4: [Panel]  -FORMAT ENABLE
+                        ;    B3: [Panel]  -WRITE PROTECT (W2)
+                        ;    B2:          6MB1
+                        ;    B1:          -DRV 2 SEL
+                        ;    B0:          -DRV 1 SEL
 pio3_cra:   equ pio3+2  ;  Control Register A
 pio3_crb:   equ pio3+3  ;  Control Register B
 
@@ -213,7 +213,7 @@ hostread:
 
 e_00c6h:
     in a,(pio3_dra)     ;00c6 db 6c
-    res 7,a             ;Bit 7 = -WRITE DISABLE
+    res 7,a             ;Bit 7 = ST-412 -WRITE DISABLE
     out (pio3_dra),a    ;00ca d3 6c
 
     in a,(pio3_dra)     ;00cc db 6c
@@ -410,14 +410,14 @@ l01beh:
     call blink          ;01c1 cd ae 02
 
     in a,(pio0_drb)     ;01c4 db 61
-    bit 0,a             ;Bit 0 = -READY
+    bit 0,a             ;Bit 0 = ST-412 -READY
     jr nz,l01beh        ;01c8 20 f4
 
 l01cah:
     call e_0289h        ;01ca cd 89 02
 
     in a,(pio0_dra)     ;01cd db 60
-    bit 0,a             ;Bit 0 = -SEEK COMPLETE
+    bit 0,a             ;Bit 0 = ST-412 -SEEK COMPLETE
     jr nz,l01cah        ;01d1 20 f7
 
     call l0ac7h         ;01d3 cd c7 0a
@@ -566,7 +566,7 @@ e_0289h:
     ld (6070h),hl       ;0290 22 70 60
 
     in a,(pio3_drb)     ;0293 db 6d
-    bit 4,a             ;Bit 4 = -FORMAT ENABLE
+    bit 4,a             ;Bit 4 = Panel -FORMAT ENABLE
     ld a,43h            ;0297 3e 43
     jr z,l02a1h         ;0299 28 06
 
@@ -583,7 +583,7 @@ wait_ready:
     call e_0289h        ;TODO what is e_0289h?
 
     in a,(pio0_drb)     ;02a7 db 61
-    bit 0,a             ;Bit 0 = -READY
+    bit 0,a             ;Bit 0 = ST-412 -READY
     jr nz,wait_ready    ;02ab 20 f7
 
     ret                 ;02ad c9
@@ -750,7 +750,7 @@ l0349h:
     call e_0562h        ;0357 cd 62 05
 l035ah:
     in a,(pio3_drb)     ;035a db 6d
-    bit 4,a             ;Bit 4 = -FORMAT ENABLE
+    bit 4,a             ;Bit 4 = Panel -FORMAT ENABLE
     jr z,e_0367h        ;035e 28 07
 
     ld de,8006h         ;0360 11 06 80
@@ -1335,23 +1335,23 @@ e_06ddh:
     ld b,a              ;06e0 47
     in a,(pio0_drb)     ;06e1 db 61
     and 10001111b       ;06e3 e6 8f
-    bit 5,b             ;Bit 5 = HEAD SEL 2^1
+    bit 5,b             ;Bit 5 = ST-412 HEAD SEL 2^1
     jr z,l06ebh         ;06e7 28 02
-    set 4,a             ;Bit 4 = HEAD SEL 2^0
+    set 4,a             ;Bit 4 = ST-412 HEAD SEL 2^0
 l06ebh:
-    bit 6,b             ;Bit 6 = HEAD SEL 2^2
+    bit 6,b             ;Bit 6 = ST-412 HEAD SEL 2^2
     jr z,l06f1h         ;06ed 28 02
-    set 5,a             ;Bit 5 = HEAD SEL 2^1
+    set 5,a             ;Bit 5 = ST-412 HEAD SEL 2^1
 l06f1h:
-    bit 7,b             ;Bit 7 = REDUCE WR CURRENT
+    bit 7,b             ;Bit 7 = ST-412 REDUCE WR CURRENT
     jr z,l06f7h         ;06f3 28 02
-    set 6,a             ;Bit 6 = HEAD SEL 2^2
+    set 6,a             ;Bit 6 = ST-412 HEAD SEL 2^2
 l06f7h:
     out (pio0_drb),a    ;06f7 d3 61
     ld a,b              ;06f9 78
-    and 00011111b       ;Bit 7 = REDUCE WR CURRENT
-                        ;Bit 6 = HEAD SEL 2^2
-                        ;Bit 5 = HEAD SEL 2^1
+    and 00011111b       ;Bit 7 = ST-412 REDUCE WR CURRENT
+                        ;Bit 6 = ST-412 HEAD SEL 2^2
+                        ;Bit 5 = ST-412 HEAD SEL 2^1
     ld b,a              ;06fc 47
     ld a,14h            ;06fd 3e 14
     sub b               ;06ff 90
@@ -1525,7 +1525,7 @@ l083bh:
     rst 30h             ;083e f7
 l083fh:
     in a,(pio3_dra)     ;083f db 6c
-    set 7,a             ;Bit 7 = -WRITE DISABLE
+    set 7,a             ;Bit 7 = ST-412 -WRITE DISABLE
     out (pio3_dra),a    ;0843 d3 6c
 
     ld a,02h            ;0845 3e 02
@@ -1540,7 +1540,7 @@ l083fh:
     out (pio0_dra),a    ;0857 d3 60
 
     in a,(pio3_dra)     ;0859 db 6c
-    res 7,a             ;Bit 7 = -WRITE DISABLE
+    res 7,a             ;Bit 7 = ST-412 -WRITE DISABLE
     out (pio3_dra),a    ;085d d3 6c
 
     ld a,23h            ;085f 3e 23
@@ -1585,7 +1585,7 @@ l0887h:
     jr nz,l08a7h        ;08a1 20 04
 
     in a,(pio0_dra)     ;08a3 db 60
-    and 00010000b       ;Bit 4 = CRC ERROR
+    and 00010000b       ;Bit 4 = ST-412 CRC ERROR
 
 l08a7h:
     ld a,11111111b      ;08a7 3e ff
@@ -1612,7 +1612,7 @@ l08c9h:
     scf                 ;08cd 37
 
     in a,(pio3_dra)     ;08ce db 6c
-    res 7,a             ;Bit 7 = -WRITE DISABLE
+    res 7,a             ;Bit 7 = ST-412 -WRITE DISABLE
     out (pio3_dra),a    ;08d2 d3 6c
 
     ld a,11111111b      ;08d4 3e ff
@@ -1837,11 +1837,11 @@ sub_0a53h:
     ret z               ;0a63 c8
     jp m,l0a6dh         ;0a64 fa 6d 0a
     in a,(pio0_drb)     ;0a67 db 61
-    set 1,a             ;Bit 1 = DIRECTION IN
+    set 1,a             ;Bit 1 = ST-412 DIRECTION IN
     jr l0a78h           ;0a6b 18 0b
 l0a6dh:
     in a,(pio0_drb)     ;0a6d db 61
-    res 1,a             ;Bit 1 = DIRECTION IN
+    res 1,a             ;Bit 1 = ST-412 DIRECTION IN
     ex de,hl            ;0a71 eb
     ld hl,0             ;0a72 21 00 00
     or a                ;0a75 b7
@@ -1891,31 +1891,31 @@ l0ac7h:
     call wait_ready     ;Do ??? and wait until READY goes low
 
     in a,(pio3_dra)     ;0aca db 6c
-    res 7,a             ;Bit 7 = -WRITE DISABLE
+    res 7,a             ;Bit 7 = ST-412 -WRITE DISABLE
     out (pio3_dra),a    ;0ace d3 6c
 
     in a,(pio0_drb)     ;0ad0 db 61
-    set 1,a             ;Bit 1 = DIRECTION IN
+    set 1,a             ;Bit 1 = ST-412 DIRECTION IN
     out (pio0_drb),a    ;0ad4 d3 61
 
     ld hl,000ch         ;0ad6 21 0c 00
     call sub_0b17h      ;0ad9 cd 17 0b
 
     in a,(pio0_drb)     ;0adc db 61
-    res 1,a             ;Bit 1 = DIRECTION IN
+    res 1,a             ;Bit 1 = ST-412 DIRECTION IN
     out (pio0_drb),a    ;0ae0 d3 61
 
 l0ae2h:
     in a,(pio3_dra)     ;0ae2 db 6c
-    bit 6,a             ;Bit 6 = -TRACK 00
+    bit 6,a             ;Bit 6 = ST-412 -TRACK 00
     jr z,l0afah         ;0ae6 28 12
 
     call e_0289h        ;0ae8 cd 89 02
 
     in a,(pio0_drb)
-    set 3,a             ;Bit 3 = STEP
+    set 3,a             ;Bit 3 = ST-412 STEP
     out (pio0_drb),a
-    res 3,a             ;Bit 3 = STEP
+    res 3,a             ;Bit 3 = ST-412 STEP
     out (pio0_drb),a
 
     call wait_seek_cmpl ;0af5 cd 4e 0b
@@ -1968,9 +1968,9 @@ step_bc_times:
     call e_0289h        ;0b34 cd 89 02
 l0b37h:
     in a,(pio0_drb)
-    set 3,a             ;Bit 3 = STEP
+    set 3,a             ;Bit 3 = ST-412 STEP
     out (pio0_drb),a
-    res 3,a             ;Bit 3 = STEP
+    res 3,a             ;Bit 3 = ST-412 STEP
     out (pio0_drb),a
     ex (sp),hl          ;Waste time
     ex (sp),hl
@@ -1980,14 +1980,14 @@ l0b37h:
     ld a,b
     or c
     jr nz,l0b37h        ;Loop until BC=0
-    call wait_seek_cmpl ;Wait until -SEEK COMPLETE goes low
+    call wait_seek_cmpl ;Wait until ST-412 -SEEK COMPLETE goes low
     ret
 
 wait_seek_cmpl:
-;Wait until -SEEK COMPLETE goes low
+;Wait until ST-412 -SEEK COMPLETE goes low
 ;
     in a,(pio0_dra)     ;0b4e db 60
-    bit 0,a             ;Bit 0 = -SEEK COMPLETE
+    bit 0,a             ;Bit 0 = ST-412 -SEEK COMPLETE
     jr nz,wait_seek_cmpl ;0b52 20 fa
     ret                 ;0b54 c9
 
@@ -1995,7 +1995,7 @@ format_:
 ;Format the drive
 ;
     in a,(pio3_drb)     ;0b55 db 6d
-    bit 4,a             ;Bit 4 = -FORMAT ENABLE
+    bit 4,a             ;Bit 4 = Panel -FORMAT ENABLE
     ld a,09h            ;0b59 3e 09
     jp nz,l0a3fh        ;0b5b c2 3f 0a
 
@@ -2146,7 +2146,7 @@ l0c4fh:
 
 e_0c56h:
     ld a,0ffh           ;0c56 3e ff
-    res 7,a             ;Bit 7 = -WRITE DISABLE
+    res 7,a             ;Bit 7 = ST-412 -WRITE DISABLE
     out (pio3_dra),a    ;0c5a d3 6c
 
     ld a,0ffh           ;0c5c 3e ff
