@@ -577,12 +577,14 @@ l02a1h:
     out (ctc_ch2),a     ;02a1 d3 7e
     ret                 ;02a3 c9
 
-l02a4h:
-    call e_0289h        ;02a4 cd 89 02
+wait_ready:
+;Do ??? and wait until READY goes low
+;
+    call e_0289h        ;TODO what is e_0289h?
 
     in a,(pio0_drb)     ;02a7 db 61
     bit 0,a             ;Bit 0 = -READY
-    jr nz,l02a4h        ;02ab 20 f7
+    jr nz,wait_ready    ;02ab 20 f7
 
     ret                 ;02ad c9
 
@@ -1886,7 +1888,7 @@ l0a84h:
     halt                ;0ac6 76
 
 l0ac7h:
-    call l02a4h         ;0ac7 cd a4 02
+    call wait_ready     ;Do ??? and wait until READY goes low
 
     in a,(pio3_dra)     ;0aca db 6c
     res 7,a             ;Bit 7 = -WRITE DISABLE
@@ -1926,6 +1928,7 @@ l0afah:
     ld (600ch),hl       ;0b01 22 0c 60
     ret                 ;0b04 c9
 
+l0b05:
     ld a,02h            ;0b05 3e 02
     ld (6014h),a        ;0b07 32 14 60
 sub_0b0ah:
@@ -1941,7 +1944,6 @@ sub_0b17h:
     ld a,h              ;0b17 7c
     or l                ;0b18 b5
     jr z,l0b33h         ;0b19 28 18
-
 l0b1bh:
     push hl             ;0b1b e5
     ld bc,305           ;305 = Last cylinder number?
