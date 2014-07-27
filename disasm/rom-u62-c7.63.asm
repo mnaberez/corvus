@@ -408,7 +408,8 @@ spin_up:
 ;Wait for the mechanism to spin up.  This may take 15 seconds or so.
 ;Blink the "BUSY" LED on the front panel until the mechanism is ready.
 ;
-    call e_0289h        ;TODO: what is e_0289h?
+    call e_0289h        ;TODO Disable interrupts, Swap 6070h/6071h,
+                        ;     do something with ctc_ch2
     call blink          ;Blink the "BUSY" LED on the front panel
 
     in a,(pio0_drb)
@@ -416,16 +417,18 @@ spin_up:
     jr nz,spin_up       ;Loop until the mechanism is ready
 
 l01cah:
-    call e_0289h        ;01ca cd 89 02
+    call e_0289h        ;TODO Disable interrupts, Swap 6070h/6071h,
+                        ;     do something with ctc_ch2
 
-    in a,(pio0_dra)     ;01cd db 60
+    in a,(pio0_dra)
     bit 0,a             ;Bit 0 = ST-412 -SEEK COMPLETE
-    jr nz,l01cah        ;01d1 20 f7
+    jr nz,l01cah        ;Loop until -SEEK COMPLETE goes low
 
     call l0ac7h         ;01d3 cd c7 0a
     di                  ;01d6 f3
     ld sp,61edh         ;01d7 31 ed 61
-    call e_0289h        ;01da cd 89 02
+    call e_0289h        ;TODO Disable interrupts, Swap 6070h/6071h,
+                        ;     do something with ctc_ch2
 
     in a,(pio3_dra)     ;01dd db 6c
     set 0,a             ;Bit 0 = -TIMEOUT DISABLE (UB4:8)
@@ -555,17 +558,22 @@ l0274h:
     ret z               ;027f c8
     dec d               ;0280 15
     jr nz,l026eh        ;0281 20 eb
-    call e_0289h        ;0283 cd 89 02
+    call e_0289h        ;TODO Disable interrupts, Swap 6070h/6071h,
+                        ;     do something with ctc_ch2
     or 0ffh             ;0286 f6 ff
     ret                 ;0288 c9
 
 e_0289h:
-    di                  ;0289 f3
-    ld hl,(6070h)       ;028a 2a 70 60
-    ld a,h              ;028d 7c
-    ld h,l              ;028e 65
-    ld l,a              ;028f 6f
-    ld (6070h),hl       ;0290 22 70 60
+;Disable interrupts, Swap 6070h/6071h, do something with ctc_ch2
+;
+    di                  ;Disable Interrupts
+
+                        ;Swap 6070h and 6071h:
+    ld hl,(6070h)       ;  HL = (6070h)
+    ld a,h              ;  A = H
+    ld h,l              ;  H = L
+    ld l,a              ;  L = A
+    ld (6070h),hl       ;  (6070h) = HL
 
     in a,(pio3_drb)     ;0293 db 6d
     bit 4,a             ;Bit 4 = Panel -FORMAT ENABLE
@@ -582,7 +590,8 @@ l02a1h:
 wait_ready:
 ;Do ??? and wait until READY goes low
 ;
-    call e_0289h        ;TODO what is e_0289h?
+    call e_0289h        ;TODO Disable interrupts, Swap 6070h/6071h,
+                        ;     do something with ctc_ch2
 
     in a,(pio0_drb)     ;02a7 db 61
     bit 0,a             ;Bit 0 = ST-412 -READY
@@ -718,7 +727,8 @@ l031eh:
     ld a,11011111b      ;Bit 5 = -COMPL
     out (pio2_dra),a    ;0323 d3 68
 l0325h:
-    call e_0289h        ;0325 cd 89 02
+    call e_0289h        ;TODO Disable interrupts, Swap 6070h/6071h,
+                        ;     do something with ctc_ch2
     ei                  ;0328 fb
 
     in a,(pio2_dra)     ;0329 db 68
@@ -801,7 +811,8 @@ l03a0h:
     jr nz,e_0367h       ;03ae 20 b7
     ld a,07h            ;03b0 3e 07
     ld (6015h),a        ;03b2 32 15 60
-    call e_0289h        ;03b5 cd 89 02
+    call e_0289h        ;TODO Disable interrupts, Swap 6070h/6071h,
+                        ;     do something with ctc_ch2
     call e_0557h        ;03b8 cd 57 05
     call e_03f1h        ;03bb cd f1 03
     call e_0562h        ;03be cd 62 05
@@ -958,7 +969,8 @@ e_0489h:
     out (pio2_dra),a    ;04a7 d3 68
 l04a9h:
     di                  ;04a9 f3
-    call e_0289h        ;04aa cd 89 02
+    call e_0289h        ;TODO Disable interrupts, Swap 6070h/6071h,
+                        ;     do something with ctc_ch2
     ei                  ;04ad fb
     ld b,80h            ;04ae 06 80
 l04b0h:
@@ -1050,7 +1062,8 @@ l052bh:
     jr nz,l052bh        ;0534 20 f5
     ret                 ;0536 c9
 l0537h:
-    call e_0289h        ;0537 cd 89 02
+    call e_0289h        ;TODO Disable interrupts, Swap 6070h/6071h,
+                        ;     do something with ctc_ch2
     in a,(pio2_dra)     ;053a db 68
     bit 7,a             ;Bit 7 = -DRV.ACK
     jr nz,l0537h        ;053e 20 f7
@@ -1058,7 +1071,8 @@ l0540h:
     ld a,11111111b      ;0540 3e ff
     out (pio2_dra),a    ;0542 d3 68
 l0544h:
-    call e_0289h        ;0544 cd 89 02
+    call e_0289h        ;TODO Disable interrupts, Swap 6070h/6071h,
+                        ;     do something with ctc_ch2
 
     in a,(pio2_dra)     ;0547 db 68
     bit 7,a             ;Bit 7 = -DRV.ACK
@@ -1822,7 +1836,8 @@ l0a3fh:
     ret                 ;0a42 c9
 
 e_0a43h:
-    call e_0289h        ;0a43 cd 89 02
+    call e_0289h        ;TODO Disable interrupts, Swap 6070h/6071h,
+                        ;     do something with ctc_ch2
     call e_0c56h        ;0a46 cd 56 0c
     call sub_0958h      ;0a49 cd 58 09
     ret c               ;0a4c d8
@@ -1912,7 +1927,8 @@ l0ae2h:
     bit 6,a             ;Bit 6 = ST-412 -TRACK 00
     jr z,l0afah         ;0ae6 28 12
 
-    call e_0289h        ;0ae8 cd 89 02
+    call e_0289h        ;TODO Disable interrupts, Swap 6070h/6071h,
+                        ;     do something with ctc_ch2
 
     in a,(pio0_drb)
     set 3,a             ;Bit 3 = ST-412 STEP
@@ -1967,7 +1983,8 @@ l0b33h:
 step_bc_times:
 ;Pulse the STEP line BC times
 ;
-    call e_0289h        ;0b34 cd 89 02
+    call e_0289h        ;TODO Disable interrupts, Swap 6070h/6071h,
+                        ;     do something with ctc_ch2
 l0b37h:
     in a,(pio0_drb)
     set 3,a             ;Bit 3 = ST-412 STEP
@@ -2098,7 +2115,8 @@ l0c00h:
     ld hl,l0bf4h        ;0c02 21 f4 0b
 l0c05h:
     ld (6069h),hl       ;0c05 22 69 60
-    call e_0289h        ;0c08 cd 89 02
+    call e_0289h        ;TODO Disable interrupts, Swap 6070h/6071h,
+                        ;     do something with ctc_ch2
     ld a,b              ;0c0b 78
     or a                ;0c0c b7
     ret z               ;0c0d c8
