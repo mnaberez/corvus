@@ -871,7 +871,7 @@ l040eh:
     xor a               ;040e af
     ld (6011h),a        ;040f 32 11 60
     ld a,0d5h           ;0412 3e d5
-    jr l0486h           ;0414 18 70
+    jr out_pio2_dra     ;out (pio2_dra),a then ret
 l0416h:
     ld a,03h            ;0416 3e 03
     call sub_04eah      ;0418 cd ea 04
@@ -910,7 +910,7 @@ e_7a:
 sub_0443h:
     in a,(xferstb)      ;0443 db 78
     ld a,0f4h           ;0445 3e f4
-    jr l0486h           ;0447 18 3d
+    jr out_pio2_dra     ;out (pio2_dra),a then ret
 
 hostread_:
 ;Read BC bytes of data from the host
@@ -953,14 +953,17 @@ e_80:
     ld a,0c5h           ;047a 3e c5
     out (pio2_dra),a    ;047c d3 68
     ld a,0cdh           ;047e 3e cd
-    jr l0486h           ;0480 18 04
+    jr out_pio2_dra     ;out (pio2_dra),a then ret
 
 e_83:
     in a,(hsxclr)       ;0482 db 74
     ld a,0d7h           ;0484 3e d7
-l0486h:
-    out (pio2_dra),a    ;0486 d3 68
-    ret                 ;0488 c9
+
+out_pio2_dra:
+;Writes A to pio2_dra and returns
+;
+    out (pio2_dra),a
+    ret
 
 e_86:
     di                  ;0489 f3
