@@ -907,9 +907,19 @@ e_77:
 
 e_7a:
     ld a,(7000h)        ;0440 3a 00 70
+
 sub_0443h:
     in a,(xferstb)      ;0443 db 78
-    ld a,0f4h           ;0445 3e f4
+
+    ld a,11110100b      ;Byte to write to pio2_dra:
+                        ;  Bit 7 -DRV.ACK = 1
+                        ;  Bit 6 -SYNC    = 1
+                        ;  Bit 5 -COMPL   = 1
+                        ;  Bit 4 PIO RDY  = 1
+                        ;  Bit 3 -HSXFER  = 0
+                        ;  Bit 2 -ALT SEL = 1
+                        ;  Bit 1 -DRV.ACK = 0
+                        ;  Bit 0 BUS DIR  = 0
     jr out_pio2_dra     ;out (pio2_dra),a then ret
 
 hostread_:
@@ -950,14 +960,40 @@ l0469h:
     ret                 ;0479 c9
 
 e_80:
-    ld a,0c5h           ;047a 3e c5
-    out (pio2_dra),a    ;047c d3 68
-    ld a,0cdh           ;047e 3e cd
-    jr out_pio2_dra     ;out (pio2_dra),a then ret
+    ld a,11000101b      ;Byte to write to pio2_dra:
+                        ;  Bit 7 -DRV.ACK = 1
+                        ;  Bit 6 -SYNC    = 1
+                        ;  Bit 5 -COMPL   = 0
+                        ;  Bit 4 PIO RDY  = 0
+                        ;  Bit 3 -HSXFER  = 0
+                        ;  Bit 2 -ALT SEL = 1
+                        ;  Bit 1 -DRV.ACK = 0
+                        ;  Bit 0 BUS DIR  = 1
+    out (pio2_dra),a
+
+    ld a,11001101b      ;Byte to write to pio2_dra:
+                        ;  Bit 7 -DRV.ACK = 1
+                        ;  Bit 6 -SYNC    = 1
+                        ;  Bit 5 -COMPL   = 0
+                        ;  Bit 4 PIO RDY  = 0
+                        ;  Bit 3 -HSXFER  = 1
+                        ;  Bit 2 -ALT SEL = 1
+                        ;  Bit 1 -DRV.ACK = 0
+                        ;  Bit 0 BUS DIR  = 1
+    jr out_pio2_dra
 
 e_83:
-    in a,(hsxclr)       ;0482 db 74
-    ld a,0d7h           ;0484 3e d7
+    in a,(hsxclr)
+
+    ld a,11010111b      ;Byte to write to pio2_dra:
+                        ;  Bit 7 -DRV.ACK = 1
+                        ;  Bit 6 -SYNC    = 1
+                        ;  Bit 5 -COMPL   = 0
+                        ;  Bit 4 PIO RDY  = 1
+                        ;  Bit 3 -HSXFER  = 0
+                        ;  Bit 2 -ALT SEL = 1
+                        ;  Bit 1 -DRV.ACK = 1
+                        ;  Bit 0 BUS DIR  = 1
 
 out_pio2_dra:
 ;Writes A to pio2_dra and returns
