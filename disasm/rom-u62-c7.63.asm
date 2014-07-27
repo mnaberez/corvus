@@ -1916,7 +1916,7 @@ l0ae2h:
     res 3,a             ;Bit 3 = STEP
     out (pio0_drb),a
 
-    call sub_0b4eh      ;0af5 cd 4e 0b
+    call wait_seek_cmpl ;0af5 cd 4e 0b
     jr l0ae2h           ;0af8 18 e8
 
 l0afah:
@@ -1977,13 +1977,15 @@ l0b37h:
     ld a,b              ;0b46 78
     or c                ;0b47 b1
     jr nz,l0b37h        ;0b48 20 ed
-    call sub_0b4eh      ;0b4a cd 4e 0b
+    call wait_seek_cmpl ;0b4a cd 4e 0b
     ret                 ;0b4d c9
 
-sub_0b4eh:
+wait_seek_cmpl:
+;Wait until -SEEK COMPLETE goes low
+;
     in a,(pio0_dra)     ;0b4e db 60
     bit 0,a             ;Bit 0 = -SEEK COMPLETE
-    jr nz,sub_0b4eh     ;0b52 20 fa
+    jr nz,wait_seek_cmpl ;0b52 20 fa
     ret                 ;0b54 c9
 
 format_:
