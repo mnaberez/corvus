@@ -301,7 +301,7 @@ l010bh:                 ;
     or a                ;012c b7
     sbc hl,de           ;012d ed 52
 l012fh:
-    jp z,l01beh         ;012f ca be 01
+    jp z,spin_up         ;012f ca be 01
 
                         ;Long delay by counting in HL from 0000-FFFF:
     ld hl,0             ;  HL = 0 (seed value)
@@ -404,14 +404,16 @@ l01a9h:
 
     call l020ah         ;01bb cd 0a 02
 
-;TODO Is this waiting for the mechanism to spin up?
-l01beh:
-    call e_0289h        ;01be cd 89 02
-    call blink          ;01c1 cd ae 02
+spin_up:
+;Wait for the mechanism to spin up.  This may take 15 seconds or so.
+;Blink the "BUSY" LED on the front panel until the mechanism is ready.
+;
+    call e_0289h        ;TODO: what is e_0289h?
+    call blink          ;Blink the "BUSY" LED on the front panel
 
-    in a,(pio0_drb)     ;01c4 db 61
+    in a,(pio0_drb)
     bit 0,a             ;Bit 0 = ST-412 -READY
-    jr nz,l01beh        ;01c8 20 f4
+    jr nz,spin_up       ;Loop until the mechanism is ready
 
 l01cah:
     call e_0289h        ;01ca cd 89 02
