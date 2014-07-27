@@ -871,7 +871,7 @@ l040eh:
     xor a               ;040e af
     ld (6011h),a        ;040f 32 11 60
     ld a,0d5h           ;0412 3e d5
-    jr out_pio2_dra     ;out (pio2_dra),a then ret
+    jr out_pio2_dra2    ;out (pio2_dra),a then ret
 l0416h:
     ld a,03h            ;0416 3e 03
     call sub_04eah      ;0418 cd ea 04
@@ -920,7 +920,7 @@ sub_0443h:
                         ;  Bit 2 -ALT SEL = 1
                         ;  Bit 1 -DRV.ACK = 0
                         ;  Bit 0 BUS DIR  = 0
-    jr out_pio2_dra     ;out (pio2_dra),a then ret
+    jr out_pio2_dra2    ;out (pio2_dra),a then ret
 
 hostread_:
 ;Read BC bytes of data from the host
@@ -980,7 +980,7 @@ e_80:
                         ;  Bit 2 -ALT SEL = 1
                         ;  Bit 1 -DRV.ACK = 0
                         ;  Bit 0 BUS DIR  = 1
-    jr out_pio2_dra
+    jr out_pio2_dra2
 
 e_83:
     in a,(hsxclr)
@@ -995,7 +995,7 @@ e_83:
                         ;  Bit 1 -DRV.ACK = 1
                         ;  Bit 0 BUS DIR  = 1
 
-out_pio2_dra:
+out_pio2_dra2:
 ;Writes A to pio2_dra and returns
 ;
     out (pio2_dra),a
@@ -1137,7 +1137,7 @@ l0544h:
     jr z,l0544h         ;0551 28 f1
 
     ld a,0cfh           ;0553 3e cf
-    jr l055fh           ;0555 18 08
+    jr out_pio2_dra1    ;out (pio2_dra) then ret
 
 e_8c:
     ld a,01111111b      ;Bit 7 = ACTIVITY LED ("BUSY")
@@ -1146,16 +1146,19 @@ e_8c:
     in a,(hsxclr)       ;055b db 74
 
     ld a,11010101b      ;055d 3e d5
-l055fh:
-    out (pio2_dra),a    ;055f d3 68
-    ret                 ;0561 c9
+
+out_pio2_dra1:
+;Writes A to pio2_dra and returns
+;
+    out (pio2_dra),a
+    ret
 
 e_8f:
     ld a,11111111b      ;Bit 7 = ACTIVITY LED ("BUSY")
     out (pio0_dra),a    ;0564 d3 60
 
     ld a,0dfh           ;0566 3e df
-    jr l055fh           ;0568 18 f5
+    jr out_pio2_dra1    ;out (pio2_dra) then ret
 
 e_92:
     di                  ;056a f3
