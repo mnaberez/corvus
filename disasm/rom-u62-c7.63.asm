@@ -186,10 +186,12 @@ hostread:
     jp e_8c             ;TODO "BUSY" LED on, then HSXCLR, then pio2_dra?
     jp e_8f             ;TODO "BUSY" LED off, then set pio2_dra?
     jp e_92             ;0092 c3 6a 05
-    jp e_95             ;0095 c3 7d 05
+fatal:
+    jp fatal_           ;Fatal error has occurred.  Halt until reset.
     jp e_98             ;0098 c3 9b 05
     jp e_9b             ;009b c3 87 05
-    jp e_9e             ;009e c3 89 02
+    jp e_9e             ;009e TODO Disable interrupts, Swap 6070h/6071h,
+                        ;          do something with ctc_ch2
     jp e_a1             ;00a1 c3 65 0c
     jp e_a4             ;00a4 c3 41 0c
 ;called from prep code
@@ -375,7 +377,7 @@ l017bh:
 l0192h:
     cpi                 ;CP (HL), INC HL, DEC BC
 l0194h:
-    jp nz,e_95          ;0194 c2 7d 05
+    jp nz,fatal_        ;Fatal error has occurred.  Halt until reset.
     jp pe,l0192h        ;0197 ea 92 01
 
     rla                 ;019a 17
@@ -1190,16 +1192,18 @@ l0579h:
     ei                  ;057b fb
     ret                 ;057c c9
 
-e_95:
-    di                  ;057d f3
+fatal_:
+;Fatal error has occurred.  Halt until reset.
+;
+    di                  ;Disable Interrupts
 
     ld a,11111101b      ;Bit 1 = -UNIT SELECT 1 (UB4:7)
-    out (pio3_dra),a    ;0580 d3 6c
+    out (pio3_dra),a
 
     ld a,11011111b      ;Bit 5 = -COMPL
-    out (pio2_dra),a    ;0584 d3 68
+    out (pio2_dra),a
 
-    halt                ;0586 76
+    halt                ;Halt until reset (interrupts are disabled)
 
 e_9b:
     ld a,d              ;0587 7a
@@ -2227,7 +2231,7 @@ l0c05h:
     ld a,01h            ;0c1f 3e 01
     ld (81feh),a        ;0c21 32 fe 81
     rst 10h             ;0c24 d7
-    jp nz,e_95          ;0c25 c2 7d 05
+    jp nz,fatal_        ;Fatal error has occurred.  Halt until reset.
 l0c28h:
     ld hl,(6069h)       ;0c28 2a 69 60
     ld e,(hl)           ;0c2b 5e
