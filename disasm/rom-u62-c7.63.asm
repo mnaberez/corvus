@@ -2194,26 +2194,21 @@ e_03:
     ret                 ;0bf0 c9
 l0bf1h:
     jp e_a4             ;0bf1 c3 41 0c
-l0bf4h:
-    nop                 ;0bf4 00
-    ld c,b              ;0bf5 48
-    nop                 ;0bf6 00
-    ld c,d              ;0bf7 4a
-    nop                 ;0bf8 00
-    add a,b             ;0bf9 80
-    nop                 ;0bfa 00
-    add a,d             ;0bfb 82
-    nop                 ;0bfc 00
-    and b               ;0bfd a0
-    nop                 ;0bfe 00
-    and d               ;0bff a2
+
+table_1:
+    dw 4800h            ;0bf4 00 48
+    dw 4a00h            ;0bf6 00 4a
+    dw 8000h            ;0bf8 00 80
+    dw 8200h            ;0bfa 00 82
+    dw 0a000h           ;0bfc 00 a0
+    dw 0a200h           ;0bfe 00 a2
 
 e_28:
 ;called from prep code in read_firm_blk only
 ;
     pop hl              ;0c00 e1
     push de             ;0c01 d5
-    ld hl,l0bf4h        ;0c02 21 f4 0b
+    ld hl,table_1       ;0c02 21 f4 0b
 l0c05h:
     ld (6069h),hl       ;0c05 22 69 60
     call e_9e           ;TODO Disable interrupts, Swap 6070h/6071h,
