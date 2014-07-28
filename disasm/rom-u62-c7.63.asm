@@ -1256,7 +1256,7 @@ l05c9h:
     jp nz,l0608h        ;05cf c2 08 06
 
     call sub_06bch      ;05d2 cd bc 06
-    ld c,69h            ;05d5 0e 69
+    ld c,pio2_drb       ;05d5 0e 69
     ei                  ;05d7 fb
     in a,(pio2_drb)     ;Read data byte from host
     ld (hl),a           ;05da 77
