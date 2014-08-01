@@ -73,7 +73,7 @@ begrdy:     equ 70h     ;/BEGRDY
 hsxclr:     equ 74h     ;/HSXCLR
 xferstb:    equ 78h     ;/XFERSTB
 
-ctc:        equ 7ch     ;Z80 CTC
+ctc:        equ 7ch     ;Z80 CTC (U45)
 ctc_ch0:    equ ctc+0   ;  Channel 0 Register
 ctc_ch1:    equ ctc+1   ;  Channel 1 Register
 ctc_ch2:    equ ctc+2   ;  Channel 2 Register
@@ -774,7 +774,6 @@ l035ah:
     in a,(pio3_drb)     ;035a db 6d
     bit 4,a             ;Bit 4 = Panel -FORMAT ENABLE
     jr z,hostloop_      ;Jump to host command loop
-
 
     ld de,8006h
     ld bc,2000h
