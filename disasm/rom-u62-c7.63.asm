@@ -550,6 +550,7 @@ set_spares:
     ld (spares),a       ;Store A in (spares)
     ret
 
+l02ch:
     ld d,1eh            ;026c 16 1e
 l026eh:
     call e_a7           ;TODO -WRITE DISABLE=low, 6014h=0FFh, 6015h=0FFh?
@@ -774,9 +775,10 @@ l035ah:
     bit 4,a             ;Bit 4 = Panel -FORMAT ENABLE
     jr z,hostloop_      ;Jump to host command loop
 
-    ld de,8006h         ;0360 11 06 80
-    ld bc,2000h         ;0363 01 00 20
-    rst 28h             ;0366 ef
+
+    ld de,8006h
+    ld bc,2000h
+    rst 28h             ;TODO: does this load the firmware from the drive?
 
 hostloop_:
 ;Wait for a command from the host and process it
@@ -1058,7 +1060,6 @@ l04b0h:
     in a,(pio2_drb)     ;Read data byte from host
     pop hl              ;04c6 e1
     ei                  ;04c7 fb
-l04c8h:
     ld hl,60bdh         ;04c8 21 bd 60
     bit 7,(hl)          ;04cb cb 7e
     jr z,l04e4h         ;04cd 28 15
@@ -1635,7 +1636,7 @@ e_1b:
     ld (81fch),a        ;0847 32 fc 81
     ld a,0b8h           ;084a 3e b8
     jr l0871h           ;084c 18 23
-    call sub_08f7h      ;084e cd f7 08
+    call sub_08f7h      ;TODO turn "BUSY" LED on, pio0_cra, ei, reti
     pop af              ;0851 f1
     call 8dfch          ;0852 cd fc 8d
 
@@ -1676,7 +1677,7 @@ l0887h:
     halt                ;0887 76
 
     jr l0887h           ;0888 18 fd
-    call sub_08f7h      ;088a cd f7 08
+    call sub_08f7h      ;TODO turn "BUSY" LED on, pio0_cra, ei, reti
     pop af              ;088d f1
 
     in a,(pio3_dra)     ;088e db 6c
@@ -1741,10 +1742,13 @@ l08c9h:
     ld hl,0             ;08ef 21 00 00
     ld (6100h),hl       ;08f2 22 00 61
     jr l08ffh           ;08f5 18 08
-sub_08f7h:
 
+sub_08f7h:
+;TODO turn "BUSY" LED on, pio0_cra, ei, reti
+;
     ld a,01111111b      ;Bit 7 = ACTIVITY LED ("BUSY")
-    out (pio0_dra),a    ;08f9 d3 60
+    out (pio0_dra),a    ;Turn "BUSY" on (low state turns LED on)
+                        ;  Set other bits to ??
 
     ld a,03h            ;08fb 3e 03
     out (pio0_cra),a    ;08fd d3 62
@@ -1860,7 +1864,7 @@ l09afh:
     ld de,(63feh)       ;09bc ed 5b fe 63
     ld a,50h            ;09c0 3e 50
     jp l0871h           ;09c2 c3 71 08
-    call sub_08f7h      ;09c5 cd f7 08
+    call sub_08f7h      ;TODO turn "BUSY" LED on, pio0_cra, ei, reti
     pop af              ;09c8 f1
 
     in a,(pio3_dra)     ;09c9 db 6c
