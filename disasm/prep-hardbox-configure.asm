@@ -97,7 +97,7 @@ read_firm_blk:
 ;Read a block of Corvus firmware
 ;
 ;Command byte (0x32) has already been read
-;1 byte left to read: head/sector
+;1 byte left to read: head/sector: head (bits 7-5), sector (bits 4-0)
 ;
     ld bc,0001h         ;8053 01 01 00
     call hostread       ;8056 cd 7d 00
@@ -115,7 +115,9 @@ writ_firm_blk:
 ;Write a block of Corvus firmware
 ;
 ;Command byte (0x33) has already been read
-;513 bytes left to read: 1 byte head/sector, 512 bytes data
+;513 bytes left to read:
+;  1 byte head/sector: head (bits 7-5), sector (bits 4-0)
+;  512 bytes data
 ;
     ld bc,0201h         ;806a 01 01 02
     call hostread       ;806d cd 7d 00
