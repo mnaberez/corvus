@@ -1476,6 +1476,8 @@ sub_0711h:
 e_10:
 ;called from prep code in verify_drive only
 ;
+;Sets Z flag on success, clears Z flag on failure
+;
     xor a               ;071f af
     ld (60b9h),a        ;0720 32 b9 60
     ld a,03h            ;0723 3e 03
@@ -1764,19 +1766,19 @@ e_aa:
     ld (head_sec),a     ;0905 32 fd 81
     ld hl,(60b7h)       ;0908 2a b7 60
     ld (cylinder),hl    ;090b 22 fe 81
-    rst 10h             ;090e d7
-    ret nz              ;090f c0
+    rst 10h             ;Read the sector
+    ret nz              ;Failed?  Return.
     call sub_0944h      ;0910 cd 44 09
     ldir                ;0913 ed b0
     ret z               ;0915 c8
-    rst 10h             ;0916 d7
-    ret nz              ;0917 c0
+    rst 10h             ;Read the sector
+    ret nz              ;Failed?  Return.
     call sub_0944h      ;0918 cd 44 09
     ld d,0a2h           ;091b 16 a2
     ldir                ;091d ed b0
     ret z               ;091f c8
-    rst 10h             ;0920 d7
-    ret nz              ;0921 c0
+    rst 10h             ;Read the sector
+    ret nz              ;Failed?  Return.
     jr sub_0944h        ;0922 18 20
 
 e_ad:
