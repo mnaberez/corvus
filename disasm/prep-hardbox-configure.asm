@@ -124,11 +124,11 @@ writ_firm_blk:
     ld a,(hl)           ;8070 7e
     ld (head_sec),a     ;8071 32 fd 81
     ld hl,0000h         ;8074 21 00 00
-    ld (l81feh),hl      ;8077 22 fe 81
+    ld (cylinder),hl    ;8077 22 fe 81
     rst 20h             ;807a e7
     jp nz,finish_cmd    ;807b c2 8a 81
     ld hl,0001h         ;807e 21 01 00
-    ld (l81feh),hl      ;8081 22 fe 81
+    ld (cylinder),hl    ;8081 22 fe 81
     rst 20h             ;8084 e7
     ld hl,0000h         ;8085 21 00 00
     ld (6012h),hl       ;8088 22 12 60
@@ -147,7 +147,7 @@ verify_drive:
     xor a               ;8099 af
     ld (head_sec),a     ;809a 32 fd 81
     ld hl,0000h         ;809d 21 00 00
-    ld (l81feh),hl      ;80a0 22 fe 81
+    ld (cylinder),hl    ;80a0 22 fe 81
 l80a3h:
     call sub_80cah      ;80a3 cd ca 80
     call sub_80e8h      ;80a6 cd e8 80
@@ -195,9 +195,9 @@ sub_80e8h:
     jr c,l8113h         ;80fa 38 17
     xor a               ;80fc af
     ld (head_sec),a     ;80fd 32 fd 81
-    ld hl,(l81feh)      ;8100 2a fe 81
+    ld hl,(cylinder)    ;8100 2a fe 81
     inc hl              ;8103 23
-    ld (l81feh),hl      ;8104 22 fe 81
+    ld (cylinder),hl    ;8104 22 fe 81
     ex de,hl            ;8107 eb
     ld hl,(6002h)       ;8108 2a 02 60
     or a                ;810b b7
@@ -228,7 +228,7 @@ l8120h:
     and 07h             ;8136 e6 07
     ld (hl),a           ;8138 77
     inc hl              ;8139 23
-    ld bc,(l81feh)      ;813a ed 4b fe 81
+    ld bc,(cylinder)    ;813a ed 4b fe 81
     ld (hl),c           ;813e 71
     inc hl              ;813f 23
     ld (hl),b           ;8140 70
@@ -303,9 +303,9 @@ l81fch:
 head_sec:
     db 0                ;head/sector: head (bits 7-5), sector (bits 4-0)
                         ;used by ROM at 0afbh, 0b68h, 0b81h, ...
-l81feh:
-    dw 0                ;used by ROM at 01f4h, 0711h, 0719h, ...
-
+cylinder:
+    dw 0                ;cylinder (word)
+                        ;used by ROM at 01f4h, 0711h, 0719h, ...
 l8200h:
     ;512-byte buffer used to store the format pattern
     ;and for an unknown purpose in the verify command

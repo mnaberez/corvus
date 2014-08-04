@@ -87,6 +87,7 @@ capacity:   equ 606dh   ;Capacity in 512-byte blocks (word)
 reserved:   equ 60aeh   ;Number of tracks reserved for firmware (byte)
 spares:     equ 61fdh   ;Number of tracks reserved for spares (byte)
 head_sec:   equ 81fdh   ;Head/sector: head (bits 7-5), sector (bits 4-0)
+cylinder:   equ 81feh   ;Cylinder (word)
 
     org 0000h
 
@@ -450,7 +451,7 @@ l01cah:
     call e_33           ;01eb cd 0a 02
     call e_77           ;TODO sets up PIO2 CRB (host data bus port)
     ld hl,0             ;01f1 21 00 00
-    ld (81feh),hl       ;01f4 22 fe 81
+    ld (cylinder),hl    ;01f4 22 fe 81
     ld (600ch),hl       ;01f7 22 0c 60
     ld (6004h),hl       ;01fa 22 04 60
     xor a               ;01fd af
@@ -1465,11 +1466,11 @@ l070dh:
     ret                 ;0710 c9
 
 sub_0711h:
-    ld hl,(81feh)       ;0711 2a fe 81
+    ld hl,(cylinder)    ;0711 2a fe 81
     push hl             ;0714 e5
     call e_23           ;0715 cd c7 0a
     pop hl              ;0718 e1
-    ld (81feh),hl       ;0719 22 fe 81
+    ld (cylinder),hl    ;0719 22 fe 81
     jp e_a4             ;071c c3 41 0c
 
 e_10:
@@ -1762,7 +1763,7 @@ e_aa:
     ld a,(60b6h)        ;0902 3a b6 60
     ld (head_sec),a     ;0905 32 fd 81
     ld hl,(60b7h)       ;0908 2a b7 60
-    ld (81feh),hl       ;090b 22 fe 81
+    ld (cylinder),hl    ;090b 22 fe 81
     rst 10h             ;090e d7
     ret nz              ;090f c0
     call sub_0944h      ;0910 cd 44 09
@@ -1782,7 +1783,7 @@ e_ad:
     ld a,(60b6h)        ;0924 3a b6 60
     ld (head_sec),a     ;0927 32 fd 81
     ld hl,(60b7h)       ;092a 2a b7 60
-    ld (81feh),hl       ;092d 22 fe 81
+    ld (cylinder),hl    ;092d 22 fe 81
     rst 18h             ;0930 df
     ret nz              ;0931 c0
     call sub_0944h      ;0932 cd 44 09
@@ -1811,7 +1812,7 @@ sub_0958h:
     and 00011111b       ;095e e6 1f
     cp (hl)             ;0960 be
     jr nc,l096fh        ;0961 30 0c
-    ld de,(81feh)       ;0963 ed 5b fe 81
+    ld de,(cylinder)    ;0963 ed 5b fe 81
     ld hl,(last_cyl)    ;0967 2a 02 60
     or a                ;096a b7
     sbc hl,de           ;096b ed 52
@@ -1823,7 +1824,7 @@ l096fh:
     scf                 ;0974 37
     ret                 ;0975 c9
 sub_0976h:
-    ld hl,(81feh)       ;0976 2a fe 81
+    ld hl,(cylinder)    ;0976 2a fe 81
     ld bc,(600ch)       ;0979 ed 4b 0c 60
     or a                ;097d b7
     sbc hl,bc           ;097e ed 42
@@ -1839,7 +1840,7 @@ sub_0987h:
     ld a,0bh            ;098f 3e 0b
     jr l09a0h           ;0991 18 0d
 sub_0993h:
-    ld hl,(81feh)       ;0993 2a fe 81
+    ld hl,(cylinder)    ;0993 2a fe 81
     ld de,(61feh)       ;0996 ed 5b fe 61
     or a                ;099a b7
     sbc hl,de           ;099b ed 52
@@ -1944,7 +1945,7 @@ e_0b:
     call e_a7           ;TODO -WRITE DISABLE=low, 6014h=0FFh, 6015h=0FFh?
     call sub_0958h      ;0a49 cd 58 09
     ret c               ;0a4c d8
-    ld hl,(81feh)       ;0a4d 2a fe 81
+    ld hl,(cylinder)    ;0a4d 2a fe 81
     ld (6004h),hl       ;0a50 22 04 60
 sub_0a53h:
     in a,(pio3_dra)     ;0a53 db 6c
@@ -2128,7 +2129,7 @@ format_:
 
     call e_23           ;0b5e cd c7 0a
     ld hl,0             ;0b61 21 00 00
-    ld (81feh),hl       ;0b64 22 fe 81
+    ld (cylinder),hl    ;0b64 22 fe 81
     xor a               ;0b67 af
     ld (head_sec),a     ;0b68 32 fd 81
 l0b6bh:
@@ -2192,9 +2193,9 @@ e_03:
     jr c,l0bf1h         ;0bd8 38 17
     xor a               ;0bda af
     ld (head_sec),a     ;0bdb 32 fd 81
-    ld hl,(81feh)       ;0bde 2a fe 81
+    ld hl,(cylinder)    ;0bde 2a fe 81
     inc hl              ;0be1 23
-    ld (81feh),hl       ;0be2 22 fe 81
+    ld (cylinder),hl    ;0be2 22 fe 81
     ex de,hl            ;0be5 eb
     ld hl,(last_cyl)    ;0be6 2a 02 60
     or a                ;0be9 b7
@@ -2231,11 +2232,11 @@ l0c05h:
     ld a,c              ;0c12 79
     ld (head_sec),a     ;0c13 32 fd 81
     ld hl,0             ;0c16 21 00 00
-    ld (81feh),hl       ;0c19 22 fe 81
+    ld (cylinder),hl    ;0c19 22 fe 81
     rst 10h             ;0c1c d7
     jr z,l0c28h         ;0c1d 28 09
     ld a,01h            ;0c1f 3e 01
-    ld (81feh),a        ;0c21 32 fe 81
+    ld (cylinder),a     ;0c21 32 fe 81
     rst 10h             ;0c24 d7
     jp nz,fatal_        ;Fatal error has occurred.  Halt until reset.
 l0c28h:
@@ -2340,7 +2341,7 @@ l0cb8h:
     ld a,(60b6h)        ;0cb8 3a b6 60
     ld (head_sec),a     ;0cbb 32 fd 81
     ld hl,(60b7h)       ;0cbe 2a b7 60
-    ld (81feh),hl       ;0cc1 22 fe 81
+    ld (cylinder),hl    ;0cc1 22 fe 81
     jr l0d16h           ;0cc4 18 50
 l0cc6h:
     ex de,hl            ;0cc6 eb
@@ -2371,7 +2372,7 @@ l0cc6h:
     ld de,(heads)       ;0cf0 ed 5b 09 60
     ld d,a              ;0cf4 57
     rst 8               ;0cf5 cf
-    ld (81feh),hl       ;0cf6 22 fe 81
+    ld (cylinder),hl    ;0cf6 22 fe 81
     pop bc              ;0cf9 c1
     ld a,c              ;0cfa 79
     ld (60bch),a        ;0cfb 32 bc 60
@@ -2385,7 +2386,7 @@ l0cc6h:
     ld (head_sec),a     ;0d07 32 fd 81
     ld a,(head_sec)     ;0d0a 3a fd 81
     ld (60b6h),a        ;0d0d 32 b6 60
-    ld hl,(81feh)       ;0d10 2a fe 81
+    ld hl,(cylinder)    ;0d10 2a fe 81
     ld (60b7h),hl       ;0d13 22 b7 60
 l0d16h:
     call sub_0958h      ;0d16 cd 58 09
@@ -2419,7 +2420,7 @@ e_b0:
     ld a,(60b6h)        ;0d3d 3a b6 60
     ld (head_sec),a     ;0d40 32 fd 81
     ld hl,(60b7h)       ;0d43 2a b7 60
-    ld (81feh),hl       ;0d46 22 fe 81
+    ld (cylinder),hl    ;0d46 22 fe 81
     ld hl,(60b4h)       ;0d49 2a b4 60
     inc hl              ;0d4c 23
     ld (60b4h),hl       ;0d4d 22 b4 60
@@ -2481,9 +2482,9 @@ sub_0d9eh:
     and 00011111b       ;0db1 e6 1f
     ld (head_sec),a     ;0db3 32 fd 81
     ld (60b6h),a        ;0db6 32 b6 60
-    ld hl,(81feh)       ;0db9 2a fe 81
+    ld hl,(cylinder)    ;0db9 2a fe 81
     inc hl              ;0dbc 23
-    ld (81feh),hl       ;0dbd 22 fe 81
+    ld (cylinder),hl    ;0dbd 22 fe 81
     ld (60b7h),hl       ;0dc0 22 b7 60
     ret                 ;0dc3 c9
 l0dc4h:

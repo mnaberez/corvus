@@ -98,7 +98,7 @@ format_drive:
     ld de,l8200h        ;8052 11 00 82
     ldir                ;Copy BC bytes from (HL) to (DE)
     ld hl,0000h         ;8057 21 00 00
-    ld (l81feh),hl      ;805a 22 fe 81
+    ld (cylinder),hl    ;805a 22 fe 81
     call format         ;805d cd 3d 00
     ld hl,0000h         ;8060 21 00 00
     ld (6012h),hl       ;8063 22 12 60
@@ -113,7 +113,7 @@ read_firm_blk:
     call _read_byte     ;A = read 1 byte from the host
     ld (head_sec),a     ;806c 32 fd 81
     ld hl,0000h         ;806f 21 00 00
-    ld (l81feh),hl      ;8072 22 fe 81
+    ld (cylinder),hl    ;8072 22 fe 81
     rst 10h             ;8075 d7
     ld hl,7600h         ;8076 21 00 76
     ld (6012h),hl       ;8079 22 12 60
@@ -132,11 +132,11 @@ writ_firm_blk:
     ld a,(hl)           ;8085 7e
     ld (head_sec),a     ;8086 32 fd 81
     ld hl,0000h         ;8089 21 00 00
-    ld (l81feh),hl      ;808c 22 fe 81
+    ld (cylinder),hl    ;808c 22 fe 81
     rst 20h             ;808f e7
     jp nz,finish_cmd    ;8090 c2 a0 81
     ld hl,0001h         ;8093 21 01 00
-    ld (l81feh),hl      ;8096 22 fe 81
+    ld (cylinder),hl    ;8096 22 fe 81
     rst 20h             ;8099 e7
     ld hl,0000h         ;809a 21 00 00
     ld (6012h),hl       ;809d 22 12 60
@@ -154,7 +154,7 @@ verify_drive:
     ld (0a200h),a       ;80aa 32 00 a2
     ld (head_sec),a     ;80ad 32 fd 81
     ld hl,0000h         ;80b0 21 00 00
-    ld (l81feh),hl      ;80b3 22 fe 81
+    ld (cylinder),hl    ;80b3 22 fe 81
 l80b6h:
     call sub_80ddh      ;80b6 cd dd 80
     call sub_810dh      ;80b9 cd 0d 81
@@ -208,9 +208,9 @@ sub_810dh:
     jr c,l8138h         ;811f 38 17
     xor a               ;8121 af
     ld (head_sec),a     ;8122 32 fd 81
-    ld hl,(l81feh)      ;8125 2a fe 81
+    ld hl,(cylinder)    ;8125 2a fe 81
     inc hl              ;8128 23
-    ld (l81feh),hl      ;8129 22 fe 81
+    ld (cylinder),hl    ;8129 22 fe 81
     ex de,hl            ;812c eb
     ld hl,(6002h)       ;812d 2a 02 60
     or a                ;8130 b7
@@ -242,7 +242,7 @@ l8147h:
     and 07h             ;815d e6 07
     ld (hl),a           ;815f 77
     inc hl              ;8160 23
-    ld bc,(l81feh)      ;8161 ed 4b fe 81
+    ld bc,(cylinder)    ;8161 ed 4b fe 81
     ld (hl),c           ;8165 71
     inc hl              ;8166 23
     ld (hl),b           ;8167 70
@@ -344,8 +344,9 @@ l81fch:
 head_sec:
     db 0                ;head/sector: head (bits 7-5), sector (bits 4-0)
                         ;used by ROM at 0afbh, 0b68h, 0b81h, ...
-l81feh:
-    dw 0101h            ;used by ROM at 01f4h, 0711h, 0719h, ...
+cylinder:
+    dw 0101h            ;cylinder (word)
+                ;used by ROM at 01f4h, 0711h, 0719h, ...
 
 l8200h:
     ;512-byte buffer used to store the format pattern
