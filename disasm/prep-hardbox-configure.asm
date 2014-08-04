@@ -122,7 +122,7 @@ writ_firm_blk:
     ld bc,0201h         ;806a 01 01 02
     call hostread       ;806d cd 7d 00
     ld a,(hl)           ;8070 7e
-    ld (l81fdh),a       ;8071 32 fd 81
+    ld (head_sec),a     ;8071 32 fd 81
     ld hl,0000h         ;8074 21 00 00
     ld (l81feh),hl      ;8077 22 fe 81
     rst 20h             ;807a e7
@@ -145,7 +145,7 @@ verify_drive:
     ld a,00h            ;8094 3e 00
     ld (0a200h),a       ;8096 32 00 a2
     xor a               ;8099 af
-    ld (l81fdh),a       ;809a 32 fd 81
+    ld (head_sec),a     ;809a 32 fd 81
     ld hl,0000h         ;809d 21 00 00
     ld (l81feh),hl      ;80a0 22 fe 81
 l80a3h:
@@ -172,11 +172,11 @@ sub_80cah:
     call 000bh          ;80ca cd 0b 00
     call sub_8193h      ;80cd cd 93 81
     ret nz              ;80d0 c0
-    ld a,(l81fdh)       ;80d1 3a fd 81
+    ld a,(head_sec)     ;80d1 3a fd 81
     and 0e0h            ;80d4 e6 e0
     ld c,00h            ;80d6 0e 00
     call sub_8116h      ;80d8 cd 16 81
-    ld a,(l81fdh)       ;80db 3a fd 81
+    ld a,(head_sec)     ;80db 3a fd 81
     and 0e0h            ;80de e6 e0
     add a,01h           ;80e0 c6 01
     call sub_8116h      ;80e2 cd 16 81
@@ -187,14 +187,14 @@ sub_80e8h:
     rrca                ;80ec 0f
     rrca                ;80ed 0f
     ld b,a              ;80ee 47
-    ld a,(l81fdh)       ;80ef 3a fd 81
+    ld a,(head_sec)     ;80ef 3a fd 81
     and 0e0h            ;80f2 e6 e0
     add a,20h           ;80f4 c6 20
-    ld (l81fdh),a       ;80f6 32 fd 81
+    ld (head_sec),a     ;80f6 32 fd 81
     cp b                ;80f9 b8
     jr c,l8113h         ;80fa 38 17
     xor a               ;80fc af
-    ld (l81fdh),a       ;80fd 32 fd 81
+    ld (head_sec),a     ;80fd 32 fd 81
     ld hl,(l81feh)      ;8100 2a fe 81
     inc hl              ;8103 23
     ld (l81feh),hl      ;8104 22 fe 81
@@ -215,13 +215,13 @@ sub_8116h:
     ld (hl),a           ;811e 77
     ld a,b              ;811f 78
 l8120h:
-    ld (l81fdh),a       ;8120 32 fd 81
+    ld (head_sec),a     ;8120 32 fd 81
     rst 30h             ;8123 f7
     call 0013h          ;8124 cd 13 00
     jr nc,l817dh        ;8127 30 54
     rst 10h             ;8129 d7
     ld hl,(6012h)       ;812a 2a 12 60
-    ld a,(l81fdh)       ;812d 3a fd 81
+    ld a,(head_sec)     ;812d 3a fd 81
     rlc a               ;8130 cb 07
     rlc a               ;8132 cb 07
     rlc a               ;8134 cb 07
@@ -233,7 +233,7 @@ l8120h:
     inc hl              ;813f 23
     ld (hl),b           ;8140 70
     inc hl              ;8141 23
-    ld a,(l81fdh)       ;8142 3a fd 81
+    ld a,(head_sec)     ;8142 3a fd 81
     and 1fh             ;8145 e6 1f
     ld (hl),a           ;8147 77
     inc hl              ;8148 23
@@ -253,17 +253,17 @@ l8158h:
     ldir                ;Copy BC bytes from (HL) to (DE)
     rst 18h             ;8166 df
     call 00a7h          ;8167 cd a7 00
-    ld a,(l81fdh)       ;816a 3a fd 81
+    ld a,(head_sec)     ;816a 3a fd 81
     add a,02h           ;816d c6 02
-    ld (l81fdh),a       ;816f 32 fd 81
+    ld (head_sec),a     ;816f 32 fd 81
     ld hl,60cah         ;8172 21 ca 60
     dec (hl)            ;8175 35
     ret z               ;8176 c8
-    ld a,(l81fdh)       ;8177 3a fd 81
+    ld a,(head_sec)     ;8177 3a fd 81
     jp l8120h           ;817a c3 20 81
 
 l817dh:
-    ld a,(l81fdh)       ;817d 3a fd 81
+    ld a,(head_sec)     ;817d 3a fd 81
     add a,02h           ;8180 c6 02
     ld hl,60cah         ;8182 21 ca 60
     dec (hl)            ;8185 35
@@ -300,8 +300,9 @@ l81fah:
     dw 0                ;used by ROM at 0c69h
 l81fch:
     db 0                ;used by ROM at 0847h
-l81fdh:
-    db 0                ;used by ROM at 0afbh, 0b68h, 0b81h, ...
+head_sec:
+    db 0                ;head/sector: head (bits 7-5), sector (bits 4-0)
+                        ;used by ROM at 0afbh, 0b68h, 0b81h, ...
 l81feh:
     dw 0                ;used by ROM at 01f4h, 0711h, 0719h, ...
 

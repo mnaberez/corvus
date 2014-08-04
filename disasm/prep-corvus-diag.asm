@@ -111,7 +111,7 @@ read_firm_blk:
 ;1 byte left to read: head/sector: head (bits 7-5), sector (bits 4-0)
 ;
     call _read_byte     ;A = read 1 byte from the host
-    ld (l81fdh),a       ;806c 32 fd 81
+    ld (head_sec),a     ;806c 32 fd 81
     ld hl,0000h         ;806f 21 00 00
     ld (l81feh),hl      ;8072 22 fe 81
     rst 10h             ;8075 d7
@@ -130,7 +130,7 @@ writ_firm_blk:
     ld bc,0201h         ;BC = 513 bytes to read
     call _read_buf      ;Read BC bytes from the host
     ld a,(hl)           ;8085 7e
-    ld (l81fdh),a       ;8086 32 fd 81
+    ld (head_sec),a     ;8086 32 fd 81
     ld hl,0000h         ;8089 21 00 00
     ld (l81feh),hl      ;808c 22 fe 81
     rst 20h             ;808f e7
@@ -152,7 +152,7 @@ verify_drive:
     ld (6012h),hl       ;80a6 22 12 60
     xor a               ;80a9 af
     ld (0a200h),a       ;80aa 32 00 a2
-    ld (l81fdh),a       ;80ad 32 fd 81
+    ld (head_sec),a     ;80ad 32 fd 81
     ld hl,0000h         ;80b0 21 00 00
     ld (l81feh),hl      ;80b3 22 fe 81
 l80b6h:
@@ -178,18 +178,18 @@ sub_80ddh:
     call 000bh          ;80dd cd 0b 00
     call sub_81a9h      ;80e0 cd a9 81
     ret nz              ;80e3 c0
-    ld a,(l81fdh)       ;80e4 3a fd 81
+    ld a,(head_sec)     ;80e4 3a fd 81
     and 0e0h            ;80e7 e6 e0
     call sub_813bh      ;80e9 cd 3b 81
-    ld a,(l81fdh)       ;80ec 3a fd 81
+    ld a,(head_sec)     ;80ec 3a fd 81
     and 0e0h            ;80ef e6 e0
     add a,01h           ;80f1 c6 01
     call sub_813bh      ;80f3 cd 3b 81
-    ld a,(l81fdh)       ;80f6 3a fd 81
+    ld a,(head_sec)     ;80f6 3a fd 81
     and 0e0h            ;80f9 e6 e0
     add a,02h           ;80fb c6 02
     call sub_813bh      ;80fd cd 3b 81
-    ld a,(l81fdh)       ;8100 3a fd 81
+    ld a,(head_sec)     ;8100 3a fd 81
     and 0e0h            ;8103 e6 e0
     add a,03h           ;8105 c6 03
     call sub_813bh      ;8107 cd 3b 81
@@ -200,14 +200,14 @@ sub_810dh:
     rrca                ;8111 0f
     rrca                ;8112 0f
     ld b,a              ;8113 47
-    ld a,(l81fdh)       ;8114 3a fd 81
+    ld a,(head_sec)     ;8114 3a fd 81
     and 0e0h            ;8117 e6 e0
     add a,20h           ;8119 c6 20
-    ld (l81fdh),a       ;811b 32 fd 81
+    ld (head_sec),a     ;811b 32 fd 81
     cp b                ;811e b8
     jr c,l8138h         ;811f 38 17
     xor a               ;8121 af
-    ld (l81fdh),a       ;8122 32 fd 81
+    ld (head_sec),a     ;8122 32 fd 81
     ld hl,(l81feh)      ;8125 2a fe 81
     inc hl              ;8128 23
     ld (l81feh),hl      ;8129 22 fe 81
@@ -229,13 +229,13 @@ sub_813bh:
     ld (hl),a           ;8145 77
     ld a,b              ;8146 78
 l8147h:
-    ld (l81fdh),a       ;8147 32 fd 81
+    ld (head_sec),a     ;8147 32 fd 81
     rst 30h             ;814a f7
     call 0013h          ;814b cd 13 00
     jr nc,l8193h        ;814e 30 43
     rst 10h             ;8150 d7
     ld hl,(6012h)       ;8151 2a 12 60
-    ld a,(l81fdh)       ;8154 3a fd 81
+    ld a,(head_sec)     ;8154 3a fd 81
     rlc a               ;8157 cb 07
     rlc a               ;8159 cb 07
     rlc a               ;815b cb 07
@@ -247,7 +247,7 @@ l8147h:
     inc hl              ;8166 23
     ld (hl),b           ;8167 70
     inc hl              ;8168 23
-    ld a,(l81fdh)       ;8169 3a fd 81
+    ld a,(head_sec)     ;8169 3a fd 81
     and 1fh             ;816c e6 1f
     ld (hl),a           ;816e 77
     inc hl              ;816f 23
@@ -267,7 +267,7 @@ l8184h:
     rst 18h             ;818f df
     call 00a7h          ;8190 cd a7 00
 l8193h:
-    ld a,(l81fdh)       ;8193 3a fd 81
+    ld a,(head_sec)     ;8193 3a fd 81
     add a,04h           ;8196 c6 04
     ld hl,60cah         ;8198 21 ca 60
     dec (hl)            ;819b 35
@@ -341,8 +341,9 @@ l81fah:
     dw 0                ;used by ROM at 0c69h
 l81fch:
     db 2                ;used by ROM at 0847h
-l81fdh:
-    db 0                ;used by ROM at 0afbh, 0b68h, 0b81h, ...
+head_sec:
+    db 0                ;head/sector: head (bits 7-5), sector (bits 4-0)
+                        ;used by ROM at 0afbh, 0b68h, 0b81h, ...
 l81feh:
     dw 0101h            ;used by ROM at 01f4h, 0711h, 0719h, ...
 

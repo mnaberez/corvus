@@ -86,6 +86,7 @@ cylinders:  equ 600eh   ;Number of cylinders (word)
 capacity:   equ 606dh   ;Capacity in 512-byte blocks (word)
 reserved:   equ 60aeh   ;Number of tracks reserved for firmware (byte)
 spares:     equ 61fdh   ;Number of tracks reserved for spares (byte)
+head_sec:   equ 81fdh   ;Head/sector: head (bits 7-5), sector (bits 4-0)
 
     org 0000h
 
@@ -453,7 +454,7 @@ l01cah:
     ld (600ch),hl       ;01f7 22 0c 60
     ld (6004h),hl       ;01fa 22 04 60
     xor a               ;01fd af
-    ld (81fdh),a        ;01fe 32 fd 81
+    ld (head_sec),a     ;01fe 32 fd 81
     ld hl,5aa5h         ;0201 21 a5 5a
     ld (6070h),hl       ;0204 22 70 60
     jp e_6b             ;0207 c3 0e 03
@@ -1424,7 +1425,7 @@ l06d5h:
 
 e_30:
 ;called from prep code in verify_drive only
-    ld a,(81fdh)        ;06dd 3a fd 81
+    ld a,(head_sec)     ;06dd 3a fd 81
     ld b,a              ;06e0 47
     in a,(pio0_drb)     ;06e1 db 61
     and 10001111b       ;06e3 e6 8f
@@ -1441,6 +1442,7 @@ l06f1h:
     set 6,a             ;Bit 6 = ST-412 HEAD SEL 2^2
 l06f7h:
     out (pio0_drb),a    ;06f7 d3 61
+
     ld a,b              ;06f9 78
     and 00011111b       ;Bit 7 = ST-412 REDUCE WR CURRENT
                         ;Bit 6 = ST-412 HEAD SEL 2^2
@@ -1461,6 +1463,7 @@ l0706h:
 l070dh:
     ld (6014h),a        ;070d 32 14 60
     ret                 ;0710 c9
+
 sub_0711h:
     ld hl,(81feh)       ;0711 2a fe 81
     push hl             ;0714 e5
@@ -1757,7 +1760,7 @@ l08ffh:
 
 e_aa:
     ld a,(60b6h)        ;0902 3a b6 60
-    ld (81fdh),a        ;0905 32 fd 81
+    ld (head_sec),a     ;0905 32 fd 81
     ld hl,(60b7h)       ;0908 2a b7 60
     ld (81feh),hl       ;090b 22 fe 81
     rst 10h             ;090e d7
@@ -1777,7 +1780,7 @@ e_aa:
 
 e_ad:
     ld a,(60b6h)        ;0924 3a b6 60
-    ld (81fdh),a        ;0927 32 fd 81
+    ld (head_sec),a     ;0927 32 fd 81
     ld hl,(60b7h)       ;092a 2a b7 60
     ld (81feh),hl       ;092d 22 fe 81
     rst 18h             ;0930 df
@@ -1804,7 +1807,7 @@ sub_0944h:
     ret                 ;0957 c9
 sub_0958h:
     ld hl,6017h         ;0958 21 17 60
-    ld a,(81fdh)        ;095b 3a fd 81
+    ld a,(head_sec)     ;095b 3a fd 81
     and 00011111b       ;095e e6 1f
     cp (hl)             ;0960 be
     jr nc,l096fh        ;0961 30 0c
@@ -1829,7 +1832,7 @@ sub_0976h:
     res 7,(hl)          ;0984 cb be
     ret                 ;0986 c9
 sub_0987h:
-    ld hl,81fdh         ;0987 21 fd 81
+    ld hl,head_sec      ;0987 21 fd 81
     ld a,(spares)       ;098a 3a fd 61
     cp (hl)             ;098d be
     ret z               ;098e c8
@@ -2046,7 +2049,7 @@ l0ae2h:
 
 l0afah:
     xor a               ;0afa af
-    ld (81fdh),a        ;0afb 32 fd 81
+    ld (head_sec),a     ;0afb 32 fd 81
     ld hl,0             ;0afe 21 00 00
     ld (600ch),hl       ;0b01 22 0c 60
     ret                 ;0b04 c9
@@ -2127,7 +2130,7 @@ format_:
     ld hl,0             ;0b61 21 00 00
     ld (81feh),hl       ;0b64 22 fe 81
     xor a               ;0b67 af
-    ld (81fdh),a        ;0b68 32 fd 81
+    ld (head_sec),a     ;0b68 32 fd 81
 l0b6bh:
     call sub_0b75h      ;0b6b cd 75 0b
     ret nz              ;0b6e c0
@@ -2138,16 +2141,16 @@ sub_0b75h:
     call sub_0a0dh      ;0b75 cd 0d 0a
     call e_a4           ;0b78 cd 41 0c
     ret nz              ;0b7b c0
-    ld a,(81fdh)        ;0b7c 3a fd 81
+    ld a,(head_sec)     ;0b7c 3a fd 81
     and 11100000b       ;0b7f e6 e0
-    ld (81fdh),a        ;0b81 32 fd 81
+    ld (head_sec),a     ;0b81 32 fd 81
     rst 30h             ;0b84 f7
     ld c,00h            ;0b85 0e 00
     call sub_0ba1h      ;0b87 cd a1 0b
-    ld a,(81fdh)        ;0b8a 3a fd 81
+    ld a,(head_sec)     ;0b8a 3a fd 81
     and 11100000b       ;0b8d e6 e0
     or 00000001b        ;0b8f f6 01
-    ld (81fdh),a        ;0b91 32 fd 81
+    ld (head_sec),a     ;0b91 32 fd 81
     rst 30h             ;0b94 f7
     call sub_0ba1h      ;0b95 cd a1 0b
     call sub_0c49h      ;0b98 cd 49 0c
@@ -2157,14 +2160,14 @@ sub_0b75h:
 sub_0ba1h:
     ld hl,60cah         ;0ba1 21 ca 60
     ld (hl),0ah         ;0ba4 36 0a
-    ld a,(81fdh)        ;0ba6 3a fd 81
+    ld a,(head_sec)     ;0ba6 3a fd 81
 l0ba9h:
-    ld (81fdh),a        ;0ba9 32 fd 81
+    ld (head_sec),a     ;0ba9 32 fd 81
     call e_1b           ;0bac cd 3f 08
     rr c                ;0baf cb 19
     rr e                ;0bb1 cb 1b
     rr d                ;0bb3 cb 1a
-    ld a,(81fdh)        ;0bb5 3a fd 81
+    ld a,(head_sec)     ;0bb5 3a fd 81
     add a,02h           ;0bb8 c6 02
     ld hl,60cah         ;0bba 21 ca 60
     dec (hl)            ;0bbd 35
@@ -2181,14 +2184,14 @@ e_03:
     rrca                ;0bca 0f
     rrca                ;0bcb 0f
     ld b,a              ;0bcc 47
-    ld a,(81fdh)        ;0bcd 3a fd 81
+    ld a,(head_sec)     ;0bcd 3a fd 81
     and 11100000b       ;0bd0 e6 e0
     add a,20h           ;0bd2 c6 20
-    ld (81fdh),a        ;0bd4 32 fd 81
+    ld (head_sec),a     ;0bd4 32 fd 81
     cp b                ;0bd7 b8
     jr c,l0bf1h         ;0bd8 38 17
     xor a               ;0bda af
-    ld (81fdh),a        ;0bdb 32 fd 81
+    ld (head_sec),a     ;0bdb 32 fd 81
     ld hl,(81feh)       ;0bde 2a fe 81
     inc hl              ;0be1 23
     ld (81feh),hl       ;0be2 22 fe 81
@@ -2226,7 +2229,7 @@ l0c05h:
     jp p,l0c38h         ;0c0e f2 38 0c
     push bc             ;0c11 c5
     ld a,c              ;0c12 79
-    ld (81fdh),a        ;0c13 32 fd 81
+    ld (head_sec),a     ;0c13 32 fd 81
     ld hl,0             ;0c16 21 00 00
     ld (81feh),hl       ;0c19 22 fe 81
     rst 10h             ;0c1c d7
@@ -2335,7 +2338,7 @@ l0c8eh:
     jp e_b0             ;0cb5 c3 39 0d
 l0cb8h:
     ld a,(60b6h)        ;0cb8 3a b6 60
-    ld (81fdh),a        ;0cbb 32 fd 81
+    ld (head_sec),a     ;0cbb 32 fd 81
     ld hl,(60b7h)       ;0cbe 2a b7 60
     ld (81feh),hl       ;0cc1 22 fe 81
     jr l0d16h           ;0cc4 18 50
@@ -2379,8 +2382,8 @@ l0cc6h:
     rrca                ;0d04 0f
     rrca                ;0d05 0f
     or (hl)             ;0d06 b6
-    ld (81fdh),a        ;0d07 32 fd 81
-    ld a,(81fdh)        ;0d0a 3a fd 81
+    ld (head_sec),a     ;0d07 32 fd 81
+    ld a,(head_sec)     ;0d0a 3a fd 81
     ld (60b6h),a        ;0d0d 32 b6 60
     ld hl,(81feh)       ;0d10 2a fe 81
     ld (60b7h),hl       ;0d13 22 b7 60
@@ -2414,7 +2417,7 @@ e_b0:
     xor a               ;0d39 af
     ld (60b9h),a        ;0d3a 32 b9 60
     ld a,(60b6h)        ;0d3d 3a b6 60
-    ld (81fdh),a        ;0d40 32 fd 81
+    ld (head_sec),a     ;0d40 32 fd 81
     ld hl,(60b7h)       ;0d43 2a b7 60
     ld (81feh),hl       ;0d46 22 fe 81
     ld hl,(60b4h)       ;0d49 2a b4 60
@@ -2435,10 +2438,10 @@ l0d58h:
     ld l,a              ;0d66 6f
     ld bc,608bh         ;0d67 01 8b 60
     add hl,bc           ;0d6a 09
-    ld a,(81fdh)        ;0d6b 3a fd 81
+    ld a,(head_sec)     ;0d6b 3a fd 81
     and 11100000b       ;0d6e e6 e0
     or (hl)             ;0d70 b6
-    ld (81fdh),a        ;0d71 32 fd 81
+    ld (head_sec),a     ;0d71 32 fd 81
     ld (60b6h),a        ;0d74 32 b6 60
     call sub_0958h      ;0d77 cd 58 09
     jp e_a4             ;0d7a c3 41 0c
@@ -2465,7 +2468,7 @@ l0d9ch:
 sub_0d9eh:
     ld a,(heads)        ;0d9e 3a 09 60
     ld c,a              ;0da1 4f
-    ld a,(81fdh)        ;0da2 3a fd 81
+    ld a,(head_sec)     ;0da2 3a fd 81
     add a,20h           ;0da5 c6 20
     ld b,a              ;0da7 47
     rlca                ;0da8 07
@@ -2476,7 +2479,7 @@ sub_0d9eh:
     jr nz,l0dc4h        ;0dae 20 14
     ld a,b              ;0db0 78
     and 00011111b       ;0db1 e6 1f
-    ld (81fdh),a        ;0db3 32 fd 81
+    ld (head_sec),a     ;0db3 32 fd 81
     ld (60b6h),a        ;0db6 32 b6 60
     ld hl,(81feh)       ;0db9 2a fe 81
     inc hl              ;0dbc 23
@@ -2485,7 +2488,7 @@ sub_0d9eh:
     ret                 ;0dc3 c9
 l0dc4h:
     ld a,b              ;0dc4 78
-    ld (81fdh),a        ;0dc5 32 fd 81
+    ld (head_sec),a     ;0dc5 32 fd 81
     ld (60b6h),a        ;0dc8 32 b6 60
     ret                 ;0dcb c9
 
