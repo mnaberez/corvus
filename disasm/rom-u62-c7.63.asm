@@ -2231,14 +2231,25 @@ l0c05h:
     push bc             ;0c11 c5
     ld a,c              ;0c12 79
     ld (head_sec),a     ;0c13 32 fd 81
-    ld hl,0             ;0c16 21 00 00
-    ld (cylinder),hl    ;0c19 22 fe 81
-    rst 10h             ;0c1c d7
-    jr z,l0c28h         ;0c1d 28 09
-    ld a,01h            ;0c1f 3e 01
-    ld (cylinder),a     ;0c21 32 fe 81
-    rst 10h             ;0c24 d7
-    jp nz,fatal_        ;Fatal error has occurred.  Halt until reset.
+
+                        ;Try to read the sector from the primary
+                        ;copy of the firmware on cylinder 0.
+
+    ld hl,0             ;Set cylinder number 0
+    ld (cylinder),hl
+
+    rst 10h             ;Read the sector
+    jr z,l0c28h         ;Success? Jump to l0c28h
+
+                        ;Reading the sector failed.  Try to read it
+                        ;from the backup copy on cylinder 1.
+
+    ld a,1              ;Set cylinder number 1
+    ld (cylinder),a
+
+    rst 10h             ;Read the sector
+    jp nz,fatal_        ;Failed?  Jump to fatal error.  Halt until reset.
+
 l0c28h:
     ld hl,(6069h)       ;0c28 2a 69 60
     ld e,(hl)           ;0c2b 5e
