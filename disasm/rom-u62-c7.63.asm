@@ -1404,7 +1404,10 @@ sub_06bdh:
     nop                 ;06bd 00
     nop                 ;06be 00
     ret                 ;06bf c9
+
 sub_06c0h:
+;called from e_10, e_18, e_20
+;
     ld hl,6011h         ;06c0 21 11 60
     set 5,(hl)          ;06c3 cb ee
     ld a,(6014h)        ;06c5 3a 14 60
@@ -1544,6 +1547,8 @@ sub_0793h:
 
 e_18:
 ;called from prep code in verify_drive only
+;
+;Sets Z flag on success, clears Z flag on failure
 ;
     ld a,03h            ;0799 3e 03
     ld (6024h),a        ;079b 32 24 60
@@ -1766,17 +1771,20 @@ e_aa:
     ld (head_sec),a     ;0905 32 fd 81
     ld hl,(60b7h)       ;0908 2a b7 60
     ld (cylinder),hl    ;090b 22 fe 81
+
     rst 10h             ;Read the sector
     ret nz              ;Failed?  Return.
     call sub_0944h      ;0910 cd 44 09
-    ldir                ;0913 ed b0
-    ret z               ;0915 c8
+    ldir                ;copy using hl/de/bc set up sub_0944h
+    ret z               ;Return if 60bbh is zero
+
     rst 10h             ;Read the sector
     ret nz              ;Failed?  Return.
     call sub_0944h      ;0918 cd 44 09
     ld d,0a2h           ;091b 16 a2
-    ldir                ;091d ed b0
+    ldir                ;copy using hl/de/bc set up sub_0944h
     ret z               ;091f c8
+
     rst 10h             ;Read the sector
     ret nz              ;Failed?  Return.
     jr sub_0944h        ;0922 18 20
@@ -1786,28 +1794,44 @@ e_ad:
     ld (head_sec),a     ;0927 32 fd 81
     ld hl,(60b7h)       ;092a 2a b7 60
     ld (cylinder),hl    ;092d 22 fe 81
+
     rst 18h             ;0930 df
-    ret nz              ;0931 c0
+    ret nz              ;Failed?  Return.
     call sub_0944h      ;0932 cd 44 09
-    ret z               ;0935 c8
+    ret z               ;Return if 60bbh is zero
+
     ld h,0a2h           ;0936 26 a2
-    ldir                ;0938 ed b0
+    ldir                ;copy using hl/de/bc set up sub_0944h
     rst 18h             ;093a df
-    ret nz              ;093b c0
+    ret nz              ;Failed?  Return.
+
     call sub_0944h      ;093c cd 44 09
-    ret z               ;093f c8
-    ldir                ;0940 ed b0
+    ret z               ;Return if 60bbh is zero
+    ldir                ;copy using hl/de/bc set up sub_0944h
+
     rst 18h             ;0942 df
-    ret nz              ;0943 c0
+    ret nz              ;Failed?  Return.
+                        ;Fall through into sub_0944h
+
 sub_0944h:
-    call e_b0           ;0944 cd 39 0d
-    ld a,(60bbh)        ;0947 3a bb 60
-    dec a               ;094a 3d
-    ld (60bbh),a        ;094b 32 bb 60
-    ld hl,6200h         ;094e 21 00 62
-    ld de,8200h         ;0951 11 00 82
-    ld bc,0200h         ;0954 01 00 02
-    ret                 ;0957 c9
+;called from e_aa, e_ad
+;
+;calls e_b0, decrements 60bbh, sets hl/de/bc for ldir,
+;sets a with 60bbh
+;
+    call e_b0           ;TOOD e_b0?
+
+                        ;Decrement 60bbh:
+    ld a,(60bbh)        ;  A = value at 60bbh
+    dec a               ;  Decrement A
+    ld (60bbh),a        ;  Save A in 60bbh
+
+                        ;Set up registers for LDIR instruction:
+    ld hl,6200h         ;  HL = start address
+    ld de,8200h         ;  DE = destination address
+    ld bc,0200h         ;  BC = number of bytes to copy
+    ret
+
 sub_0958h:
     ld hl,6017h         ;0958 21 17 60
     ld a,(head_sec)     ;095b 3a fd 81
