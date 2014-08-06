@@ -67,7 +67,6 @@ class Console(cmd.Cmd):
         drive = int(splitted[0])
         count = int(splitted[1])
 
-        # corvus, count
         first_sector = 0
         last_sector = self._corvus.get_drive_capacity(1) - 1
         for i in range(count):
