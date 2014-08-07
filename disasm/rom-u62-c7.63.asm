@@ -387,8 +387,8 @@ l0194h:
     jr nz,l013ch        ;019d 20 9d
     jr l01a3h           ;019f 18 02
 
-sub_01a1h:
-    reti                ;01a1 ed 4d
+do_reti:
+    reti
 
 l01a3h:
     ld h,00h            ;01a3 26 00
@@ -463,7 +463,7 @@ l01cah:
 e_33:
     ld b,0ch            ;020a 06 0c
 l020ch:
-    call sub_01a1h      ;020c cd a1 01
+    call do_reti        ;Performs RETI only
     djnz l020ch         ;020f 10 fb
     xor a               ;0211 af
     ld i,a              ;0212 ed 47
