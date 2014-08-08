@@ -659,7 +659,7 @@ table_0:
     ;Init sequence for PIO0 Port A
     db pio0_cra         ;Address of PIO0 Control Register A
     db 0cfh             ;First byte to write to pio0_cra
-    db 7fh              ;Second byte to write to pio0_crb
+    db 7fh              ;Second byte to write to pio0_cra
     db 00h              ;Byte to write to pio0_dra
 
     ;Init sequence for PIO0 Port B
