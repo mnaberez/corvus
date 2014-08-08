@@ -736,18 +736,21 @@ l031eh:
 
     ld a,11011111b      ;Bit 5 = -COMPL
     out (pio2_dra),a    ;0323 d3 68
-l0325h:
+
+w_drv_ack_lo:
+;Wait until -DRV.ACK is low
+;
     call e_9e           ;TODO Disable interrupts, Swap 6070h/6071h,
                         ;     do something with ctc_ch2
-    ei                  ;0328 fb
+    ei
 
-    in a,(pio2_dra)     ;0329 db 68
-    bit 7,a             ;Bit 7 = -DRV.ACK
-    jr z,l0325h         ;032d 28 f6
+    in a,(pio2_dra)
+    bit 7,a             ;Z flag = opposite of Bit 7 = -DRV.ACK
+    jr z,w_drv_ack_lo  ;Loop if -DRV.ACK is high
 
-    in a,(pio2_dra)     ;032f db 68
-    bit 7,a             ;Bit 7 = -DRV.ACK
-    jr z,l0325h         ;0333 28 f0
+    in a,(pio2_dra)
+    bit 7,a             ;Z flag = opposite of Bit 7 = -DRV.ACK
+    jr z,w_drv_ack_lo  ;Loop if -DRV.ACK is high
 
     ld a,(606fh)        ;0335 3a 6f 60
     dec a               ;0338 3d
@@ -755,6 +758,7 @@ l0325h:
     xor a               ;033b af
     call e_89           ;033c cd 1c 05
     jr l035ah           ;033f 18 19
+
 l0341h:
     ld b,a              ;0341 47
     ld d,a              ;0342 57
@@ -1113,44 +1117,54 @@ l0511h:
 
 e_89:
     or a                ;051c b7
-    jr z,l0537h         ;051d 28 18
+    jr z,w_drv_ack_hi   ;051d 28 18
     cp 02h              ;051f fe 02
     jr z,l0529h         ;0521 28 06
     ld a,(606fh)        ;0523 3a 6f 60
     dec a               ;0526 3d
-    jr nz,l0537h        ;0527 20 0e
+    jr nz,w_drv_ack_hi  ;0527 20 0e
+
 l0529h:
     ld h,04h            ;0529 26 04
 l052bh:
     in a,(pio2_dra)     ;052b db 68
-    bit 7,a             ;Bit 7 = -DRV.ACK
-    jr z,l0540h         ;052f 28 0f
+    bit 7,a             ;Z flag = opposite of Bit 7 = -DRV.ACK
+    jr z,drv_ack_is_hi  ;Jump if -DRV.ACK is high
 
     dec hl              ;0531 2b
     ld a,h              ;0532 7c
     or l                ;0533 b5
     jr nz,l052bh        ;0534 20 f5
     ret                 ;0536 c9
-l0537h:
+
+w_drv_ack_hi:
+;Wait until -DRV.ACK is high
+;
     call e_9e           ;TODO Disable interrupts, Swap 6070h/6071h,
                         ;     do something with ctc_ch2
-    in a,(pio2_dra)     ;053a db 68
-    bit 7,a             ;Bit 7 = -DRV.ACK
-    jr nz,l0537h        ;053e 20 f7
-l0540h:
+    in a,(pio2_dra)
+    bit 7,a             ;Z flag = opposite of Bit 7 = -DRV.ACK
+    jr nz,w_drv_ack_hi  ;Loop if -DRV.ACK is low
+
+drv_ack_is_hi:
     ld a,11111111b      ;0540 3e ff
     out (pio2_dra),a    ;0542 d3 68
-l0544h:
+
+w_drv_ack_lo1:
+;Wait until -DRV.ACK is low
+;
     call e_9e           ;TODO Disable interrupts, Swap 6070h/6071h,
                         ;     do something with ctc_ch2
 
-    in a,(pio2_dra)     ;0547 db 68
-    bit 7,a             ;Bit 7 = -DRV.ACK
-    jr z,l0544h         ;054b 28 f7
+    in a,(pio2_dra)
+    bit 7,a             ;Z flag = opposite of Bit 7 = -DRV.ACK
+    jr z,w_drv_ack_lo1   ;Loop if -DRV.ACK is high
 
-    in a,(pio2_dra)     ;054d db 68
-    bit 7,a             ;Bit 7 = -DRV.ACK
-    jr z,l0544h         ;0551 28 f1
+                        ;Check it again to be sure it's stable.
+
+    in a,(pio2_dra)
+    bit 7,a             ;Z flag = opposite of Bit 7 = -DRV.ACK
+    jr z,w_drv_ack_lo1   ;Loop if -DRV.ACK is high
 
     ld a,0cfh           ;0553 3e cf
     jr out_pio2_dra1    ;out (pio2_dra),a then ret
