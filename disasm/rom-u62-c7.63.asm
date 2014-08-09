@@ -127,7 +127,7 @@ l0008h:
     jp e_30             ;0030 c3 dd 06  called from prep code (via rst 30h)
     jp e_33             ;0033 c3 0a 02
 
-    dw irq_05e7h
+    dw irq_05e7h        ;0036 e7 05
 
     jp e_38             ;0038 c3 c6 00
 
@@ -136,43 +136,29 @@ l0008h:
 ;called from prep code
 format:
     jp format_          ;Format the drive
-    adc a,d             ;0040 8a
-    ex af,af'           ;0041 08
-    add hl,bc           ;0042 09
-    ld c,b              ;0043 48
-    inc c               ;0044 0c
-    ld c,b              ;0045 48
+
+    dw l088ah           ;0040 8a 08
+    dw 4809h            ;0042 09 48
+    dw 480ch            ;0044 0c 48
     jp l0008h           ;0046 c3 08 00
     nop                 ;0049 00
-    or h                ;004a b4
-    inc b               ;004b 04
-    nop                 ;004c 00
-    nop                 ;004d 00
-    ld l,c              ;004e 69
-    ld b,0c5h           ;004f 06 c5
-    add hl,bc           ;0051 09
-    nop                 ;0052 00
-    nop                 ;0053 00
-    add hl,de           ;0054 19
-    ld b,0c3h           ;0055 06 c3
-    ex af,af'           ;0057 08
-    nop                 ;0058 00
+    dw l04b4h           ;004a b4 04
+    dw 0                ;004c 00 00
+    dw l0669h           ;004e 69 06
+    dw l09c5h           ;0050 c5 09
+    dw 0                ;0052 00 00
+    dw l0619h           ;0054 19 06
+    jp l0008h           ;0056 c3 08 00
     nop                 ;0059 00
-    nop                 ;005a 00
-    nop                 ;005b 00
-    nop                 ;005c 00
-    nop                 ;005d 00
-    nop                 ;005e 00
-    nop                 ;005f 00
-    nop                 ;0060 00
-    nop                 ;0061 00
-    nop                 ;0062 00
-    nop                 ;0063 00
-    nop                 ;0064 00
-    nop                 ;0065 00
-
+    dw 0                ;005a 00 00
+    dw 0                ;005c 00 00
+    dw 0                ;005e 00 00
+    dw 0                ;0060 00 00
+    dw 0                ;0062 00 00
+    dw 0                ;0064 00 00
     jp e_38             ;0066 c3 c6 00
-    ld c,06h            ;0069 0e 06
+    dw l060eh           ;0069 0e 06
+
     jp e_6b             ;006b c3 0e 03
 hostloop:
     jp hostloop_        ;Wait for a command from the host and process it
@@ -207,16 +193,11 @@ fatal:
     jp e_b0             ;00b0 c3 39 0d
     jp e_b3             ;00b3 c3 7d 0d
 
-    nop                 ;00b6 00
-    nop                 ;00b7 00
-    ld c,(hl)           ;00b8 4e
-    ex af,af'           ;00b9 08
-    nop                 ;00ba 00
-    nop                 ;00bb 00
-    nop                 ;00bc 00
-    nop                 ;00bd 00
-    rst 0               ;00be c7
-    ex af,af'           ;00bf 08
+    dw 0                ;00b6 00 00
+    dw l084eh            ;00b8 4e 08
+    dw 0                ;00ba 00 00
+    dw 0                ;00bc 00 00
+    dw l08c7h           ;00be c7 08
     jp e_c0             ;00c0 c3 e6 04
     jp e_c3             ;00c3 c3 84 0a
 
@@ -1058,6 +1039,7 @@ l04b0h:
     djnz l04b0h         ;04b0 10 fe
     jr l04a9h           ;04b2 18 f5
 
+l04b4h:
     ld a,11001111b      ;Bit 5 = -COMPL
                         ;Bit 4 = PIO RDY
     out (pio2_dra),a    ;04b6 d3 68
@@ -1330,6 +1312,7 @@ l060eh:
     dec a               ;0615 3d
     ei                  ;0616 fb
     reti                ;0617 ed 4d
+l0619h:
     ini                 ;0619 ed a2
     call sub_06bdh      ;061b cd bd 06
     jp z,l063ch         ;061e ca 3c 06
@@ -1376,6 +1359,7 @@ l063ch:
     ld (ix-06h),a       ;0663 dd 77 fa
     ei                  ;0666 fb
     reti                ;0667 ed 4d
+l0669h:
     or 00h              ;0669 f6 00
     or 00h              ;066b f6 00
     or 00h              ;066d f6 00
@@ -1674,6 +1658,7 @@ e_1b:
     ld (81fch),a        ;0847 32 fc 81
     ld a,0b8h           ;084a 3e b8
     jr l0871h           ;084c 18 23
+l084eh:
     call sub_08f7h      ;TODO turn "BUSY" LED on, pio0_cra, ei, reti
     pop af              ;0851 f1
     call 8dfch          ;0852 cd fc 8d
@@ -1713,8 +1698,8 @@ l0871h:
     ei                  ;0886 fb
 l0887h:
     halt                ;0887 76
-
     jr l0887h           ;0888 18 fd
+l088ah:
     call sub_08f7h      ;TODO turn "BUSY" LED on, pio0_cra, ei, reti
     pop af              ;088d f1
 
@@ -1753,6 +1738,7 @@ l08a7h:
     jp l070dh           ;08c0 c3 0d 07
     ld a,08h            ;08c3 3e 08
     jr l08c9h           ;08c5 18 02
+l08c7h:
     ld a,09h            ;08c7 3e 09
 l08c9h:
     ld (6014h),a        ;08c9 32 14 60
@@ -1921,9 +1907,9 @@ l09afh:
     ld de,(63feh)       ;09bc ed 5b fe 63
     ld a,50h            ;09c0 3e 50
     jp l0871h           ;09c2 c3 71 08
+l09c5h:
     call sub_08f7h      ;TODO turn "BUSY" LED on, pio0_cra, ei, reti
     pop af              ;09c8 f1
-
     in a,(pio3_dra)     ;09c9 db 6c
     res 7,a             ;Bit 7 = ST-412 -WRITE DISABLE
     out (pio3_dra),a    ;09cd d3 6c
