@@ -194,7 +194,7 @@ fatal:
     jp e_b3             ;00b3 c3 7d 0d
 
     dw 0                ;00b6 00 00
-    dw l084eh            ;00b8 4e 08
+    dw l084eh           ;00b8 4e 08
     dw 0                ;00ba 00 00
     dw 0                ;00bc 00 00
     dw l08c7h           ;00be c7 08
@@ -734,11 +734,11 @@ w_drv_ack_lo:
 
     in a,(pio2_dra)
     bit 7,a             ;Z flag = opposite of Bit 7 = -DRV.ACK
-    jr z,w_drv_ack_lo  ;Loop if -DRV.ACK is high
+    jr z,w_drv_ack_lo   ;Loop if -DRV.ACK is high
 
     in a,(pio2_dra)
     bit 7,a             ;Z flag = opposite of Bit 7 = -DRV.ACK
-    jr z,w_drv_ack_lo  ;Loop if -DRV.ACK is high
+    jr z,w_drv_ack_lo   ;Loop if -DRV.ACK is high
 
     ld a,(606fh)        ;0335 3a 6f 60
     dec a               ;0338 3d
@@ -1147,13 +1147,13 @@ w_drv_ack_lo1:
 
     in a,(pio2_dra)
     bit 7,a             ;Z flag = opposite of Bit 7 = -DRV.ACK
-    jr z,w_drv_ack_lo1   ;Loop if -DRV.ACK is high
+    jr z,w_drv_ack_lo1  ;Loop if -DRV.ACK is high
 
                         ;Check it again to be sure it's stable.
 
     in a,(pio2_dra)
     bit 7,a             ;Z flag = opposite of Bit 7 = -DRV.ACK
-    jr z,w_drv_ack_lo1   ;Loop if -DRV.ACK is high
+    jr z,w_drv_ack_lo1  ;Loop if -DRV.ACK is high
 
     ld a,0cfh           ;0553 3e cf
     jr out_pio2_dra1    ;out (pio2_dra),a then ret
@@ -1264,7 +1264,7 @@ irq_05cch:
     cp d                ;05ce ba
     jp nz,l0608h        ;05cf c2 08 06
 
-    call sub_06bch      ;05d2 cd bc 06
+    call three_nops     ;05d2 cd bc 06
     ld c,pio2_drb       ;05d5 0e 69
     ei                  ;05d7 fb
     in a,(pio2_drb)     ;Read data byte from host
@@ -1284,7 +1284,7 @@ irq_05e7h:
     nop                 ;05ed 00
     nop                 ;05ee 00
     ei                  ;05ef fb
-    call sub_06bch      ;05f0 cd bc 06
+    call three_nops     ;05f0 cd bc 06
     in a,(pio2_drb)     ;Read data byte from host
     cp c                ;05f5 b9
     jr nz,l0608h        ;05f6 20 10
@@ -1298,6 +1298,7 @@ l0601h:
     ld a,54h            ;0602 3e 54
     out (pio2_cra),a    ;0604 d3 6a
     reti                ;0606 ed 4d
+
 l0608h:
     dec e               ;0608 1d
     jr z,l060eh         ;0609 28 03
@@ -1312,9 +1313,10 @@ l060eh:
     dec a               ;0615 3d
     ei                  ;0616 fb
     reti                ;0617 ed 4d
+
 l0619h:
     ini                 ;0619 ed a2
-    call sub_06bdh      ;061b cd bd 06
+    call two_nops       ;061b cd bd 06
     jp z,l063ch         ;061e ca 3c 06
     pop af              ;0621 f1
     nop                 ;0622 00
@@ -1332,6 +1334,7 @@ l0619h:
     ei                  ;0637 fb
     ini                 ;0638 ed a2
     reti                ;063a ed 4d
+
 l063ch:
     in d,(c)            ;063c ed 50
     nop                 ;063e 00
@@ -1359,6 +1362,7 @@ l063ch:
     ld (ix-06h),a       ;0663 dd 77 fa
     ei                  ;0666 fb
     reti                ;0667 ed 4d
+
 l0669h:
     or 00h              ;0669 f6 00
     or 00h              ;066b f6 00
@@ -1382,8 +1386,9 @@ l0669h:
     outi                ;0687 ed a3
     jr z,l068dh         ;0689 28 02
     reti                ;068b ed 4d
+
 l068dh:
-    call sub_06bch      ;068d cd bc 06
+    call three_nops     ;068d cd bc 06
     ld a,0e8h           ;0690 3e e8
     out (pio2_dra),a    ;0692 d3 68
     out (c),d           ;0694 ed 51
@@ -1403,19 +1408,22 @@ l068dh:
     out (c),e           ;06ab ed 59
     ld a,0ech           ;06ad 3e ec
     out (pio2_dra),a    ;06af d3 68
-    call sub_06bch      ;06b1 cd bc 06
+    call three_nops     ;06b1 cd bc 06
     nop                 ;06b4 00
     nop                 ;06b5 00
     out (c),a           ;06b6 ed 79
     pop bc              ;06b8 c1
     ei                  ;06b9 fb
     reti                ;06ba ed 4d
-sub_06bch:
-    nop                 ;06bc 00
-sub_06bdh:
-    nop                 ;06bd 00
-    nop                 ;06be 00
-    ret                 ;06bf c9
+
+three_nops:
+;Perform three NOPs then RET.
+    nop
+two_nops:
+;Perform two NOPs then RET.
+    nop
+    nop
+    ret
 
 sub_06c0h:
 ;called from e_10, e_18, e_20
