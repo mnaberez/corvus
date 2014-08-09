@@ -95,40 +95,44 @@ cylinder:   equ 81feh   ;Cylinder (word)
 l0000h:
     jp e_00             ;0000 c3 df 00
     jp e_03             ;0003 c3 c1 0b
-    nop                 ;0006 00
-    nop                 ;0007 00
+
+    dw 0                ;0006 00 00
+
 l0008h:
     jp e_08             ;0008 c3 cc 0d
-;called from prep code
-    jp e_0b             ;000b c3 43 0a
-    ld b,48h            ;000e 06 48
-;called from prep code (via rst 10h)
-    jp e_10             ;0010 c3 1f 07
-;called from prep code
-    jp e_13             ;0013 c3 6f 08
-    cp d                ;0016 ba
-    dec b               ;0017 05
-;called from prep code (via rst 18h)
-    jp e_18             ;0018 c3 99 07
+    jp e_0b             ;000b c3 43 0a  called from prep code
+
+    dw 4806h            ;000e 06 48
+
+    jp e_10             ;0010 c3 1f 07  called from prep code (via rst 10h)
+    jp e_13             ;0013 c3 6f 08  called from prep code
+
+    dw irq_05bah        ;0016 ba 05
+
+    jp e_18             ;0018 c3 99 07  called from prep code (via rst 18h)
     jp e_1b             ;001b c3 3f 08
-    nop                 ;001e 00
-    nop                 ;001f 00
-;called from prep code (via rst 20h)
-    jp e_20             ;0020 c3 c1 07
+
+    dw 0                ;001e 00 00
+
+    jp e_20             ;0020 c3 c1 07  called from prep code (via rst 20h)
     jp e_23             ;0023 c3 c7 0a
-    or l                ;0026 b5
-    dec b               ;0027 05
+
+    dw irq_05b5h        ;0026 b5 05
+
     jp e_28             ;0028 c3 00 0c
     jp e_2b             ;002b c3 1c 0d
-    db 0cch, 05h        ;002e cc 05
-;called from prep code (via rst 30h)
-    jp e_30             ;0030 c3 dd 06
+
+    dw irq_05cch        ;002e cc 05
+
+    jp e_30             ;0030 c3 dd 06  called from prep code (via rst 30h)
     jp e_33             ;0033 c3 0a 02
-    rst 20h             ;0036 e7
-    dec b               ;0037 05
+
+    dw irq_05e7h
+
     jp e_38             ;0038 c3 c6 00
-    nop                 ;003b 00
-    nop                 ;003c 00
+
+    dw 0
+
 ;called from prep code
 format:
     jp format_          ;Format the drive
@@ -672,11 +676,12 @@ table_0:
     db pio2_cra         ;Address of PIO2 Control Register A
     db 0cfh             ;First byte to write to pio2_cra
     db 0c0h             ;Second byte to write to pio2_cra
+                        ;  TODO: irq vector?
     db 0ddh             ;Byte to write to pio0_dra
 
     ;Init sequence for PIO2 Port B
     db pio2_crb         ;Address of PIO2 Control Register B
-    db 04fh             ;First byte to write to pio2_crb
+    db 4fh              ;First byte to write to pio2_crb
     db 03h              ;Second byte to write to pio2_crb
     db 0ffh             ;Byte to write to pio2_drb
 
@@ -684,12 +689,14 @@ table_0:
     db pio3_cra         ;Address of PIO3 Control Register A
     db 0cfh             ;First byte to write to pio3_cra
     db 5ch              ;Second byte to write to pio3_cra
+                        ;  TODO: irq vector?
     db 7ch              ;Byte to write to pio3_dra
 
     ;Init sequence for PIO3 Port B
     db pio3_crb         ;Address of PIO3 Control Register B
     db 0cfh             ;First byte to write to pio3_crb
     db 0fch             ;Second byte to write to pio3_crb
+                        ;  TODO: irq vector?
     db 0feh             ;Byte to write to pio3_drb
 
 drive_6mb:
@@ -1249,9 +1256,12 @@ e_98:
     in a,(hsxclr)       ;05b2 db 74
     ret                 ;05b4 c9
 
+irq_05b5h:
     djnz l05c9h         ;05b5 10 12
     pop bc              ;05b7 c1
     jr l05c5h           ;05b8 18 0b
+
+irq_05bah:
     ld b,05h            ;05ba 06 05
 l05bch:
     in a,(pio2_dra)     ;05bc db 68
@@ -1267,6 +1277,7 @@ l05c9h:
     ei                  ;05c9 fb
     reti                ;05ca ed 4d
 
+irq_05cch:
     in a,(pio2_drb)     ;Read data byte from host
     cp d                ;05ce ba
     jp nz,l0608h        ;05cf c2 08 06
@@ -1283,6 +1294,8 @@ l05c9h:
     cp b                ;05e2 b8
     jr z,l0601h         ;05e3 28 1c
     jr l0608h           ;05e5 18 21
+
+irq_05e7h:
     in a,(pio2_drb)     ;Read data byte from host
     cp d                ;05e9 ba
     jp nz,l0608h        ;05ea c2 08 06
@@ -1308,6 +1321,7 @@ l0608h:
     jr z,l060eh         ;0609 28 03
     ei                  ;060b fb
     reti                ;060c ed 4d
+
 l060eh:
     pop af              ;060e f1
     ld a,03h            ;060f 3e 03
