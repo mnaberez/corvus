@@ -84,10 +84,12 @@ format_drive:
 ;Command byte (0x01) has already been read
 ;512 bytes left to read: format pattern
 ;
-    ld bc,0200h         ;803c 01 00 02
-    call hostread       ;803f cd 7d 00
-    ld de,l8200h        ;8042 11 00 82
+    ld bc,0200h         ;BC = 512 bytes to read from host
+    call hostread       ;Read the bytes from the host
+
+    ld de,l8200h        ;Transfer the bytes read into buffer at l8200h
     ldir                ;Copy BC bytes from (HL) to (DE)
+
     call format         ;8047 cd 3d 00
     ld hl,0000h         ;804a 21 00 00
     ld (6012h),hl       ;804d 22 12 60
