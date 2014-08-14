@@ -101,8 +101,9 @@ read_firm_blk:
 ;Command byte (0x32) has already been read
 ;1 byte left to read: head/sector: head (bits 7-5), sector (bits 4-0)
 ;
-    ld bc,0001h         ;8053 01 01 00
-    call hostread       ;8056 cd 7d 00
+    ld bc,0001h         ;BC = 1 byte to read from host
+    call hostread       ;Read the byte from the host
+
     ld a,(hl)           ;8059 7e
     ld b,04h            ;805a 06 04
     ld c,a              ;805c 4f
@@ -121,8 +122,9 @@ writ_firm_blk:
 ;  1 byte head/sector: head (bits 7-5), sector (bits 4-0)
 ;  512 bytes data
 ;
-    ld bc,0201h         ;806a 01 01 02
-    call hostread       ;806d cd 7d 00
+    ld bc,0201h         ;BC = 513 bytes to read from the host
+    call hostread       ;Read the bytes from the host
+
     ld a,(hl)           ;8070 7e
     ld (head_sec),a     ;8071 32 fd 81
     ld hl,0000h         ;8074 21 00 00
