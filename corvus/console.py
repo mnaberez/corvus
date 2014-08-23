@@ -1,7 +1,5 @@
-import asyncore
 import cmd
 import shlex
-import sys
 import time
 from corvus.client import Corvus
 
