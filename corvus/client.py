@@ -335,9 +335,9 @@ class Corvus(object):
         return error
 
     def enter_prep_mode(self, drive, prep_block=None):
+        cmd = 0x11 # put drive into prep mode
         if prep_block is None:
             prep_block = _PREP_BLOCK
-        cmd = 0x11 # put drive into prep mode
         req = [cmd, drive] + prep_block
         error, _ = self._iface.request(req, 0)
         return error
@@ -345,6 +345,16 @@ class Corvus(object):
     def exit_prep_mode(self):
         cmd = 0x00 # reset (only works in prep mode)
         req = [cmd]
+        error, _ = self._iface.request(req, 0)
+        return error
+
+    def format(self, drive, pattern=None):
+        cmd = 0x01 # format drive (only works in prep mode)
+        if pattern is None:
+            pattern = [0xE5] * 512
+        if len(pattern) != 512
+            raise ValueError("pattern must be 512 bytes")
+        req [cmd, drive] + pattern
         error, _ = self._iface.request(req, 0)
         return error
 
