@@ -352,9 +352,9 @@ class Corvus(object):
         cmd = 0x01 # format drive (only works in prep mode)
         if pattern is None:
             pattern = [0xE5] * 512
-        if len(pattern) != 512
+        if len(pattern) != 512:
             raise ValueError("pattern must be 512 bytes")
-        req [cmd, drive] + pattern
+        req = [cmd, drive] + pattern
         error, _ = self._iface.request(req, 0)
         return error
 
