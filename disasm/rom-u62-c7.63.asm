@@ -681,7 +681,8 @@ table_0:
     db 0feh             ;Byte to write to pio3_drb
 
 drive_6mb:
-;Drive parameters for 6MB mechanism (IMI 5006H)
+;Drive parameters for 6MB mechanism
+;IMI 5006H
 ;
     db 2                ;Number of surfaces (heads)
     dw 305              ;Last cylinder number (last_cyl)
@@ -690,7 +691,8 @@ drive_6mb:
     dw 11540            ;Capacity in 512-byte blocks (capacity)
 
 drive_11mb:
-;Drive parameters for 11MB mechanism (IMI 5012H)
+;Drive parameters for 11MB mechanism
+;IMI 5012H
 ;
     db 4                ;Number of surfaces (heads)
     dw 305              ;Last cylinder number (last_cyl)
@@ -699,7 +701,8 @@ drive_11mb:
     dw 23700            ;Capacity in 512-byte blocks (capacity)
 
 drive_20mb:
-;Drive parameters for 20MB mechanism (TODO - Possibly IMI 5018H or IMI 5021H)
+;Drive parameters for 20MB mechanism
+;IMI 5018H, possibly also IMI 5021H
 ;
     db 6                ;Number of surfaces (heads)
     dw 305              ;Last cylinder number (last_cyl)
