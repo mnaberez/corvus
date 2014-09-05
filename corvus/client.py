@@ -157,6 +157,7 @@ class LabjackInterface(object):
                 ports = responses[cmds.index(data_read)]
                 buffer.append(ports['EIO'])
             pos += 1
+
         return buffer
 
     def write(self, value):
@@ -355,8 +356,19 @@ class Corvus(object):
         if len(pattern) != 512:
             raise ValueError("pattern must be 512 bytes")
         req = [cmd, drive] + pattern
+
         error, _ = self._iface.request(req, 0)
         return error
+
+    def verify(self, drive):
+        cmd = 0x07 # verify drive (only works in prep mode)
+        req = [cmd, drive]
+        error, resp = self._iface.request(req, 1)
+        num_bad_sectors = resp[0]
+        for i in range(0, num_bad_sectors):
+            self._iface.read_multi(4)
+        # TODO return bad sector list
+        return num_bad_sectors
 
     def _make_dadr(self, drive, sector):
         # byte 0:

@@ -73,6 +73,53 @@ class Console(cmd.Cmd):
             self._corvus.read_sector_512(drive, last_sector)
             time.sleep(0.10)
 
+    def help_prep_enter(self):
+        self.stdout.write('prep_enter <drive>\n'
+                          'Enter prep mode.\n')
+
+    def do_prep_enter(self, args):
+        splitted = shlex.split(args)
+        if len(splitted) != 1:
+            return self.help_prep_enter()
+
+        drive = int(splitted[0])
+        error = self._corvus.enter_prep_mode(drive)
+        self.stdout.write("%02d\n" % error)
+
+    def help_prep_exit(self):
+        self.stdout.write('prep_exit\n'
+                          'Exit prep mode (must be in prep mode).\n')
+
+    def do_prep_exit(self, args):
+        error = self._corvus.exit_prep_mode()
+        self.stdout.write("%02d\n" % error)
+
+    def help_prep_format(self):
+        self.stdout.write('prep_format <drive>\n'
+                          'Format the drive (must be in prep mode).\n')
+
+    def do_prep_format(self, args):
+        splitted = shlex.split(args)
+        if len(splitted) != 1:
+            return self.help_prep_format()
+
+        drive = int(splitted[0])
+        error = self._corvus.format(drive)
+        self.stdout.write("%02d\n" % error)
+
+    def help_prep_verify(self):
+        self.stdout.write('prep_verify <drive>\n'
+                          'Verify the drive (must be in prep mode).\n')
+
+    def do_prep_verify(self, args):
+        splitted = shlex.split(args)
+        if len(splitted) != 1:
+            return self.help_prep_verify()
+
+        drive = int(splitted[0])
+        num_bad_sectors = self._corvus.verify(drive)
+        self.stdout.write("%d bad sectors\n" % num_bad_sectors)
+
     def help_quit(self):
         self._output("Exit this program")
 
