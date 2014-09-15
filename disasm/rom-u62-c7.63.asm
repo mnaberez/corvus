@@ -114,7 +114,8 @@ l0008h:
 
     dw 0                ;001e 00 00
 
-    jp e_20             ;0020 c3 c1 07  called from prep code (via rst 20h)
+    jp e_20             ;0020 c3 c1 07  write firmware block?
+                        ;               called from prep code (via rst 20h)
     jp e_23             ;0023 c3 c7 0a
 
     dw irq_05b5h        ;0026 b5 05
@@ -1593,7 +1594,10 @@ l07afh:
     jr l0767h           ;07bf 18 a6
 
 e_20:
+;Write firmware block(?)
 ;called from prep code in writ_firm_blk only
+;
+;Sets Z flag on success, clears Z flag on failure
 ;
     ld a,03h            ;07c1 3e 03
     ld (6025h),a        ;07c3 32 25 60

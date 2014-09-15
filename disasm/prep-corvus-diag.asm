@@ -127,20 +127,30 @@ writ_firm_blk:
 ;  1 byte head/sector: head (bits 7-5), sector (bits 4-0)
 ;  512 bytes data
 ;
-    ld bc,0201h         ;BC = 513 bytes to read
+    ld bc,0201h         ;BC = 513 bytes to read from the host
     call _read_buf      ;Read BC bytes from the host
-    ld a,(hl)           ;8085 7e
-    ld (head_sec),a     ;8086 32 fd 81
-    ld hl,0000h         ;8089 21 00 00
-    ld (cylinder),hl    ;808c 22 fe 81
-    rst 20h             ;808f e7
-    jp nz,finish_cmd    ;8090 c2 a0 81
-    ld hl,0001h         ;8093 21 01 00
-    ld (cylinder),hl    ;8096 22 fe 81
-    rst 20h             ;8099 e7
+
+    ld a,(hl)           ;A = read head/sector byte from command buffer
+    ld (head_sec),a     ;Head/Sector = A
+
+                        ;Try to write the block to cylinder 0,
+                        ;which holds the primary copy of the firmware.
+
+    ld hl,0000h         ;Cylinder = 0
+    ld (cylinder),hl
+    rst 20h             ;Write firmware block
+    jp nz,finish_cmd    ;Failed?  Jump to finish_cmd
+
+                        ;Try to write the block to cylinder 1,
+                        ;which holds the backup copy of the firmware.
+
+    ld hl,0001h         ;Cylinder = 1
+    ld (cylinder),hl
+    rst 20h             ;Write firmware block
+
     ld hl,0000h         ;809a 21 00 00
     ld (6012h),hl       ;809d 22 12 60
-    jp finish_cmd       ;80a0 c3 a0 81
+    jp finish_cmd
 
 verify_drive:
 ;Verify drive
