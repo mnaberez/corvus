@@ -1501,7 +1501,7 @@ sub_0711h:
     jp e_a4             ;071c c3 41 0c
 
 e_10:
-;called from prep code in verify_drive only
+;called from prep code in read_firm_blk and verify_drive only
 ;
 ;Sets Z flag on success, clears Z flag on failure
 ;
@@ -1796,9 +1796,9 @@ l08ffh:
     reti                ;0900 ed 4d
 
 e_aa:
-    ld a,(60b6h)        ;0902 3a b6 60
+    ld a,(60b6h)        ;TODO 60b6h holds a head/sector byte
     ld (head_sec),a     ;0905 32 fd 81
-    ld hl,(60b7h)       ;0908 2a b7 60
+    ld hl,(60b7h)       ;TODO 60b6h holds a cylinder word
     ld (cylinder),hl    ;090b 22 fe 81
 
     rst 10h             ;Read the sector
@@ -1819,9 +1819,9 @@ e_aa:
     jr sub_0944h        ;0922 18 20
 
 e_ad:
-    ld a,(60b6h)        ;0924 3a b6 60
+    ld a,(60b6h)        ;TODO 60b6h holds a head/sector byte
     ld (head_sec),a     ;0927 32 fd 81
-    ld hl,(60b7h)       ;092a 2a b7 60
+    ld hl,(60b7h)       ;TODO 60b6h holds a cylinder word
     ld (cylinder),hl    ;092d 22 fe 81
 
     rst 18h             ;0930 df
@@ -2404,9 +2404,9 @@ l0c8eh:
     jr nz,l0cc6h        ;0cb3 20 11
     jp e_b0             ;0cb5 c3 39 0d
 l0cb8h:
-    ld a,(60b6h)        ;0cb8 3a b6 60
+    ld a,(60b6h)        ;TODO 60b6h holds a head/sector byte
     ld (head_sec),a     ;0cbb 32 fd 81
-    ld hl,(60b7h)       ;0cbe 2a b7 60
+    ld hl,(60b7h)       ;TODO 60b6h holds a cylinder word
     ld (cylinder),hl    ;0cc1 22 fe 81
     jr l0d16h           ;0cc4 18 50
 l0cc6h:
@@ -2451,9 +2451,9 @@ l0cc6h:
     or (hl)             ;0d06 b6
     ld (head_sec),a     ;0d07 32 fd 81
     ld a,(head_sec)     ;0d0a 3a fd 81
-    ld (60b6h),a        ;0d0d 32 b6 60
+    ld (60b6h),a        ;TODO 60b6h holds a head/sector byte
     ld hl,(cylinder)    ;0d10 2a fe 81
-    ld (60b7h),hl       ;0d13 22 b7 60
+    ld (60b7h),hl       ;TODO 60b6h holds a cylinder word
 l0d16h:
     call sub_0958h      ;0d16 cd 58 09
     jp e_a4             ;0d19 c3 41 0c
@@ -2483,9 +2483,9 @@ l0d2bh:
 e_b0:
     xor a               ;0d39 af
     ld (60b9h),a        ;0d3a 32 b9 60
-    ld a,(60b6h)        ;0d3d 3a b6 60
+    ld a,(60b6h)        ;TODO 60b6h holds a head/sector byte
     ld (head_sec),a     ;0d40 32 fd 81
-    ld hl,(60b7h)       ;0d43 2a b7 60
+    ld hl,(60b7h)       ;TODO 60b6h holds a cylinder word
     ld (cylinder),hl    ;0d46 22 fe 81
     ld hl,(60b4h)       ;0d49 2a b4 60
     inc hl              ;0d4c 23
@@ -2509,7 +2509,7 @@ l0d58h:
     and 11100000b       ;0d6e e6 e0
     or (hl)             ;0d70 b6
     ld (head_sec),a     ;0d71 32 fd 81
-    ld (60b6h),a        ;0d74 32 b6 60
+    ld (60b6h),a        ;TODO 60b6h holds a head/sector byte
     call sub_0958h      ;0d77 cd 58 09
     jp e_a4             ;0d7a c3 41 0c
 
@@ -2547,16 +2547,16 @@ sub_0d9eh:
     ld a,b              ;0db0 78
     and 00011111b       ;0db1 e6 1f
     ld (head_sec),a     ;0db3 32 fd 81
-    ld (60b6h),a        ;0db6 32 b6 60
+    ld (60b6h),a        ;TODO 60b6h holds a head/sector byte
     ld hl,(cylinder)    ;0db9 2a fe 81
     inc hl              ;0dbc 23
     ld (cylinder),hl    ;0dbd 22 fe 81
-    ld (60b7h),hl       ;0dc0 22 b7 60
+    ld (60b7h),hl       ;TODO 60b6h holds a cylinder word
     ret                 ;0dc3 c9
 l0dc4h:
     ld a,b              ;0dc4 78
     ld (head_sec),a     ;0dc5 32 fd 81
-    ld (60b6h),a        ;0dc8 32 b6 60
+    ld (60b6h),a        ;TODO 60b6h holds a head/sector byte
     ret                 ;0dcb c9
 
 e_08:
