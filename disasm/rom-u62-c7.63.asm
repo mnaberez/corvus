@@ -120,7 +120,7 @@ l0008h:
 
     dw irq_05b5h        ;0026 b5 05
 
-    jp e_28             ;0028 c3 00 0c
+    jp e_28             ;0028 c3 00 0c  read firmware blocks?
     jp e_2b             ;002b c3 1c 0d
 
     dw irq_05cch        ;002e cc 05
@@ -2261,22 +2261,25 @@ e_03:
 l0bf1h:
     jp e_a4             ;0bf1 c3 41 0c
 
-table_1:
-    dw 4800h            ;0bf4 00 48
-    dw 4a00h            ;0bf6 00 4a
-    dw 8000h            ;0bf8 00 80
-    dw 8200h            ;0bfa 00 82
-    dw 0a000h           ;0bfc 00 a0
-    dw 0a200h           ;0bfe 00 a2
+buffer_ptrs:
+    dw 4800h            ;Pointer to 512-byte buffer area #1
+    dw 4a00h            ;Pointer to 512-byte buffer area #2
+    dw 8000h            ;Pointer to 512-byte buffer area #3
+    dw 8200h            ;Pointer to 512-byte buffer area #4
+    dw 0a000h           ;Pointer to 512-byte buffer area #5
+    dw 0a200h           ;Pointer to 512-byte buffer area #6
 
 e_28:
+;Read firmware blocks?
 ;called from prep code in read_firm_blk only
 ;
     pop hl              ;0c00 e1
     push de             ;0c01 d5
-    ld hl,table_1       ;0c02 21 f4 0b
+
+    ld hl,buffer_ptrs   ;HL = pointer to first buffer area
 l0c05h:
-    ld (6069h),hl       ;0c05 22 69 60
+    ld (6069h),hl       ;Save buffer pointer in 6069h
+
     call e_9e           ;TODO Disable interrupts, Swap 6070h/6071h,
                         ;     do something with ctc_ch2
     ld a,b              ;0c0b 78
@@ -2306,13 +2309,13 @@ l0c05h:
     jp nz,fatal_        ;Failed?  Jump to fatal error.  Halt until reset.
 
 l0c28h:
-    ld hl,(6069h)       ;0c28 2a 69 60
+    ld hl,(6069h)       ;HL = Recall buffer pointer
     ld e,(hl)           ;0c2b 5e
     inc hl              ;0c2c 23
     ld d,(hl)           ;0c2d 56
     ld hl,6200h         ;0c2e 21 00 62
-    ld bc,0200h         ;0c31 01 00 02
-    ldir                ;0c34 ed b0
+    ld bc,0200h         ;BC = 512 bytes to copy
+    ldir                ;Copy (BC) bytes from (HL) to (DE)
     pop bc              ;0c36 c1
     inc c               ;0c37 0c
 l0c38h:
