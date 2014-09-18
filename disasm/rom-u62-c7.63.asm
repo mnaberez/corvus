@@ -2277,7 +2277,7 @@ e_28:
     push de             ;0c01 d5
 
     ld hl,buffer_ptrs   ;HL = pointer to first buffer area
-l0c05h:
+e_28_loop:
     ld (6069h),hl       ;Save buffer pointer in 6069h
 
     call e_9e           ;TODO Disable interrupts, Swap 6070h/6071h,
@@ -2323,7 +2323,7 @@ l0c38h:
     ld hl,(6069h)       ;0c3a 2a 69 60
     inc hl              ;0c3d 23
     inc hl              ;0c3e 23
-    jr l0c05h           ;0c3f 18 c4
+    jr e_28_loop        ;0c3f 18 c4
 
 e_a4:
 ;called from prep code in verify_drive only
