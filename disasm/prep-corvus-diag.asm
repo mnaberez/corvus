@@ -93,7 +93,7 @@ format_drive:
 ;Command byte (0x01) has already been read
 ;512 bytes left to read: format pattern
 ;
-    ld bc,0200h         ;BC = 512 bytes to read
+    ld bc,512           ;BC = 512 bytes to read
     call _read_buf      ;Read BC bytes from the host
     ld de,l8200h        ;8052 11 00 82
     ldir                ;Copy BC bytes from (HL) to (DE)
@@ -127,7 +127,7 @@ writ_firm_blk:
 ;  1 byte head/sector: head (bits 7-5), sector (bits 4-0)
 ;  512 bytes data
 ;
-    ld bc,0201h         ;BC = 513 bytes to read from the host
+    ld bc,513           ;BC = 513 bytes to read from the host
     call _read_buf      ;Read BC bytes from the host
 
     ld a,(hl)           ;A = read head/sector byte from command buffer

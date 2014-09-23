@@ -44,7 +44,7 @@ cmd_loop:
     out (ctc_ch2),a     ;8011 d3 7e
 
                         ;Read a command byte from the host:
-    ld bc,0001h         ;  BC = 1 byte to read from the host
+    ld bc,1             ;  BC = 1 byte to read from the host
     call hostread       ;  Read BC bytes from the host
     ld a,(hl)           ;  A = command byte
 
@@ -84,7 +84,7 @@ format_drive:
 ;Command byte (0x01) has already been read
 ;512 bytes left to read: format pattern
 ;
-    ld bc,0200h         ;BC = 512 bytes to read from host
+    ld bc,512           ;BC = 512 bytes to read from host
     call hostread       ;Read the bytes from the host
 
     ld de,l8200h        ;Transfer the bytes read into buffer at l8200h
@@ -101,7 +101,7 @@ read_firm_blk:
 ;Command byte (0x32) has already been read
 ;1 byte left to read: head/sector: head (bits 7-5), sector (bits 4-0)
 ;
-    ld bc,0001h         ;BC = 1 byte to read from host
+    ld bc,1             ;BC = 1 byte to read from host
     call hostread       ;Read the byte from the host
 
     ld a,(hl)           ;8059 7e
@@ -122,7 +122,7 @@ writ_firm_blk:
 ;  1 byte head/sector: head (bits 7-5), sector (bits 4-0)
 ;  512 bytes data
 ;
-    ld bc,0201h         ;BC = 513 bytes to read from the host
+    ld bc,513           ;BC = 513 bytes to read from the host
     call hostread       ;Read the bytes from the host
 
     ld a,(hl)           ;A = read head/sector byte from command buffer
