@@ -392,6 +392,16 @@ l01a9h:
     jr nz,l0194h        ;01b2 20 e0
 
 ;TODO Is this drive type detection?
+;
+;IMI mechanisms use an otherwise unassigned pair of lines on the ST-412 data
+;cable to tell the controller the drive capacity.  These lines are -6MB and -12MB.
+;Non-IMI mechanisms will have these lines floating, which may explain why
+;they don't work (David Gesswein, Steven Hirsch).
+;
+;20-pin ST-412 data cable:
+;  Pin 9 = -6MB
+;  Pin 10 = -12MB
+;
     in a,(pio3_drb)     ;01b4 db 6d
     and 01000100b       ;Bit 6 = 12MB1, Bit 2 = 6MB1
     ld (6104h),a        ;01b8 32 04 61
