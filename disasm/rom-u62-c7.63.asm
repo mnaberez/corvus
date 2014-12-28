@@ -391,20 +391,10 @@ l01a9h:
     add a,(hl)          ;01b1 86
     jr nz,l0194h        ;01b2 20 e0
 
-;TODO Is this drive type detection?
-;
-;IMI mechanisms use an otherwise unassigned pair of lines on the ST-412 data
-;cable to tell the controller the drive capacity.  These lines are -6MB and -12MB.
-;Non-IMI mechanisms will have these lines floating, which may explain why
-;they don't work (David Gesswein, Steven Hirsch).
-;
-;20-pin ST-412 data cable:
-;  Pin 9 = -6MB
-;  Pin 10 = -12MB
-;
-    in a,(pio3_drb)     ;01b4 db 6d
+    in a,(pio3_drb)     ;Read port to be used for drive type detection
     and 01000100b       ;Bit 6 = 12MB1, Bit 2 = 6MB1
-    ld (6104h),a        ;01b8 32 04 61
+    ld (6104h),a        ;Save byte for use by detection type detection
+                        ;  (see code in e_33).
 
     call e_33           ;01bb cd 0a 02
 
@@ -473,9 +463,28 @@ l0219h:
     ld a,14h            ;TODO: sectors per track?
     ld (6017h),a        ;021f 32 17 60
 
-    ld a,(6104h)        ;0222 3a 04 61
+    ;Drive type detection
+    ;
+    ;IMI mechanisms use an otherwise unassigned pair of lines on the ST-412
+    ;data cable to tell the controller the drive capacity.  These lines are
+    ;-6MB and -12MB.  Non-IMI mechanisms will have these lines floating,
+    ;which may explain why they don't work (David Gesswein, Steven Hirsch).
+    ;
+    ;20-pin ST-412 data cable:
+    ;  Pin 10 = -12MB (PIO Bit 6)
+    ;  Pin 9  = -6MB  (PIO Bit 4)
+    ;
+    ;Bit 6 ... Bit 4
+    ;-----     -----
+    ;  0         0     = Falls through to 20MB
+    ;  0         1     = 6MB
+    ;  1         0     = 11MB
+    ;  1         1     = Falls through to 20MB
 
-    cp 04h              ;Is it 4?
+    ld a,(6104h)        ;A = byte read from pio3_drb, all bits masked off
+                        ;  except for bit 6 (-12MB) abd bit 4 (-6MB)
+
+    cp 00000100h        ;Is it 4?
     jr nz,not_6mb       ;  No: it's not a 6MB, so jump.
 
                         ;Set params for 6MB:
@@ -483,7 +492,7 @@ l0219h:
     jr set_drive_params ;  Set params for 6MB drive
 
 not_6mb:
-    cp 40h              ;Is it 40h?
+    cp 01000000b        ;Is it 40h?
     jr nz,not_11mb      ;  No: It's not an 11MB, so jump.
 
                         ;Set drive params for 11MB:
