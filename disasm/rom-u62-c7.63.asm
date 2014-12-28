@@ -484,7 +484,7 @@ l0219h:
     ld a,(6104h)        ;A = byte read from pio3_drb, all bits masked off
                         ;  except for bit 6 (-12MB) abd bit 4 (-6MB)
 
-    cp 00000100h        ;Is it 4?
+    cp 00000100b        ;Is it 4?
     jr nz,not_6mb       ;  No: it's not a 6MB, so jump.
 
                         ;Set params for 6MB:
